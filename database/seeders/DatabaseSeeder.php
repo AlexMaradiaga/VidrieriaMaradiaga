@@ -11,5 +11,6 @@ class DatabaseSeeder extends Seeder
         $this->call([
             InventoryCatalogSeeder::class,
         ]);
+        $this->call(AccessRolesSeeder::class);
     }
 }

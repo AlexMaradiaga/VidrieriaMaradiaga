@@ -12,8 +12,7 @@ final class StoreProductRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        // Las rutas deben estar protegidas por el middleware de autenticación.
-        return $this->user() !== null;
+        return $this->user()?->can('inventory.products.create') ?? false;
     }
 
     public function rules(): array
