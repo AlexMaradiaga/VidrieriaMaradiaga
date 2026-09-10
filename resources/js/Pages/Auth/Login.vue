@@ -1,0 +1,249 @@
+<script setup lang="ts">
+import { Head, useForm } from '@inertiajs/vue3';
+import Button from 'primevue/button';
+import InputText from 'primevue/inputtext';
+
+const form = useForm({
+    email: '',
+    password: '',
+});
+
+function submit(): void {
+    form.clearErrors();
+
+    form.post('/login', {
+        onFinish: () => form.reset('password'),
+    });
+}
+</script>
+
+<template>
+    <Head title="Iniciar sesión" />
+
+    <main class="login-page">
+        <section class="brand-panel" aria-label="Vidriería Maradiaga">
+            <div class="brand-mark" aria-hidden="true">VM</div>
+
+            <p class="eyebrow">VIDRIERÍA MARADIAGA</p>
+
+            <h1>Tu operación, en un solo lugar.</h1>
+
+            <p class="brand-description">
+                Gestiona tus materiales y organiza el trabajo de tu equipo.
+            </p>
+
+            <span class="brand-footer">Sistema de gestión empresarial</span>
+        </section>
+
+        <section class="form-panel">
+            <form class="login-form" @submit.prevent="submit">
+                <p class="eyebrow">BIENVENIDO</p>
+
+                <h2>Iniciar sesión</h2>
+
+                <p class="form-description">
+                    Ingresa con tu cuenta de trabajo.
+                </p>
+
+                <div class="field">
+                    <label for="email">Correo electrónico</label>
+
+                    <InputText
+                        id="email"
+                        v-model="form.email"
+                        type="email"
+                        autocomplete="username"
+                        maxlength="255"
+                        required
+                        autofocus
+                        :invalid="Boolean(form.errors.email)"
+                        :aria-invalid="Boolean(form.errors.email)"
+                        :aria-describedby="form.errors.email ? 'email-error' : undefined"
+                    />
+
+                    <small
+                        v-if="form.errors.email"
+                        id="email-error"
+                        class="error"
+                        role="alert"
+                    >
+                        {{ form.errors.email }}
+                    </small>
+                </div>
+
+                <div class="field">
+                    <label for="password">Contraseña</label>
+
+                    <InputText
+                        id="password"
+                        v-model="form.password"
+                        type="password"
+                        autocomplete="current-password"
+                        required
+                        :invalid="Boolean(form.errors.password)"
+                        :aria-invalid="Boolean(form.errors.password)"
+                        :aria-describedby="form.errors.password ? 'password-error' : undefined"
+                    />
+
+                    <small
+                        v-if="form.errors.password"
+                        id="password-error"
+                        class="error"
+                        role="alert"
+                    >
+                        {{ form.errors.password }}
+                    </small>
+                </div>
+
+                <Button
+                    type="submit"
+                    label="Ingresar"
+                    icon="pi pi-sign-in"
+                    :loading="form.processing"
+                    :disabled="form.processing"
+                    class="submit-button"
+                />
+
+                <p class="help">
+                    ¿Necesitas acceso? Solicítalo al administrador.
+                </p>
+            </form>
+        </section>
+    </main>
+</template>
+
+<style scoped>
+.login-page {
+    min-height: 100vh;
+    min-height: 100dvh;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    background: #f5f7fb;
+    color: #172338;
+}
+
+.brand-panel {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: clamp(2rem, 6vw, 6rem);
+    background: linear-gradient(145deg, #11243a, #164c60);
+    color: white;
+}
+
+.brand-mark {
+    display: grid;
+    place-items: center;
+    width: 64px;
+    height: 64px;
+    margin-bottom: 2rem;
+    border: 1px solid #ffffff50;
+    border-radius: 18px;
+    font-size: 1.4rem;
+    font-weight: 800;
+}
+
+.eyebrow {
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+}
+
+.brand-panel h1 {
+    max-width: 520px;
+    margin: 1rem 0;
+    font-size: clamp(2rem, 4vw, 3.5rem);
+    line-height: 1.12;
+}
+
+.brand-description {
+    max-width: 420px;
+    color: #d4e2ed;
+    line-height: 1.7;
+}
+
+.brand-footer {
+    margin-top: 3rem;
+    font-size: 0.8rem;
+    color: #bdcedb;
+}
+
+.form-panel {
+    display: grid;
+    place-items: center;
+    padding: 2rem;
+}
+
+.login-form {
+    width: 100%;
+    max-width: 400px;
+}
+
+.login-form h2 {
+    margin: 0.6rem 0;
+    font-size: 2rem;
+}
+
+.form-description,
+.help {
+    color: #58677a;
+    line-height: 1.5;
+}
+
+.form-description {
+    margin-bottom: 2rem;
+}
+
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 1.25rem;
+}
+
+.field label {
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.error {
+    color: #b42318;
+}
+
+.submit-button {
+    width: 100%;
+    margin-top: 0.5rem;
+}
+
+.help {
+    margin-top: 1.5rem;
+    text-align: center;
+    font-size: 0.85rem;
+}
+
+@media (max-width: 760px) {
+    .login-page {
+        grid-template-columns: 1fr;
+    }
+
+    .brand-panel {
+        padding: 1.75rem;
+    }
+
+    .brand-mark {
+        margin-bottom: 0.75rem;
+    }
+
+    .brand-panel h1 {
+        font-size: 1.8rem;
+    }
+
+    .brand-footer {
+        display: none;
+    }
+
+    .form-panel {
+        padding: 2rem 1.5rem;
+    }
+}
+</style>
