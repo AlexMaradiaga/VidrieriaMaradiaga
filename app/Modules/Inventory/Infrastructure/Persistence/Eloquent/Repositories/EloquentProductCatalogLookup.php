@@ -14,6 +14,7 @@ final class EloquentProductCatalogLookup implements ProductCatalogLookupInterfac
         return DB::table('inventory_categories')
             ->where('id', $categoryId)
             ->where('active', true)
+            ->whereNull('deleted_at')
             ->exists();
     }
 
@@ -22,6 +23,7 @@ final class EloquentProductCatalogLookup implements ProductCatalogLookupInterfac
         return DB::table('inventory_units')
             ->where('id', $unitId)
             ->where('active', true)
+            ->whereNull('deleted_at')
             ->exists();
     }
 }

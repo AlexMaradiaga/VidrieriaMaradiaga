@@ -8,6 +8,8 @@ use App\Modules\Inventory\Application\Ports\ProductCatalogLookupInterface;
 use App\Modules\Inventory\Domain\Ports\ProductRepositoryInterface;
 use App\Modules\Inventory\Infrastructure\Persistence\Eloquent\Repositories\EloquentProductCatalogLookup;
 use App\Modules\Inventory\Infrastructure\Persistence\Eloquent\Repositories\EloquentProductRepository;
+use App\Modules\Inventory\Application\Ports\ProductCatalogQueryInterface;
+use App\Modules\Inventory\Infrastructure\Persistence\Eloquent\Repositories\EloquentProductCatalogQuery;
 use Illuminate\Support\ServiceProvider;
 
 final class InventoryServiceProvider extends ServiceProvider
@@ -22,6 +24,10 @@ final class InventoryServiceProvider extends ServiceProvider
         $this->app->bind(
             ProductCatalogLookupInterface::class,
             EloquentProductCatalogLookup::class,
+        );
+        $this->app->bind(
+            ProductCatalogQueryInterface::class,
+            EloquentProductCatalogQuery::class,
         );
     }
 }

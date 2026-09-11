@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head, useForm } from '@inertiajs/vue3';
+import { Head, Link, useForm, usePage } from '@inertiajs/vue3';
 import Button from 'primevue/button';
 import Card from 'primevue/card';
 
@@ -12,6 +12,12 @@ function logout(): void {
 
     logoutForm.post('/logout');
 }
+
+const page = usePage<{
+    auth: {
+        permissions: string[];
+    };
+}>();
 </script>
 
 <template>
@@ -87,6 +93,15 @@ function logout(): void {
         </section>
 
         <section class="actions" aria-label="Acciones de inventario">
+            <Link
+                v-if="page.props.auth.permissions.includes('inventory.products.view')"
+                href="/inventory/products"
+                class="catalog-link"
+            >
+                <i class="pi pi-box" aria-hidden="true"></i>
+                Abrir catálogo de productos
+            </Link>
+
             <Button
                 type="button"
                 label="Registrar entrada"
@@ -183,5 +198,28 @@ h1 {
     .cards {
         grid-template-columns: 1fr;
     }
+}
+.catalog-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.7rem 1rem;
+    margin-right: 1rem;
+    margin-bottom: 0.75rem;
+    border-radius: 0.5rem;
+    background: var(--p-primary-color, #0f766e);
+    color: var(--p-primary-contrast-color, #fff);
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.catalog-link:hover {
+    background: var(--p-primary-hover-color, #115e59);
+}
+
+.catalog-link:focus-visible {
+    outline: 2px solid var(--p-primary-color, #0f766e);
+    outline-offset: 3px;
 }
 </style>

@@ -7,6 +7,9 @@ Route::middleware('auth')
     ->prefix('inventory')
     ->name('inventory.')
     ->group(function (): void {
+        Route::get('/products', [ProductController::class, 'index'])
+            ->name('products.index');
+
         Route::post('/products', [ProductController::class, 'store'])
             ->name('products.store');
     });

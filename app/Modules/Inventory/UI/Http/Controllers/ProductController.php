@@ -13,9 +13,40 @@ use App\Modules\Inventory\UI\Http\Requests\StoreProductRequest;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Validation\ValidationException;
+use App\Modules\Inventory\Application\Ports\ProductCatalogQueryInterface;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
+use Inertia\Inertia;
+use Inertia\Response;
 
 final class ProductController extends Controller
 {
+    public function index(
+        Request $request,
+        ProductCatalogQueryInterface $catalog,
+    ): Response {
+        Gate::authorize('inventory.products.view');
+
+        $data = $request->validate([
+            'search' => ['nullable', 'string', 'max:180'],
+            'page' => ['nullable', 'integer', 'min:1', 'max:1000000'],
+        ]);
+
+        $search = trim((string) ($data['search'] ?? ''));
+        $page = (int) ($data['page'] ?? 1);
+
+        $options = $request->user()->can('inventory.products.create')
+            ? $catalog->formOptions()
+            : ['categories' => [], 'units' => []];
+
+        return Inertia::render('Inventory/Products/Index', [
+            'products' => $catalog->search($search, $page),
+            'filters' => ['search' => $search],
+            'categories' => $options['categories'],
+            'units' => $options['units'],
+        ]);
+    }
+    
     public function store(
         StoreProductRequest $request,
         CreateProductHandler $handler,
