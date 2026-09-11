@@ -18,6 +18,10 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response;
+use App\Modules\Inventory\Application\Commands\UpdateProductCommand;
+use App\Modules\Inventory\Application\Exceptions\ProductNotFoundException;
+use App\Modules\Inventory\Application\Handlers\ManageProductHandler;
+use App\Modules\Inventory\UI\Http\Requests\UpdateProductRequest;
 
 final class ProductController extends Controller
 {
@@ -46,7 +50,7 @@ final class ProductController extends Controller
             'units' => $options['units'],
         ]);
     }
-    
+
     public function store(
         StoreProductRequest $request,
         CreateProductHandler $handler,
@@ -96,5 +100,72 @@ final class ProductController extends Controller
                 'active' => $product->isActive(),
             ],
         ], 201);
+    }
+
+    public function update(
+        UpdateProductRequest $request,
+        ManageProductHandler $handler,
+        int $productId,
+    ): JsonResponse {
+        $data = $request->validated();
+
+        try {
+            $product = $handler->update(
+                new UpdateProductCommand(
+                    productId: $productId,
+                    name: $data['name'],
+                    barcode: $data['barcode'] ?? null,
+                    description: $data['description'] ?? null,
+                    minimumStock: (string) $data['minimum_stock'],
+                    maximumStock: isset($data['maximum_stock'])
+                        ? (string) $data['maximum_stock']
+                        : null,
+                    reorderPoint: (string) $data['reorder_point'],
+                    salePrice: (string) $data['sale_price'],
+                )
+            );
+        } catch (ProductNotFoundException $exception) {
+            abort(404, $exception->getMessage());
+        } catch (InvalidProductException $exception) {
+            throw ValidationException::withMessages([
+                'product' => $exception->getMessage(),
+            ]);
+        }
+
+        return response()->json([
+            'message' => 'Producto actualizado correctamente.',
+            'data' => ['id' => $product->id()],
+        ]);
+    }
+
+    public function setActive(
+        Request $request,
+        ManageProductHandler $handler,
+        int $productId,
+    ): JsonResponse {
+        Gate::authorize('inventory.products.toggle-active');
+
+        $data = $request->validate([
+            'active' => ['required', 'boolean'],
+        ]);
+
+        try {
+            $product = $handler->setActive(
+                $productId,
+                (bool) $data['active'],
+            );
+        } catch (ProductNotFoundException $exception) {
+            abort(404, $exception->getMessage());
+        }
+
+        return response()->json([
+            'message' => $product->isActive()
+                ? 'Producto activado correctamente.'
+                : 'Producto desactivado correctamente.',
+            'data' => [
+                'id' => $product->id(),
+                'active' => $product->isActive(),
+            ],
+        ]);
     }
 }

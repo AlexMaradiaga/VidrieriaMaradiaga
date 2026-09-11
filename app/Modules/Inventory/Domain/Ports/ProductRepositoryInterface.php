@@ -21,4 +21,8 @@ interface ProductRepositoryInterface
     public function save(Product $product): Product;
 
     public function delete(Product $product): void;
+
+    public function updateCatalogDetails(Product $product): Product;
+
+    public function updateActiveStatus(Product $product): Product;
 }

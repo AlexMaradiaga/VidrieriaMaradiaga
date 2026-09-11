@@ -33,6 +33,11 @@ final class EloquentProductCatalogQuery implements ProductCatalogQueryInterface
                 'inventory_products.active',
                 'categories.name as category_name',
                 'units.symbol as unit_symbol',
+                'inventory_products.barcode',
+                'inventory_products.description',
+                'inventory_products.minimum_stock',
+                'inventory_products.maximum_stock',
+                'inventory_products.reorder_point',
             ]);
 
         if ($search !== '') {
@@ -66,6 +71,11 @@ final class EloquentProductCatalogQuery implements ProductCatalogQueryInterface
                     'unit_symbol' => $product->unit_symbol,
                     'sale_price' => $product->sale_price,
                     'active' => $product->active,
+                    'barcode' => $product->barcode,
+                    'description' => $product->description,
+                    'minimum_stock' => $product->minimum_stock,
+                    'maximum_stock' => $product->maximum_stock,
+                    'reorder_point' => $product->reorder_point,
                 ])
                 ->values()
                 ->all(),

@@ -85,4 +85,49 @@ final class EloquentProductRepository implements ProductRepositoryInterface
             throw new RuntimeException('No se pudo eliminar el producto.');
         }
     }
+
+    public function updateCatalogDetails(Product $product): Product
+    {
+        if ($product->id() === null) {
+            throw new LogicException('El producto debe estar guardado.');
+        }
+
+        $model = InventoryProductModel::query()
+            ->findOrFail($product->id());
+
+        // Actualizar únicamente los campos editables del catálogo.
+        $model->fill([
+            'name' => $product->name(),
+            'barcode' => $product->barcode(),
+            'description' => $product->description(),
+            'minimum_stock' => $product->minimumStock(),
+            'maximum_stock' => $product->maximumStock(),
+            'reorder_point' => $product->reorderPoint(),
+            'sale_price' => $product->salePrice(),
+        ]);
+
+        if (! $model->save()) {
+            throw new RuntimeException('No se pudo actualizar el producto.');
+        }
+
+        return $this->mapper->toDomain($model);
+    }
+
+    public function updateActiveStatus(Product $product): Product
+    {
+        if ($product->id() === null) {
+            throw new LogicException('El producto debe estar guardado.');
+        }
+
+        $model = InventoryProductModel::query()
+            ->findOrFail($product->id());
+
+        $model->active = $product->isActive();
+
+        if (! $model->save()) {
+            throw new RuntimeException('No se pudo actualizar el estado.');
+        }
+
+        return $this->mapper->toDomain($model);
+    }
 }

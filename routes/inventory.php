@@ -12,4 +12,12 @@ Route::middleware('auth')
 
         Route::post('/products', [ProductController::class, 'store'])
             ->name('products.store');
+
+        Route::put('/products/{productId}', [ProductController::class, 'update'])
+            ->whereNumber('productId')
+            ->name('products.update');
+
+        Route::patch('/products/{productId}/active', [ProductController::class, 'setActive'])
+            ->whereNumber('productId')
+            ->name('products.active');
     });

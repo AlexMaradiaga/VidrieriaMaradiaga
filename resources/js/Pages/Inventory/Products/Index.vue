@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, reactive, ref, watch } from 'vue';
+import { computed, nextTick, reactive, ref, watch } from 'vue';
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import axios from 'axios';
 import Button from 'primevue/button';
@@ -12,6 +12,11 @@ interface ProductRow {
     unit_symbol: string | null;
     sale_price: string;
     active: boolean;
+    barcode: string | null;
+    description: string | null;
+    minimum_stock: string;
+    maximum_stock: string | null;
+    reorder_point: string;
 }
 
 interface Option {
@@ -52,7 +57,9 @@ const props = defineProps<{
         last_page: number;
         total: number;
     };
-    filters: { search: string };
+    filters: {
+        search: string;
+    };
     categories: Option[];
     units: UnitOption[];
 }>();
@@ -67,13 +74,45 @@ const canCreate = computed(() =>
     page.props.auth.permissions.includes('inventory.products.create'),
 );
 
+const canUpdate = computed(() =>
+    page.props.auth.permissions.includes('inventory.products.update'),
+);
+
+const canChangeStatus = computed(() =>
+    page.props.auth.permissions.includes('inventory.products.toggle-active'),
+);
+
 const search = ref(props.filters.search);
-const showForm = ref(false);
+const showEditor = ref(false);
+const editingId = ref<number | null>(null);
+const editingCategory = ref('');
+const editingUnit = ref('');
+
 const saving = ref(false);
 const loading = ref(false);
+const changingStatus = ref<number | null>(null);
+
 const success = ref('');
 const failure = ref('');
 const errors = ref<Record<string, string[]>>({});
+
+const editorHeading = ref<HTMLHeadingElement | null>(null);
+
+const isEditing = computed(() => editingId.value !== null);
+
+const busy = computed(
+    () => saving.value || loading.value || changingStatus.value !== null,
+);
+
+const hasCreationOptions = computed(
+    () => props.categories.length > 0 && props.units.length > 0,
+);
+
+const canSubmit = computed(() =>
+    isEditing.value
+        ? canUpdate.value
+        : canCreate.value && hasCreationOptions.value,
+);
 
 const decimalFields = [
     {
@@ -146,7 +185,6 @@ function formatPrice(value: string): string {
     const integerPart = match[1] ?? '0';
     const decimals = (match[2] ?? '').padEnd(3, '0');
 
-    // Redondear para mostrar dos decimales sin convertir a float.
     let cents =
         BigInt(integerPart) * BigInt(100) +
         BigInt(decimals.slice(0, 2));
@@ -166,8 +204,81 @@ function formatPrice(value: string): string {
     return `${whole}.${fraction}`;
 }
 
-function loadProducts(pageNumber = 1): void {
+function clearFeedback(): void {
+    success.value = '';
+    failure.value = '';
+    errors.value = {};
+}
+
+async function focusEditor(): Promise<void> {
+    await nextTick();
+    editorHeading.value?.focus();
+}
+
+function openCreate(): void {
+    if (busy.value || !canCreate.value) return;
+
+    clearFeedback();
+    editingId.value = null;
+    editingCategory.value = '';
+    editingUnit.value = '';
+    Object.assign(form, emptyForm());
+    showEditor.value = true;
+
+    void focusEditor();
+}
+
+function openEdit(product: ProductRow): void {
+    if (busy.value || !canUpdate.value) return;
+
+    clearFeedback();
+
+    // Estos campos deben venir incluidos en la consulta del backend.
+    if (
+        typeof product.minimum_stock !== 'string' ||
+        typeof product.reorder_point !== 'string' ||
+        !('maximum_stock' in product) ||
+        !('barcode' in product) ||
+        !('description' in product)
+    ) {
+        failure.value =
+            'No se recibieron todos los datos del producto. No es posible abrir la edición.';
+        return;
+    }
+
+    editingId.value = product.id;
+    editingCategory.value = product.category_name ?? 'Sin categoría';
+    editingUnit.value = product.unit_symbol ?? 'Sin unidad';
+
+    Object.assign(form, emptyForm(), {
+        sku: product.sku,
+        name: product.name,
+        barcode: product.barcode ?? '',
+        description: product.description ?? '',
+        minimum_stock: product.minimum_stock,
+        maximum_stock: product.maximum_stock ?? '',
+        reorder_point: product.reorder_point,
+        sale_price: product.sale_price,
+    });
+
+    showEditor.value = true;
+
+    void focusEditor();
+}
+
+function closeEditor(): void {
+    if (busy.value) return;
+
+    showEditor.value = false;
+    editingId.value = null;
+    failure.value = '';
+    errors.value = {};
+}
+
+function refreshProducts(pageNumber = 1): void {
     if (loading.value) return;
+
+    loading.value = true;
 
     router.get(
         '/inventory/products',
@@ -178,8 +289,9 @@ function loadProducts(pageNumber = 1): void {
         {
             preserveState: true,
             preserveScroll: true,
-            onStart: () => {
-                loading.value = true;
+            onError: () => {
+                failure.value =
+                    'No se pudo actualizar el listado. Revisa la búsqueda o recarga la página.';
             },
             onFinish: () => {
                 loading.value = false;
@@ -188,33 +300,147 @@ function loadProducts(pageNumber = 1): void {
     );
 }
 
-function openForm(): void {
-    Object.assign(form, emptyForm());
-    errors.value = {};
-    failure.value = '';
-    success.value = '';
-    showForm.value = true;
+function searchProducts(): void {
+    if (busy.value) return;
+
+    clearFeedback();
+    refreshProducts(1);
 }
 
-async function saveProduct(): Promise<void> {
-    if (saving.value) return;
+function clearSearch(): void {
+    if (busy.value) return;
 
-    saving.value = true;
+    search.value = '';
+    searchProducts();
+}
+
+function goToPage(pageNumber: number): void {
+    if (busy.value) return;
+
+    refreshProducts(pageNumber);
+}
+
+function handleMutationError(error: unknown): void {
     errors.value = {};
-    failure.value = '';
-    success.value = '';
+
+    if (axios.isAxiosError<ValidationResponse>(error)) {
+        const status = error.response?.status;
+
+        if (status === 422) {
+            errors.value = error.response.data.errors ?? {};
+            failure.value = 'Revisa los datos indicados.';
+            return;
+        }
+
+        if (status === 403) {
+            failure.value = 'No tienes permiso para esta operación.';
+            return;
+        }
+
+        if (status === 404) {
+            failure.value = 'El producto no existe o fue eliminado.';
+            return;
+        }
+
+        if (status === 401 || status === 419) {
+            failure.value =
+                'Tu sesión venció. Vuelve a iniciar sesión antes de continuar.';
+            return;
+        }
+    }
+
+    failure.value =
+        'No se pudo confirmar la operación. Revisa el catálogo antes de reintentar para comprobar si se guardó.';
+}
+
+async function submitProduct(): Promise<void> {
+    if (busy.value || !canSubmit.value) return;
+
+    clearFeedback();
+    saving.value = true;
+
+    const productId = editingId.value;
+    const productCode = form.sku.trim().toUpperCase();
+
+    // Campos permitidos tanto para crear como para editar.
+    const editableData = {
+        name: form.name.trim(),
+        barcode: form.barcode.trim() || null,
+        description: form.description.trim() || null,
+        minimum_stock: form.minimum_stock.trim(),
+        maximum_stock: form.maximum_stock.trim() || null,
+        reorder_point: form.reorder_point.trim(),
+        sale_price: form.sale_price.trim(),
+    };
+
+    const config = {
+        headers: {
+            Accept: 'application/json',
+            'X-Requested-With': 'XMLHttpRequest',
+        },
+    };
 
     try {
-        await axios.post(
-            '/inventory/products',
-            {
-                ...form,
-                sku: form.sku.trim().toUpperCase(),
-                name: form.name.trim(),
-                barcode: form.barcode.trim() || null,
-                description: form.description.trim() || null,
-                maximum_stock: form.maximum_stock.trim() || null,
-            },
+        if (productId !== null) {
+            // No enviar código, unidad, costos ni estado al endpoint de edición.
+            await axios.put(
+                `/inventory/products/${productId}`,
+                editableData,
+                config,
+            );
+        } else {
+            await axios.post(
+                '/inventory/products',
+                {
+                    ...editableData,
+                    sku: productCode,
+                    category_id: form.category_id,
+                    base_unit_id: form.base_unit_id,
+                    product_type: form.product_type,
+                    track_stock: form.track_stock,
+                    track_lots: form.track_lots,
+                    track_remnants: form.track_remnants,
+                    allow_negative_stock: form.allow_negative_stock,
+                },
+                config,
+            );
+        }
+
+        showEditor.value = false;
+        editingId.value = null;
+
+        success.value = productId !== null
+            ? 'Producto actualizado correctamente.'
+            : 'Producto creado correctamente.';
+
+        // Mostrar el registro incluso si el nombre editado ya no coincide
+        // con la búsqueda anterior.
+        search.value = productCode;
+        refreshProducts(1);
+    } catch (error: unknown) {
+        handleMutationError(error);
+    } finally {
+        saving.value = false;
+    }
+}
+
+async function changeStatus(product: ProductRow): Promise<void> {
+    if (busy.value || !canChangeStatus.value || showEditor.value) return;
+
+    const targetStatus = !product.active;
+    const action = targetStatus ? 'Activar' : 'Desactivar';
+
+    if (!window.confirm(`${action} el producto ${product.sku}: ${product.name}?`)) {
+        return;
+    }
+
+    clearFeedback();
+    changingStatus.value = product.id;
+
+    try {
+        await axios.patch(
+            `/inventory/products/${product.id}/active`,
+            { active: targetStatus },
             {
                 headers: {
                     Accept: 'application/json',
@@ -223,36 +449,15 @@ async function saveProduct(): Promise<void> {
             },
         );
 
-        showForm.value = false;
-        success.value = 'Producto creado correctamente.';
+        success.value = targetStatus
+            ? 'Producto activado correctamente.'
+            : 'Producto desactivado correctamente.';
 
-        // Buscar el SKU recién creado para mostrar el registro guardado.
-        search.value = form.sku.trim().toUpperCase();
-        loadProducts();
+        refreshProducts(props.products.current_page);
     } catch (error: unknown) {
-        if (axios.isAxiosError<ValidationResponse>(error)) {
-            const status = error.response?.status;
-
-            if (status === 422) {
-                errors.value = error.response?.data.errors ?? {};
-                failure.value = 'Revisa los datos del formulario.';
-            } else if (status === 403) {
-                failure.value = 'No tienes permiso para crear productos.';
-            } else if (status === 401 || status === 419) {
-                failure.value =
-                    'Tu sesión venció. Vuelve a iniciar sesión antes de guardar.';
-            } else if (!error.response) {
-                failure.value =
-                    'No se recibió respuesta. Busca el SKU antes de reintentar para comprobar si se guardó.';
-            } else {
-                failure.value =
-                    'No fue posible completar la operación. Busca el SKU antes de reintentar.';
-            }
-        } else {
-            failure.value = 'Ocurrió un error inesperado.';
-        }
+        handleMutationError(error);
     } finally {
-        saving.value = false;
+        changingStatus.value = null;
     }
 }
 </script>
@@ -265,15 +470,18 @@ async function saveProduct(): Promise<void> {
             <div>
                 <Link href="/" class="back">← Panel principal</Link>
                 <h1>Catálogo de productos</h1>
-                <p>{{ products.total }} productos encontrados</p>
+                <p class="subtitle">
+                    {{ products.total }} productos encontrados
+                </p>
             </div>
 
             <Button
-                v-if="canCreate && !showForm"
+                v-if="canCreate && !showEditor"
+                type="button"
                 label="Nuevo producto"
                 icon="pi pi-plus"
-                :disabled="loading"
-                @click="openForm"
+                :disabled="busy"
+                @click="openCreate"
             />
         </header>
 
@@ -281,11 +489,36 @@ async function saveProduct(): Promise<void> {
             {{ success }}
         </p>
 
-        <section v-if="showForm" class="panel">
-            <h2>Nuevo producto</h2>
+        <div v-if="failure" class="notice failure" role="alert">
+            <p>{{ failure }}</p>
+
+            <ul v-if="Object.keys(errors).length">
+                <li v-for="(messages, field) in errors" :key="field">
+                    {{ messages.join(' ') }}
+                </li>
+            </ul>
+        </div>
+
+        <section
+            v-if="showEditor"
+            class="panel"
+            aria-labelledby="editor-heading"
+        >
+            <h2
+                id="editor-heading"
+                ref="editorHeading"
+                tabindex="-1"
+            >
+                {{ isEditing ? `Editar producto: ${form.sku}` : 'Nuevo producto' }}
+            </h2>
+
+            <p v-if="isEditing" class="hint">
+                Categoría: {{ editingCategory }}.
+                Unidad de control: {{ editingUnit }}.
+            </p>
 
             <p
-                v-if="categories.length === 0 || units.length === 0"
+                v-if="!isEditing && !hasCreationOptions"
                 class="notice"
                 role="alert"
             >
@@ -293,17 +526,8 @@ async function saveProduct(): Promise<void> {
                 para crear productos.
             </p>
 
-            <div v-if="failure" class="notice failure" role="alert">
-                <p>{{ failure }}</p>
-                <ul v-if="Object.keys(errors).length">
-                    <li v-for="(messages, field) in errors" :key="field">
-                        {{ messages.join(' ') }}
-                    </li>
-                </ul>
-            </div>
-
-            <form @submit.prevent="saveProduct">
-                <fieldset :disabled="saving">
+            <form @submit.prevent="submitProduct">
+                <fieldset :disabled="busy">
                     <div class="form-grid">
                         <label>
                             Código único del producto *
@@ -313,11 +537,17 @@ async function saveProduct(): Promise<void> {
                                 maxlength="50"
                                 pattern="[A-Za-z0-9][A-Za-z0-9._-]*"
                                 autocomplete="off"
+                                :readonly="isEditing"
                                 placeholder="Ejemplo: VID-TEMP-06"
                                 aria-describedby="product-code-help"
                             />
+
                             <small id="product-code-help" class="hint">
-                                Identifica cada material o variante. No debe repetirse.
+                                {{
+                                    isEditing
+                                        ? 'El código se conserva al editar.'
+                                        : 'Identifica cada material o variante. No debe repetirse.'
+                                }}
                             </small>
                         </label>
 
@@ -327,47 +557,52 @@ async function saveProduct(): Promise<void> {
                                 v-model="form.name"
                                 required
                                 maxlength="180"
+                                placeholder="Ejemplo: Vidrio templado de 6 mm"
                             />
                         </label>
 
-                        <label>
-                            Categoría *
-                            <select v-model="form.category_id" required>
-                                <option disabled value="">Selecciona</option>
-                                <option
-                                    v-for="category in categories"
-                                    :key="category.id"
-                                    :value="category.id"
-                                >
-                                    {{ category.name }}
-                                </option>
-                            </select>
-                        </label>
+                        <template v-if="!isEditing">
+                            <label>
+                                Categoría *
+                                <select v-model="form.category_id" required>
+                                    <option disabled value="">Selecciona</option>
 
-                        <label>
-                            Unidad de control del inventario *
-                            <select v-model="form.base_unit_id" required>
-                                <option disabled value="">Selecciona</option>
-                                <option
-                                    v-for="unit in units"
-                                    :key="unit.id"
-                                    :value="unit.id"
-                                >
-                                    {{ unit.name }} ({{ unit.symbol }})
-                                </option>
-                            </select>
-                        </label>
+                                    <option
+                                        v-for="category in categories"
+                                        :key="category.id"
+                                        :value="category.id"
+                                    >
+                                        {{ category.name }}
+                                    </option>
+                                </select>
+                            </label>
 
-                        <label>
-                            Tipo de producto *
-                            <select v-model="form.product_type" required>
-                                <option value="material">Materia prima</option>
-                                <option value="finished_product">
-                                    Producto terminado
-                                </option>
-                                <option value="consumable">Consumible</option>
-                            </select>
-                        </label>
+                            <label>
+                                Unidad de control del inventario *
+                                <select v-model="form.base_unit_id" required>
+                                    <option disabled value="">Selecciona</option>
+
+                                    <option
+                                        v-for="unit in units"
+                                        :key="unit.id"
+                                        :value="unit.id"
+                                    >
+                                        {{ unit.name }} ({{ unit.symbol }})
+                                    </option>
+                                </select>
+                            </label>
+
+                            <label>
+                                Tipo de producto *
+                                <select v-model="form.product_type" required>
+                                    <option value="material">Materia prima</option>
+                                    <option value="finished_product">
+                                        Producto terminado
+                                    </option>
+                                    <option value="consumable">Consumible</option>
+                                </select>
+                            </label>
+                        </template>
 
                         <label>
                             Código de barras
@@ -379,6 +614,7 @@ async function saveProduct(): Promise<void> {
                             :key="field.key"
                         >
                             {{ field.label }}{{ field.required ? ' *' : '' }}
+
                             <input
                                 v-model="form[field.key]"
                                 type="text"
@@ -388,6 +624,21 @@ async function saveProduct(): Promise<void> {
                                 placeholder="0.0000"
                                 title="Usa punto decimal y hasta cuatro decimales."
                             />
+
+                            <small
+                                v-if="field.key === 'reorder_point'"
+                                class="hint"
+                            >
+                                Nivel de existencia a partir del cual conviene
+                                solicitar más material. No genera una compra automática.
+                            </small>
+
+                            <small
+                                v-if="field.key === 'maximum_stock'"
+                                class="hint"
+                            >
+                                Déjalo vacío si no deseas definir un máximo.
+                            </small>
                         </label>
 
                         <label class="full-width">
@@ -400,16 +651,17 @@ async function saveProduct(): Promise<void> {
                         </label>
                     </div>
 
-                    <p class="hint">
+                    <p class="hint form-help">
                         Los niveles de inventario se expresan en la unidad
-                        base. Usa punto decimal, por ejemplo 12.5000.
-                        Crear el producto no registra existencias.
+                        de control. Escribe los importes sin separadores de miles,
+                        por ejemplo 2500.00. Guardar el producto no modifica
+                        las existencias disponibles.
                     </p>
 
-                    <div class="checks">
+                    <div v-if="!isEditing" class="checks">
                         <label>
                             <input v-model="form.track_stock" type="checkbox" />
-                            Controlar stock
+                            Controlar existencias
                         </label>
 
                         <label>
@@ -436,21 +688,17 @@ async function saveProduct(): Promise<void> {
                                 type="checkbox"
                                 :disabled="!form.track_stock"
                             />
-                            Permitir stock negativo
+                            Permitir existencias negativas
                         </label>
                     </div>
 
                     <div class="actions">
                         <Button
                             type="submit"
-                            label="Guardar producto"
+                            :label="isEditing ? 'Guardar cambios' : 'Guardar producto'"
                             icon="pi pi-check"
                             :loading="saving"
-                            :disabled="
-                                saving ||
-                                categories.length === 0 ||
-                                units.length === 0
-                            "
+                            :disabled="busy || !canSubmit"
                         />
 
                         <Button
@@ -458,8 +706,8 @@ async function saveProduct(): Promise<void> {
                             label="Cancelar"
                             severity="secondary"
                             outlined
-                            :disabled="saving"
-                            @click="showForm = false"
+                            :disabled="busy"
+                            @click="closeEditor"
                         />
                     </div>
                 </fieldset>
@@ -467,7 +715,7 @@ async function saveProduct(): Promise<void> {
         </section>
 
         <section class="panel" :aria-busy="loading">
-            <form class="search-bar" @submit.prevent="loadProducts(1)">
+            <form class="search-bar" @submit.prevent="searchProducts">
                 <label for="product-search">Buscar por código o nombre</label>
 
                 <div class="search-controls">
@@ -477,6 +725,7 @@ async function saveProduct(): Promise<void> {
                         type="search"
                         maxlength="180"
                         placeholder="Ejemplo: perfil natural"
+                        :disabled="busy"
                     />
 
                     <Button
@@ -484,7 +733,17 @@ async function saveProduct(): Promise<void> {
                         label="Buscar"
                         icon="pi pi-search"
                         :loading="loading"
-                        :disabled="loading || saving"
+                        :disabled="busy"
+                    />
+
+                    <Button
+                        v-if="search || filters.search"
+                        type="button"
+                        label="Ver todos"
+                        severity="secondary"
+                        outlined
+                        :disabled="busy"
+                        @click="clearSearch"
                     />
                 </div>
             </form>
@@ -494,14 +753,16 @@ async function saveProduct(): Promise<void> {
                     <caption class="table-caption">
                         Productos registrados
                     </caption>
+
                     <thead>
                         <tr>
                             <th scope="col">Código</th>
                             <th scope="col">Producto</th>
                             <th scope="col">Categoría</th>
-                            <th scope="col">Unidad base</th>
+                            <th scope="col">Unidad de control</th>
                             <th scope="col">Precio de venta</th>
                             <th scope="col">Estado</th>
+                            <th scope="col">Acciones</th>
                         </tr>
                     </thead>
 
@@ -511,7 +772,11 @@ async function saveProduct(): Promise<void> {
                             <td>{{ product.name }}</td>
                             <td>{{ product.category_name ?? '—' }}</td>
                             <td>{{ product.unit_symbol ?? '—' }}</td>
-                            <td class="number">{{ formatPrice(product.sale_price) }}</td>
+
+                            <td class="number">
+                                {{ formatPrice(product.sale_price) }}
+                            </td>
+
                             <td>
                                 <span
                                     class="badge"
@@ -520,10 +785,46 @@ async function saveProduct(): Promise<void> {
                                     {{ product.active ? 'Activo' : 'Inactivo' }}
                                 </span>
                             </td>
+
+                            <td>
+                                <div class="row-actions">
+                                    <Button
+                                        v-if="canUpdate"
+                                        type="button"
+                                        label="Editar"
+                                        icon="pi pi-pencil"
+                                        severity="secondary"
+                                        outlined
+                                        :aria-label="`Editar ${product.sku}`"
+                                        :disabled="busy || showEditor"
+                                        @click="openEdit(product)"
+                                    />
+
+                                    <Button
+                                        v-if="canChangeStatus"
+                                        type="button"
+                                        :label="product.active ? 'Desactivar' : 'Activar'"
+                                        :icon="product.active ? 'pi pi-ban' : 'pi pi-check'"
+                                        severity="secondary"
+                                        outlined
+                                        :aria-label="`${product.active ? 'Desactivar' : 'Activar'} ${product.sku}`"
+                                        :loading="changingStatus === product.id"
+                                        :disabled="busy || showEditor"
+                                        @click="changeStatus(product)"
+                                    />
+
+                                    <span
+                                        v-if="!canUpdate && !canChangeStatus"
+                                        class="hint"
+                                    >
+                                        Solo consulta
+                                    </span>
+                                </div>
+                            </td>
                         </tr>
 
                         <tr v-if="products.data.length === 0">
-                            <td colspan="6" class="empty">
+                            <td colspan="7" class="empty">
                                 No hay productos que coincidan con la búsqueda.
                             </td>
                         </tr>
@@ -533,13 +834,12 @@ async function saveProduct(): Promise<void> {
 
             <nav class="pagination" aria-label="Paginación de productos">
                 <Button
+                    type="button"
                     label="Anterior"
                     severity="secondary"
                     outlined
-                    :disabled="
-                        products.current_page <= 1 || loading || saving
-                    "
-                    @click="loadProducts(products.current_page - 1)"
+                    :disabled="products.current_page <= 1 || busy"
+                    @click="goToPage(products.current_page - 1)"
                 />
 
                 <span>
@@ -548,15 +848,14 @@ async function saveProduct(): Promise<void> {
                 </span>
 
                 <Button
+                    type="button"
                     label="Siguiente"
                     severity="secondary"
                     outlined
                     :disabled="
-                        products.current_page >= products.last_page ||
-                        loading ||
-                        saving
+                        products.current_page >= products.last_page || busy
                     "
-                    @click="loadProducts(products.current_page + 1)"
+                    @click="goToPage(products.current_page + 1)"
                 />
             </nav>
         </section>
@@ -568,6 +867,7 @@ async function saveProduct(): Promise<void> {
     max-width: 1440px;
     margin: 0 auto;
     padding: clamp(1rem, 3vw, 2.5rem);
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
 .header,
@@ -596,8 +896,18 @@ h2 {
     font-weight: 700;
 }
 
+.subtitle,
+.hint {
+    color: var(--p-text-muted-color, #64748b);
+}
+
 .back {
     color: var(--p-primary-color, #0f766e);
+    text-decoration: none;
+}
+
+.back:hover {
+    text-decoration: underline;
 }
 
 .panel {
@@ -610,9 +920,9 @@ h2 {
 
 fieldset {
     min-width: 0;
-    border: 0;
-    padding: 0;
     margin: 0;
+    padding: 0;
+    border: 0;
 }
 
 .form-grid {
@@ -633,6 +943,7 @@ fieldset {
 input:not([type='checkbox']),
 select,
 textarea {
+    box-sizing: border-box;
     width: 100%;
     min-width: 0;
     padding: 0.7rem;
@@ -643,9 +954,21 @@ textarea {
     font: inherit;
 }
 
+input[readonly] {
+    background: var(--p-content-hover-background, #f1f5f9);
+}
+
+input:disabled,
+select:disabled,
+textarea:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+}
+
 input:focus-visible,
 select:focus-visible,
-textarea:focus-visible {
+textarea:focus-visible,
+.back:focus-visible {
     outline: 2px solid var(--p-primary-color, #0f766e);
     outline-offset: 2px;
 }
@@ -668,18 +991,31 @@ textarea:focus-visible {
 }
 
 .hint {
-    margin-top: 1rem;
-    color: var(--p-text-muted-color, #64748b);
     font-size: 0.85rem;
+    font-weight: 400;
+    line-height: 1.5;
+}
+
+.form-help {
+    margin: 1rem 0;
+}
+
+.actions {
+    margin-top: 1rem;
+    flex-wrap: wrap;
 }
 
 .notice {
-    padding: 1rem;
     margin-bottom: 1rem;
+    padding: 1rem;
     border-radius: 0.5rem;
-    line-height: 1.6;
     background: #fff7ed;
     color: #9a3412;
+    line-height: 1.6;
+}
+
+.notice p {
+    margin: 0;
 }
 
 .success {
@@ -693,6 +1029,7 @@ textarea:focus-visible {
 }
 
 .notice ul {
+    margin-top: 0.5rem;
     padding-left: 1.25rem;
     list-style: disc;
 }
@@ -716,8 +1053,8 @@ table {
 }
 
 .table-caption {
-    text-align: left;
     padding-bottom: 0.75rem;
+    text-align: left;
     font-weight: 600;
 }
 
@@ -725,6 +1062,7 @@ th,
 td {
     padding: 0.9rem;
     border-bottom: 1px solid var(--p-content-border-color, #e2e8f0);
+    vertical-align: middle;
 }
 
 th {
@@ -738,7 +1076,12 @@ th {
     font-variant-numeric: tabular-nums;
 }
 
+.number {
+    text-align: right;
+}
+
 .badge {
+    display: inline-block;
     padding: 0.25rem 0.6rem;
     border-radius: 1rem;
     background: #dcfce7;
@@ -749,6 +1092,13 @@ th {
 .inactive {
     background: #f1f5f9;
     color: #475569;
+}
+
+.row-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    min-width: 190px;
 }
 
 .empty {
@@ -776,7 +1126,6 @@ th {
         padding: 1rem;
     }
 
-    .actions,
     .pagination {
         flex-wrap: wrap;
     }
