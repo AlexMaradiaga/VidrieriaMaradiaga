@@ -10,6 +10,8 @@ use App\Modules\Inventory\Infrastructure\Persistence\Eloquent\Repositories\Eloqu
 use App\Modules\Inventory\Infrastructure\Persistence\Eloquent\Repositories\EloquentProductRepository;
 use App\Modules\Inventory\Application\Ports\ProductCatalogQueryInterface;
 use App\Modules\Inventory\Infrastructure\Persistence\Eloquent\Repositories\EloquentProductCatalogQuery;
+use App\Modules\Inventory\Application\Ports\RegisterInventoryEntryInterface;
+use App\Modules\Inventory\Infrastructure\Persistence\Services\SqlRegisterInventoryEntry;
 use Illuminate\Support\ServiceProvider;
 
 final class InventoryServiceProvider extends ServiceProvider
@@ -28,6 +30,10 @@ final class InventoryServiceProvider extends ServiceProvider
         $this->app->bind(
             ProductCatalogQueryInterface::class,
             EloquentProductCatalogQuery::class,
+        );
+        $this->app->bind(
+            RegisterInventoryEntryInterface::class,
+            SqlRegisterInventoryEntry::class,
         );
     }
 }

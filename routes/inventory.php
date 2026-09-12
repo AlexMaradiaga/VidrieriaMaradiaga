@@ -1,5 +1,6 @@
 <?php
 
+use App\Modules\Inventory\UI\Http\Controllers\InventoryEntryController;
 use App\Modules\Inventory\UI\Http\Controllers\ProductController;
 use Illuminate\Support\Facades\Route;
 
@@ -20,4 +21,7 @@ Route::middleware('auth')
         Route::patch('/products/{productId}/active', [ProductController::class, 'setActive'])
             ->whereNumber('productId')
             ->name('products.active');
+
+        Route::post('/entries', [InventoryEntryController::class, 'store'])
+            ->name('entries.store');
     });
