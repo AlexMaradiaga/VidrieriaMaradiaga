@@ -1,11 +1,9 @@
 <?php
 
+use App\Modules\Inventory\UI\Http\Controllers\InventoryDashboardController;
 use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
 
-Route::get('/', function () {
-    return Inertia::render('Dashboard/Index');
-})
+Route::get('/', InventoryDashboardController::class)
     ->middleware('auth')
     ->name('dashboard');
 

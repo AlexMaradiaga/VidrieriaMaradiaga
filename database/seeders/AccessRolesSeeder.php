@@ -24,6 +24,8 @@ final class AccessRolesSeeder extends Seeder
                 'inventory.products.create',
                 'inventory.products.update',
                 'inventory.products.toggle-active',
+                'inventory.entries.create',
+                'inventory.entries.post',
             ];
 
             foreach ($permissions as $permission) {
@@ -37,6 +39,8 @@ final class AccessRolesSeeder extends Seeder
                     'inventory.products.view',
                     'inventory.products.create',
                     'inventory.products.update',
+                    'inventory.entries.create',
+                    'inventory.entries.post',
                 ],
 
                 'Ventas' => [

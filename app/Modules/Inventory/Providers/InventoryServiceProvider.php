@@ -15,6 +15,8 @@ use App\Modules\Inventory\Infrastructure\Persistence\Services\SqlRegisterInvento
 use Illuminate\Support\ServiceProvider;
 use App\Modules\Inventory\Application\Ports\InventoryEntryOptionsInterface;
 use App\Modules\Inventory\Infrastructure\Persistence\Services\SqlInventoryEntryOptions;
+use App\Modules\Inventory\Application\Ports\InventoryDashboardQueryInterface;
+use App\Modules\Inventory\Infrastructure\Persistence\Queries\SqlInventoryDashboardQuery;
 
 final class InventoryServiceProvider extends ServiceProvider
 {
@@ -40,6 +42,10 @@ final class InventoryServiceProvider extends ServiceProvider
         $this->app->bind(
             InventoryEntryOptionsInterface::class,
             SqlInventoryEntryOptions::class,
+        );
+        $this->app->bind(
+            InventoryDashboardQueryInterface::class,
+            SqlInventoryDashboardQuery::class,
         );
     }
 }
