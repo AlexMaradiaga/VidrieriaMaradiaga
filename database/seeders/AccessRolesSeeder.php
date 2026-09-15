@@ -26,6 +26,8 @@ final class AccessRolesSeeder extends Seeder
                 'inventory.products.toggle-active',
                 'inventory.entries.create',
                 'inventory.entries.post',
+                'inventory.entries.view',
+                'inventory.kardex.view',
             ];
 
             foreach ($permissions as $permission) {
@@ -41,6 +43,8 @@ final class AccessRolesSeeder extends Seeder
                     'inventory.products.update',
                     'inventory.entries.create',
                     'inventory.entries.post',
+                    'inventory.entries.view',
+                    'inventory.kardex.view',
                 ],
 
                 'Ventas' => [
@@ -50,7 +54,6 @@ final class AccessRolesSeeder extends Seeder
 
             foreach ($roles as $name => $rolePermissions) {
                 $role = Role::findOrCreate($name, 'web');
-
                 $role->givePermissionTo($rolePermissions);
             }
         });

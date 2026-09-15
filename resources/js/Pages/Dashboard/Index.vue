@@ -142,11 +142,40 @@ function logout(): void {
             </section>
         </template>
         <section class="actions" aria-label="Acciones de inventario">
-            <Link v-if="canView" href="/inventory/products" class="catalog-link">
-                <i class="pi pi-box" aria-hidden="true"></i> Abrir catálogo de productos
+            <Link
+                v-if="canView"
+                href="/inventory/products"
+                class="catalog-link"
+            >
+                <i class="pi pi-box" aria-hidden="true"></i>
+                Abrir catálogo de productos
             </Link>
-            <Link v-if="canRegister" href="/inventory/entries/create" class="catalog-link">
-                <i class="pi pi-plus" aria-hidden="true"></i> Registrar entrada
+
+            <Link
+                v-if="canRegister"
+                href="/inventory/entries/create"
+                class="catalog-link"
+            >
+                <i class="pi pi-plus" aria-hidden="true"></i>
+                Registrar entrada
+            </Link>
+
+            <Link
+                v-if="page.props.auth.permissions.includes('inventory.entries.view')"
+                href="/inventory/entries"
+                class="catalog-link"
+            >
+                <i class="pi pi-history" aria-hidden="true"></i>
+                Historial de entradas
+            </Link>
+
+            <Link
+                v-if="page.props.auth.permissions.includes('inventory.kardex.view')"
+                href="/inventory/kardex"
+                class="catalog-link"
+            >
+                <i class="pi pi-list" aria-hidden="true"></i>
+                Kardex por producto
             </Link>
         </section>
     </main>
