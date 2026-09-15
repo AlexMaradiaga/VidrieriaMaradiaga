@@ -12,6 +12,8 @@ final class EloquentProductCatalogQuery implements ProductCatalogQueryInterface
 {
     public function search(string $search, int $page): array
     {
+        $search = trim($search);
+
         $query = InventoryProductModel::query()
             ->leftJoin(
                 'inventory_categories as categories',
@@ -31,13 +33,25 @@ final class EloquentProductCatalogQuery implements ProductCatalogQueryInterface
                 'inventory_products.name',
                 'inventory_products.sale_price',
                 'inventory_products.active',
-                'categories.name as category_name',
-                'units.symbol as unit_symbol',
                 'inventory_products.barcode',
                 'inventory_products.description',
                 'inventory_products.minimum_stock',
                 'inventory_products.maximum_stock',
                 'inventory_products.reorder_point',
+                'categories.name as category_name',
+                'units.symbol as unit_symbol',
+            ])
+            ->selectSub(
+                DB::table('inventory_stock_balances')
+                    ->selectRaw('COALESCE(SUM(quantity), 0)')
+                    ->whereColumn(
+                        'inventory_stock_balances.product_id',
+                        'inventory_products.id'
+                    ),
+                'stock_quantity'
+            )
+            ->withCasts([
+                'stock_quantity' => 'decimal:4',
             ]);
 
         if ($search !== '') {
@@ -59,7 +73,7 @@ final class EloquentProductCatalogQuery implements ProductCatalogQueryInterface
 
         $paginator = $query
             ->orderByDesc('inventory_products.id')
-            ->paginate(15, ['*'], 'page', $page);
+            ->paginate(15, ['*'], 'page', max(1, $page));
 
         return [
             'data' => $paginator->getCollection()
@@ -69,6 +83,7 @@ final class EloquentProductCatalogQuery implements ProductCatalogQueryInterface
                     'name' => $product->name,
                     'category_name' => $product->category_name,
                     'unit_symbol' => $product->unit_symbol,
+                    'stock_quantity' => $product->stock_quantity,
                     'sale_price' => $product->sale_price,
                     'active' => $product->active,
                     'barcode' => $product->barcode,

@@ -12,6 +12,7 @@ interface ProductRow {
     unit_symbol: string | null;
     sale_price: string;
     active: boolean;
+    stock_quantity: string;
     barcode: string | null;
     description: string | null;
     minimum_stock: string;
@@ -87,6 +88,8 @@ const showEditor = ref(false);
 const editingId = ref<number | null>(null);
 const editingCategory = ref('');
 const editingUnit = ref('');
+const originalSalePrice = ref<string | null>(null);
+const salePriceEdited = ref(false);
 
 const saving = ref(false);
 const loading = ref(false);
@@ -149,7 +152,7 @@ function emptyForm(): ProductForm {
         minimum_stock: '0',
         maximum_stock: '',
         reorder_point: '0',
-        sale_price: '0',
+        sale_price: '0.00',
         track_stock: true,
         track_lots: false,
         track_remnants: false,
@@ -176,6 +179,31 @@ watch(
         }
     },
 );
+function formatQuantity(value: string | null): string {
+    if (value === null || value === '') return '';
+
+    const [integerPart = '0', decimalPart = ''] = value.split('.');
+    const fraction = decimalPart.replace(/0+$/, '');
+
+    return fraction ? `${integerPart}.${fraction}` : integerPart;
+}
+
+function priceForInput(value: string): string {
+    // En el formulario no usamos separadores de miles.
+    return formatPrice(value).replace(/,/g, '');
+}
+
+function normalizeNumericField(key: typeof decimalFields[number]['key']): void {
+    const value = form[key].trim();
+
+    if (key === 'sale_price') {
+        if (/^\d{1,14}(?:\.\d{1,2})?$/.test(value)) {
+            form.sale_price = priceForInput(value);
+        }
+    } else if (/^\d{1,14}(?:\.\d{1,4})?$/.test(value)) {
+        form[key] = formatQuantity(value);
+    }
+}
 
 function formatPrice(value: string): string {
     const match = /^(\d+)(?:\.(\d+))?$/.exec(value.trim());
@@ -222,6 +250,8 @@ function openCreate(): void {
     editingId.value = null;
     editingCategory.value = '';
     editingUnit.value = '';
+    originalSalePrice.value = null;
+    salePriceEdited.value = false;
     Object.assign(form, emptyForm());
     showEditor.value = true;
 
@@ -249,16 +279,18 @@ function openEdit(product: ProductRow): void {
     editingId.value = product.id;
     editingCategory.value = product.category_name ?? 'Sin categoría';
     editingUnit.value = product.unit_symbol ?? 'Sin unidad';
+    originalSalePrice.value = product.sale_price;
+    salePriceEdited.value = false;
 
     Object.assign(form, emptyForm(), {
         sku: product.sku,
         name: product.name,
         barcode: product.barcode ?? '',
         description: product.description ?? '',
-        minimum_stock: product.minimum_stock,
-        maximum_stock: product.maximum_stock ?? '',
-        reorder_point: product.reorder_point,
-        sale_price: product.sale_price,
+        minimum_stock: formatQuantity(product.minimum_stock),
+        maximum_stock: formatQuantity(product.maximum_stock),
+        reorder_point: formatQuantity(product.reorder_point),
+        sale_price: priceForInput(product.sale_price),
     });
 
     showEditor.value = true;
@@ -327,7 +359,7 @@ function handleMutationError(error: unknown): void {
         const status = error.response?.status;
 
         if (status === 422) {
-            errors.value = error.response.data.errors ?? {};
+            errors.value = error.response?.data?.errors ?? {};
             failure.value = 'Revisa los datos indicados.';
             return;
         }
@@ -359,6 +391,10 @@ async function submitProduct(): Promise<void> {
     clearFeedback();
     saving.value = true;
 
+    for (const field of decimalFields) {
+        normalizeNumericField(field.key);
+    }
+
     const productId = editingId.value;
     const productCode = form.sku.trim().toUpperCase();
 
@@ -370,7 +406,10 @@ async function submitProduct(): Promise<void> {
         minimum_stock: form.minimum_stock.trim(),
         maximum_stock: form.maximum_stock.trim() || null,
         reorder_point: form.reorder_point.trim(),
-        sale_price: form.sale_price.trim(),
+        // Conservar la precisión original si el usuario no editó el precio.
+        sale_price: originalSalePrice.value !== null && !salePriceEdited.value
+            ? originalSalePrice.value
+            : form.sale_price.trim(),
     };
 
     const config = {
@@ -619,10 +658,16 @@ async function changeStatus(product: ProductRow): Promise<void> {
                                 v-model="form[field.key]"
                                 type="text"
                                 inputmode="decimal"
-                                pattern="[0-9]{1,14}(\.[0-9]{1,4})?"
+                                :pattern="field.key === 'sale_price'
+                                    ? '[0-9]{1,14}(\\.[0-9]{1,2})?'
+                                    : '[0-9]{1,14}(\\.[0-9]{1,4})?'"
                                 :required="field.required"
-                                placeholder="0.0000"
-                                title="Usa punto decimal y hasta cuatro decimales."
+                                :placeholder="field.key === 'sale_price' ? '0.00' : '0'"
+                                :title="field.key === 'sale_price'
+                                    ? 'Usa punto decimal y hasta dos decimales.'
+                                    : 'Usa un entero o hasta cuatro decimales si la cantidad lo requiere.'"
+                                @input="field.key === 'sale_price' && (salePriceEdited = true)"
+                                @blur="normalizeNumericField(field.key)"
                             />
 
                             <small
@@ -760,6 +805,7 @@ async function changeStatus(product: ProductRow): Promise<void> {
                             <th scope="col">Producto</th>
                             <th scope="col">Categoría</th>
                             <th scope="col">Unidad de control</th>
+                            <th scope="col">Existencia total</th>
                             <th scope="col">Precio de venta</th>
                             <th scope="col">Estado</th>
                             <th scope="col">Acciones</th>
@@ -772,6 +818,9 @@ async function changeStatus(product: ProductRow): Promise<void> {
                             <td>{{ product.name }}</td>
                             <td>{{ product.category_name ?? '—' }}</td>
                             <td>{{ product.unit_symbol ?? '—' }}</td>
+                            <td class="number">
+                                {{ formatQuantity(product.stock_quantity ?? null) || '—' }}
+                            </td>
 
                             <td class="number">
                                 {{ formatPrice(product.sale_price) }}
@@ -793,8 +842,7 @@ async function changeStatus(product: ProductRow): Promise<void> {
                                         type="button"
                                         label="Editar"
                                         icon="pi pi-pencil"
-                                        severity="secondary"
-                                        outlined
+                                        severity="info"
                                         :aria-label="`Editar ${product.sku}`"
                                         :disabled="busy || showEditor"
                                         @click="openEdit(product)"
@@ -805,8 +853,7 @@ async function changeStatus(product: ProductRow): Promise<void> {
                                         type="button"
                                         :label="product.active ? 'Desactivar' : 'Activar'"
                                         :icon="product.active ? 'pi pi-ban' : 'pi pi-check'"
-                                        severity="secondary"
-                                        outlined
+                                        :severity="product.active ? 'danger' : 'success'"
                                         :aria-label="`${product.active ? 'Desactivar' : 'Activar'} ${product.sku}`"
                                         :loading="changingStatus === product.id"
                                         :disabled="busy || showEditor"
@@ -824,7 +871,7 @@ async function changeStatus(product: ProductRow): Promise<void> {
                         </tr>
 
                         <tr v-if="products.data.length === 0">
-                            <td colspan="7" class="empty">
+                            <td colspan="8" class="empty">
                                 No hay productos que coincidan con la búsqueda.
                             </td>
                         </tr>

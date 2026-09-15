@@ -10,6 +10,10 @@ use App\Modules\Inventory\UI\Http\Requests\StoreInventoryEntryRequest;
 use DomainException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Validation\ValidationException;
+use App\Modules\Inventory\Application\Ports\InventoryEntryOptionsInterface;
+use Illuminate\Support\Facades\Gate;
+use Inertia\Inertia;
+use Inertia\Response;
 
 final class InventoryEntryController extends Controller
 {
@@ -34,5 +38,13 @@ final class InventoryEntryController extends Controller
                 : 'Entrada confirmada correctamente.',
             'data' => $result,
         ], $result['repeated'] ? 200 : 201);
+    }
+
+    public function create(InventoryEntryOptionsInterface $options): Response
+    {
+        Gate::authorize('inventory.entries.create');
+        Gate::authorize('inventory.entries.post');
+
+        return Inertia::render('Inventory/Entries/Create', $options->get());
     }
 }

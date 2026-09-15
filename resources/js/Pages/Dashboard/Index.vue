@@ -3,21 +3,19 @@ import { Head, Link, useForm, usePage } from '@inertiajs/vue3';
 import Button from 'primevue/button';
 import Card from 'primevue/card';
 
-const logoutForm = useForm({});
-
-function logout(): void {
-    if (logoutForm.processing) {
-        return;
-    }
-
-    logoutForm.post('/logout');
-}
-
 const page = usePage<{
     auth: {
         permissions: string[];
     };
 }>();
+
+const logoutForm = useForm({});
+
+function logout(): void {
+    if (logoutForm.processing) return;
+
+    logoutForm.post('/logout');
+}
 </script>
 
 <template>
@@ -102,17 +100,17 @@ const page = usePage<{
                 Abrir catálogo de productos
             </Link>
 
-            <Button
-                type="button"
-                label="Registrar entrada"
-                icon="pi pi-plus"
-                disabled
-                aria-describedby="entry-status"
-            />
-
-            <p id="entry-status" class="action-note">
-                Disponible cuando habilitemos el registro de entradas.
-            </p>
+            <Link
+                v-if="
+                    page.props.auth.permissions.includes('inventory.entries.create') &&
+                    page.props.auth.permissions.includes('inventory.entries.post')
+                "
+                href="/inventory/entries/create"
+                class="catalog-link"
+            >
+                <i class="pi pi-plus" aria-hidden="true"></i>
+                Registrar entrada
+            </Link>
         </section>
     </main>
 </template>
@@ -174,13 +172,32 @@ h1 {
 }
 
 .actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
     margin-top: 2rem;
 }
 
-.action-note {
-    margin-top: 0.75rem;
-    color: var(--p-text-muted-color, #64748b);
-    font-size: 0.875rem;
+.catalog-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.7rem 1rem;
+    border-radius: 0.5rem;
+    background: var(--p-primary-color, #0f766e);
+    color: var(--p-primary-contrast-color, #fff);
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.catalog-link:hover {
+    background: var(--p-primary-hover-color, #115e59);
+}
+
+.catalog-link:focus-visible {
+    outline: 2px solid var(--p-primary-color, #0f766e);
+    outline-offset: 3px;
 }
 
 @media (max-width: 900px) {
@@ -198,28 +215,10 @@ h1 {
     .cards {
         grid-template-columns: 1fr;
     }
-}
-.catalog-link {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    padding: 0.7rem 1rem;
-    margin-right: 1rem;
-    margin-bottom: 0.75rem;
-    border-radius: 0.5rem;
-    background: var(--p-primary-color, #0f766e);
-    color: var(--p-primary-contrast-color, #fff);
-    font-weight: 600;
-    text-decoration: none;
-}
 
-.catalog-link:hover {
-    background: var(--p-primary-hover-color, #115e59);
-}
-
-.catalog-link:focus-visible {
-    outline: 2px solid var(--p-primary-color, #0f766e);
-    outline-offset: 3px;
+    .actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
 }
 </style>

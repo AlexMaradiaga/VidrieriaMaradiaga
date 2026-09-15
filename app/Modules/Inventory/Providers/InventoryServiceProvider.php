@@ -13,6 +13,8 @@ use App\Modules\Inventory\Infrastructure\Persistence\Eloquent\Repositories\Eloqu
 use App\Modules\Inventory\Application\Ports\RegisterInventoryEntryInterface;
 use App\Modules\Inventory\Infrastructure\Persistence\Services\SqlRegisterInventoryEntry;
 use Illuminate\Support\ServiceProvider;
+use App\Modules\Inventory\Application\Ports\InventoryEntryOptionsInterface;
+use App\Modules\Inventory\Infrastructure\Persistence\Services\SqlInventoryEntryOptions;
 
 final class InventoryServiceProvider extends ServiceProvider
 {
@@ -34,6 +36,10 @@ final class InventoryServiceProvider extends ServiceProvider
         $this->app->bind(
             RegisterInventoryEntryInterface::class,
             SqlRegisterInventoryEntry::class,
+        );
+        $this->app->bind(
+            InventoryEntryOptionsInterface::class,
+            SqlInventoryEntryOptions::class,
         );
     }
 }

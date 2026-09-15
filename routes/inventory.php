@@ -24,4 +24,8 @@ Route::middleware('auth')
 
         Route::post('/entries', [InventoryEntryController::class, 'store'])
             ->name('entries.store');
+            
+        Route::get('/entries/create', [InventoryEntryController::class, 'create'])
+            ->name('entries.create');
+
     });
