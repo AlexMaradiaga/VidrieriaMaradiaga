@@ -1,24 +1,27 @@
 <script setup lang="ts">
-import { Head, useForm } from "@inertiajs/vue3";
-import Button from "primevue/button";
-import InputText from "primevue/inputtext";
+import { Head, useForm } from '@inertiajs/vue3';
+import Button from 'primevue/button';
+import InputText from 'primevue/inputtext';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 
 const form = useForm({
-    email: "",
-    password: "",
+    email: '',
+    password: '',
 });
 
 function submit(): void {
     form.clearErrors();
 
-    form.post("/login", {
-        onFinish: () => form.reset("password"),
+    form.post('/login', {
+        onFinish: () => form.reset('password'),
     });
 }
 </script>
 
 <template>
-    <Head title="Iniciar sesión" />
+    <Head :title="t('login.pageTitle')" />
 
     <main class="login-page">
         <section class="brand-panel" aria-label="Vidriería Maradiaga">
@@ -26,27 +29,27 @@ function submit(): void {
 
             <p class="eyebrow">VIDRIERÍA MARADIAGA</p>
 
-            <h1>Tu operación, en un solo lugar.</h1>
+            <h1>{{ t('login.slogan') }}</h1>
 
             <p class="brand-description">
-                Gestiona tus materiales y organiza el trabajo de tu equipo.
+                {{ t('login.brandDescription') }}
             </p>
 
-            <span class="brand-footer">Sistema de gestión empresarial</span>
+            <span class="brand-footer">{{ t('login.system') }}</span>
         </section>
 
         <section class="form-panel">
             <form class="login-form" @submit.prevent="submit">
-                <p class="eyebrow">BIENVENIDO</p>
+                <p class="eyebrow">{{ t('login.welcome') }}</p>
 
-                <h2>Iniciar sesión</h2>
+                <h2>{{ t('login.title') }}</h2>
 
                 <p class="form-description">
-                    Ingresa con tu cuenta de trabajo.
+                    {{ t('login.instruction') }}
                 </p>
 
                 <div class="field">
-                    <label for="email">Correo electrónico</label>
+                    <label for="email">{{ t('login.email') }}</label>
 
                     <InputText
                         id="email"
@@ -58,9 +61,7 @@ function submit(): void {
                         autofocus
                         :invalid="Boolean(form.errors.email)"
                         :aria-invalid="Boolean(form.errors.email)"
-                        :aria-describedby="
-                            form.errors.email ? 'email-error' : undefined
-                        "
+                        :aria-describedby="form.errors.email ? 'email-error' : undefined"
                     />
 
                     <small
@@ -74,7 +75,7 @@ function submit(): void {
                 </div>
 
                 <div class="field">
-                    <label for="password">Contraseña</label>
+                    <label for="password">{{ t('login.password') }}</label>
 
                     <InputText
                         id="password"
@@ -84,9 +85,7 @@ function submit(): void {
                         required
                         :invalid="Boolean(form.errors.password)"
                         :aria-invalid="Boolean(form.errors.password)"
-                        :aria-describedby="
-                            form.errors.password ? 'password-error' : undefined
-                        "
+                        :aria-describedby="form.errors.password ? 'password-error' : undefined"
                     />
 
                     <small
@@ -101,7 +100,7 @@ function submit(): void {
 
                 <Button
                     type="submit"
-                    label="Ingresar"
+                    :label="t('login.submit')"
                     icon="pi pi-sign-in"
                     :loading="form.processing"
                     :disabled="form.processing"
@@ -109,7 +108,7 @@ function submit(): void {
                 />
 
                 <p class="help">
-                    ¿Necesitas acceso? Solicítalo al administrador.
+                    {{ t('login.help') }}
                 </p>
             </form>
         </section>

@@ -9,3 +9,102 @@
     --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
 }
+
+:root {
+    color-scheme: light;
+    --app-page-background: #f8fafc;
+    --app-page-text: #172033;
+}
+
+html.app-dark {
+    color-scheme: dark;
+    --app-page-background: #0f1115;
+    --app-page-text: #f8fafc;
+}
+
+html[data-theme='soft'] {
+    color-scheme: light;
+    --app-page-background: #f2f6f3;
+    --app-page-text: #24352f;
+    --p-content-background: #fbfdfb;
+    --p-content-hover-background: #eaf2ed;
+    --p-content-border-color: #cddbd2;
+    --p-form-field-background: #ffffff;
+    --p-form-field-color: #24352f;
+    --p-text-color: #24352f;
+    --p-text-muted-color: #62736b;
+}
+
+html[data-accent='emerald'] {
+    --p-primary-color: #10b981;
+    --p-primary-hover-color: #059669;
+    --p-primary-active-color: #047857;
+    --p-primary-contrast-color: #052e22;
+}
+
+html[data-accent='blue'] {
+    --p-primary-color: #3b82f6;
+    --p-primary-hover-color: #2563eb;
+    --p-primary-active-color: #1d4ed8;
+    --p-primary-contrast-color: #ffffff;
+}
+
+html[data-accent='violet'] {
+    --p-primary-color: #8b5cf6;
+    --p-primary-hover-color: #7c3aed;
+    --p-primary-active-color: #6d28d9;
+    --p-primary-contrast-color: #ffffff;
+}
+
+html[data-accent='amber'] {
+    --p-primary-color: #d97706;
+    --p-primary-hover-color: #b45309;
+    --p-primary-active-color: #92400e;
+    --p-primary-contrast-color: #ffffff;
+}
+
+html,
+body,
+#app {
+    min-height: 100%;
+}
+
+body {
+    margin: 0;
+    background: var(--app-page-background);
+    color: var(--app-page-text);
+    transition: background-color 180ms ease, color 180ms ease;
+}
+
+html[data-theme='dark'] .login-page {
+    background: #0f1115;
+    color: #f8fafc;
+}
+
+html[data-theme='dark'] .form-description,
+html[data-theme='dark'] .help {
+    color: #aab4c3;
+}
+
+html[data-theme='soft'] .login-page {
+    background: #f2f6f3;
+    color: #24352f;
+}
+
+html[data-theme='soft'] .brand-panel {
+    background: linear-gradient(145deg, #315b4d, #3f7a67);
+}
+
+html[data-theme='soft'] .form-description,
+html[data-theme='soft'] .help {
+    color: #62736b;
+}
+
+html[data-theme='light'] .login-page {
+    background: #f8fafc;
+    color: #172033;
+}
+
+.p-drawer.settings-drawer {
+    width: min(25rem, 92vw);
+}
