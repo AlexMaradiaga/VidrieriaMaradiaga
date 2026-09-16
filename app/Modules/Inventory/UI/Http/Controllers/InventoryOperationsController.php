@@ -44,7 +44,9 @@ final class InventoryOperationsController extends Controller
         }
 
         return response()->json([
-            'message' => $result['repeated'] ? 'Esta salida ya había sido registrada.' : 'Salida confirmada correctamente.',
+            'message' => $result['repeated']
+                ? __('inventory.responses.exit_repeated')
+                : __('inventory.responses.exit_created'),
             'data' => $result,
         ], $result['repeated'] ? 200 : 201);
     }
@@ -80,7 +82,9 @@ final class InventoryOperationsController extends Controller
         }
 
         return response()->json([
-            'message' => $result['repeated'] ? 'Este traslado ya había sido registrado.' : 'Traslado confirmado correctamente.',
+            'message' => $result['repeated']
+                ? __('inventory.responses.transfer_repeated')
+                : __('inventory.responses.transfer_created'),
             'data' => $result,
         ], $result['repeated'] ? 200 : 201);
     }
@@ -112,7 +116,9 @@ final class InventoryOperationsController extends Controller
         }
 
         return response()->json([
-            'message' => $result['repeated'] ? 'Este conteo ya había sido registrado.' : 'Conteo físico y ajustes confirmados.',
+            'message' => $result['repeated']
+                ? __('inventory.responses.count_repeated')
+                : __('inventory.responses.count_created'),
             'data' => $result,
         ], $result['repeated'] ? 200 : 201);
     }
@@ -153,7 +159,7 @@ final class InventoryOperationsController extends Controller
             'updated_at' => now(),
         ]);
 
-        return back()->with('success', 'Retazo registrado correctamente.');
+        return back()->with('success', __('inventory.responses.remnant_created'));
     }
 
     public function remnantsStatus(Request $request, int $remnantId): RedirectResponse
@@ -162,7 +168,7 @@ final class InventoryOperationsController extends Controller
         $data = $request->validate(['status' => ['required', Rule::in(['available', 'reserved', 'consumed', 'discarded'])]]);
         DB::table('inventory_remnants')->where('id', $remnantId)->update([...$data, 'updated_at' => now()]);
 
-        return back()->with('success', 'Estado del retazo actualizado.');
+        return back()->with('success', __('inventory.responses.remnant_status'));
     }
 
     public function kits(InventoryOperationsQueryInterface $query): Response
@@ -204,7 +210,7 @@ final class InventoryOperationsController extends Controller
             ], $data['items']));
         });
 
-        return back()->with('success', 'Kit registrado correctamente.');
+        return back()->with('success', __('inventory.responses.kit_created'));
     }
 
     public function kitsActive(Request $request, int $kitId): RedirectResponse
@@ -213,7 +219,7 @@ final class InventoryOperationsController extends Controller
         $data = $request->validate(['active' => ['required', 'boolean']]);
         DB::table('inventory_kits')->where('id', $kitId)->update([...$data, 'updated_at' => now()]);
 
-        return back()->with('success', 'Estado del kit actualizado.');
+        return back()->with('success', __('inventory.responses.kit_status'));
     }
 
     public function catalogs(InventoryOperationsQueryInterface $query): Response
@@ -229,7 +235,7 @@ final class InventoryOperationsController extends Controller
         [$table, $data] = $this->catalogData($request, $catalog);
         DB::table($table)->insert([...$data, 'active' => true, 'created_at' => now(), 'updated_at' => now()]);
 
-        return back()->with('success', 'Registro creado correctamente.');
+        return back()->with('success', __('inventory.responses.catalog_created'));
     }
 
     public function catalogActive(Request $request, string $catalog, int $recordId): RedirectResponse
@@ -245,7 +251,7 @@ final class InventoryOperationsController extends Controller
         $data = $request->validate(['active' => ['required', 'boolean']]);
         DB::table($tables[$catalog])->where('id', $recordId)->update([...$data, 'updated_at' => now()]);
 
-        return back()->with('success', 'Estado actualizado correctamente.');
+        return back()->with('success', __('inventory.responses.catalog_status'));
     }
 
     public function cutCalculator(): Response

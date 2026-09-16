@@ -9,10 +9,12 @@ import {
     type AppTheme,
     useAppSettings,
 } from '../../Composables/useAppSettings';
+import { usePwaInstall } from '../../Composables/usePwaInstall';
 
 const open = ref(false);
 const { t, locale } = useI18n();
 const { theme, accent, language } = useAppSettings();
+const { canInstall, installed, install } = usePwaInstall();
 
 watch(
     language,
@@ -73,6 +75,23 @@ const accents: Array<{ value: AppAccent; label: string }> = [
                     <span>{{ t(item.label) }}</span>
                 </button>
             </div>
+        </section>
+
+        <section class="settings-section">
+            <h2>{{ t('settings.application') }}</h2>
+
+            <Button
+                v-if="canInstall"
+                :label="t('settings.install')"
+                icon="pi pi-download"
+                fluid
+                @click="install"
+            />
+
+            <p v-else class="install-status">
+                <i :class="installed ? 'pi pi-check-circle' : 'pi pi-info-circle'" aria-hidden="true"></i>
+                {{ t(installed ? 'settings.installed' : 'settings.installHelp') }}
+            </p>
         </section>
 
         <section class="settings-section">
@@ -249,6 +268,15 @@ const accents: Array<{ value: AppAccent; label: string }> = [
     margin-top: 2rem;
     color: var(--p-text-muted-color);
     font-size: 0.85rem;
+}
+
+.install-status {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.55rem;
+    margin: 0;
+    color: var(--p-text-muted-color);
+    line-height: 1.45;
 }
 
 @media (max-width: 480px) {

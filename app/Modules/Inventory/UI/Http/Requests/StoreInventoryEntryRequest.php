@@ -61,27 +61,27 @@ final class StoreInventoryEntryRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'required' => 'El campo :attribute es obligatorio.',
-            'required_if' => 'Selecciona un proveedor para una compra.',
-            'regex' => 'El campo :attribute debe usar punto y hasta cuatro decimales.',
-            'string' => 'El campo :attribute debe enviarse como texto.',
-            'date_format' => 'La fecha debe tener formato año-mes-día.',
-            'before_or_equal' => 'La fecha no puede estar en el futuro.',
-            'uuid' => 'El identificador de solicitud no es válido.',
+            'required' => __('inventory.validation.required'),
+            'required_if' => __('inventory.validation.supplier_required'),
+            'regex' => __('inventory.validation.decimal'),
+            'string' => __('inventory.validation.string'),
+            'date_format' => __('inventory.validation.date_format'),
+            'before_or_equal' => __('inventory.validation.not_future'),
+            'uuid' => __('inventory.validation.uuid'),
         ];
     }
 
     public function attributes(): array
     {
         return [
-            'product_id' => 'producto',
-            'location_id' => 'ubicación',
-            'unit_id' => 'unidad',
-            'supplier_id' => 'proveedor',
-            'quantity' => 'cantidad',
-            'unit_cost' => 'costo unitario',
-            'document_date' => 'fecha del documento',
-            'reason' => 'motivo',
+            'product_id' => __('inventory.attributes.product_id'),
+            'location_id' => __('inventory.attributes.location_id'),
+            'unit_id' => __('inventory.attributes.unit_id'),
+            'supplier_id' => __('inventory.attributes.supplier_id'),
+            'quantity' => __('inventory.attributes.quantity'),
+            'unit_cost' => __('inventory.attributes.unit_cost'),
+            'document_date' => __('inventory.attributes.document_date'),
+            'reason' => __('inventory.attributes.reason'),
         ];
     }
 }

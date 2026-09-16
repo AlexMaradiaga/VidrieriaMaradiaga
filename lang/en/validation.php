@@ -1,0 +1,36 @@
+<?php
+
+return [
+    'array' => 'The :attribute field must be an array.',
+    'after_or_equal' => 'The :attribute field must be a date after or equal to :date.',
+    'before_or_equal' => 'The :attribute field must be a date before or equal to :date.',
+    'boolean' => 'The :attribute field must be true or false.',
+    'date_format' => 'The :attribute field must match the format :format.',
+    'different' => 'The :attribute and :other fields must be different.',
+    'distinct' => 'The :attribute field has a duplicate value.',
+    'email' => 'The :attribute field must be a valid email address.',
+    'exists' => 'The selected :attribute is invalid.',
+    'enum' => 'The selected :attribute is invalid.',
+    'gt' => ['numeric' => 'The :attribute field must be greater than :value.'],
+    'integer' => 'The :attribute field must be an integer.',
+    'in' => 'The selected :attribute is invalid.',
+    'max' => [
+        'array' => 'The :attribute field must not have more than :max items.',
+        'numeric' => 'The :attribute field must not be greater than :max.',
+        'string' => 'The :attribute field must not be greater than :max characters.',
+    ],
+    'min' => [
+        'array' => 'The :attribute field must have at least :min items.',
+        'numeric' => 'The :attribute field must be at least :min.',
+        'string' => 'The :attribute field must be at least :min characters.',
+    ],
+    'numeric' => 'The :attribute field must be a number.',
+    'prohibited' => 'The :attribute field is prohibited.',
+    'regex' => 'The :attribute field format is invalid.',
+    'required' => 'The :attribute field is required.',
+    'required_if' => 'The :attribute field is required when :other is :value.',
+    'string' => 'The :attribute field must be a string.',
+    'unique' => 'The :attribute has already been taken.',
+    'uuid' => 'The :attribute field must be a valid UUID.',
+    'attributes' => [],
+];

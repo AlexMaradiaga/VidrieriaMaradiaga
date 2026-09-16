@@ -138,8 +138,7 @@ final class InventoryHistoryController extends Controller
         }
 
         $data = $request->validate($rules, [
-            'to.after_or_equal' =>
-                'La fecha final debe ser igual o posterior a la inicial.',
+            'to.after_or_equal' => __('inventory.validation.end_date'),
         ]);
 
         $data = array_replace([

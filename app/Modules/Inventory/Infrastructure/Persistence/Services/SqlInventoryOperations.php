@@ -15,10 +15,10 @@ final class SqlInventoryOperations implements InventoryOperationsInterface
 {
     public function registerExit(array $data, int $userId): array
     {
-        $quantity = $this->decimal($data['quantity'], 'cantidad');
+        $quantity = $this->decimal($data['quantity'], __('inventory.fields.quantity'));
 
         if (! $quantity->isGreaterThan('0')) {
-            throw new DomainException('La cantidad debe ser mayor que cero.');
+            throw new DomainException(__('inventory.errors.quantity_positive'));
         }
 
         $payload = [
@@ -40,7 +40,7 @@ final class SqlInventoryOperations implements InventoryOperationsInterface
 
             if ($existing !== null) {
                 if ($existing->request_hash !== $hash || $existing->direction !== 'outbound' || $existing->status !== 'posted') {
-                    throw new DomainException('El identificador de solicitud ya pertenece a otra operación.');
+                    throw new DomainException(__('inventory.errors.operation_key_used'));
                 }
 
                 return ['movement_id' => (int) $existing->id, 'repeated' => true];
@@ -53,7 +53,7 @@ final class SqlInventoryOperations implements InventoryOperationsInterface
             $current = BigDecimal::of($balance === null ? '0' : (string) $balance->quantity)->toScale(4);
 
             if ($current->isLessThan($baseQuantity)) {
-                throw new DomainException('La ubicación seleccionada no tiene existencia suficiente.');
+                throw new DomainException(__('inventory.errors.insufficient_stock'));
             }
 
             $after = $current->minus($baseQuantity)->toScale(4);
@@ -89,17 +89,17 @@ final class SqlInventoryOperations implements InventoryOperationsInterface
 
     public function transfer(array $data, int $userId): array
     {
-        $quantity = $this->decimal($data['quantity'], 'cantidad');
+        $quantity = $this->decimal($data['quantity'], __('inventory.fields.quantity'));
 
         if (! $quantity->isGreaterThan('0')) {
-            throw new DomainException('La cantidad debe ser mayor que cero.');
+            throw new DomainException(__('inventory.errors.quantity_positive'));
         }
 
         $source = (int) $data['source_location_id'];
         $destination = (int) $data['destination_location_id'];
 
         if ($source === $destination) {
-            throw new DomainException('La ubicación de origen y la de destino deben ser diferentes.');
+            throw new DomainException(__('inventory.errors.same_locations'));
         }
 
         $key = strtolower($data['operation_key']);
@@ -118,7 +118,7 @@ final class SqlInventoryOperations implements InventoryOperationsInterface
             $existing = DB::table('inventory_transfers')->where('operation_key', $key)->lockForUpdate()->first();
             if ($existing !== null) {
                 if ($existing->request_hash !== $requestHash) {
-                    throw new DomainException('El identificador de solicitud ya pertenece a otro traslado.');
+                    throw new DomainException(__('inventory.errors.operation_key_used'));
                 }
                 return ['transfer_id' => (int) $existing->id, 'repeated' => true];
             }
@@ -136,7 +136,7 @@ final class SqlInventoryOperations implements InventoryOperationsInterface
 
             $sourceQuantity = BigDecimal::of($balances[$source] === null ? '0' : (string) $balances[$source]->quantity)->toScale(4);
             if ($sourceQuantity->isLessThan($quantity)) {
-                throw new DomainException('La ubicación de origen no tiene existencia suficiente.');
+                throw new DomainException(__('inventory.errors.source_insufficient_stock'));
             }
 
             $destinationQuantity = BigDecimal::of($balances[$destination] === null ? '0' : (string) $balances[$destination]->quantity)->toScale(4);
@@ -190,7 +190,7 @@ final class SqlInventoryOperations implements InventoryOperationsInterface
             'notes' => trim((string) ($data['notes'] ?? '')) ?: null,
             'lines' => $lines->map(fn (array $line): array => [
                 'product_id' => (int) $line['product_id'],
-                'counted_quantity' => (string) $this->decimal($line['counted_quantity'], 'cantidad contada'),
+                'counted_quantity' => (string) $this->decimal($line['counted_quantity'], __('inventory.fields.counted_quantity')),
             ])->all(),
         ], JSON_THROW_ON_ERROR));
 
@@ -198,7 +198,7 @@ final class SqlInventoryOperations implements InventoryOperationsInterface
             $existing = DB::table('inventory_counts')->where('operation_key', $key)->lockForUpdate()->first();
             if ($existing !== null) {
                 if ($existing->request_hash !== $requestHash) {
-                    throw new DomainException('El identificador de solicitud ya pertenece a otro conteo.');
+                    throw new DomainException(__('inventory.errors.operation_key_used'));
                 }
                 return ['count_id' => (int) $existing->id, 'repeated' => true];
             }
@@ -219,7 +219,7 @@ final class SqlInventoryOperations implements InventoryOperationsInterface
 
             foreach ($lines as $line) {
                 $product = $this->product((int) $line['product_id']);
-                $counted = $this->decimal($line['counted_quantity'], 'cantidad contada');
+                $counted = $this->decimal($line['counted_quantity'], __('inventory.fields.counted_quantity'));
                 $balance = $this->balance($product->id, $locationId);
                 $expected = BigDecimal::of($balance === null ? '0' : (string) $balance->quantity)->toScale(4);
                 $variance = $counted->minus($expected)->toScale(4);
@@ -229,7 +229,7 @@ final class SqlInventoryOperations implements InventoryOperationsInterface
                 if (! $variance->isEqualTo('0')) {
                     $direction = $variance->isGreaterThan('0') ? 'inbound' : 'outbound';
                     $absolute = $variance->abs();
-                    $movementId = $this->movement($direction, 'adjustment', $data['document_date'], 'CONTEO-'.$countId, 'Ajuste generado por conteo físico.', $userId, $now);
+                    $movementId = $this->movement($direction, 'adjustment', $data['document_date'], 'COUNT-'.$countId, __('inventory.count_adjustment_note'), $userId, $now);
                     $total = $average->multipliedBy($absolute)->toScale(4, RoundingMode::HALF_UP);
                     $this->insertLine($movementId, $product, $locationId, $product->base_unit_id, $absolute, BigDecimal::of('1'), $absolute, $average, $average->toScale(8), $total, $counted, $average, $now);
                 }
@@ -256,8 +256,14 @@ final class SqlInventoryOperations implements InventoryOperationsInterface
     {
         $product = DB::table('inventory_products')->where('id', $id)->whereNull('deleted_at')->lockForUpdate()->first();
         if ($product === null || ! $product->active || ! $product->track_stock) {
-            throw new DomainException('El producto no existe, está inactivo o no controla existencias.');
+            throw new DomainException(__('inventory.errors.product_unavailable'));
         }
+
+        // SQL Server puede devolver columnas BIGINT como cadenas. Normalizar
+        // los identificadores aquí evita errores de tipo en los métodos
+        // internos y mantiene una única frontera de conversión.
+        $product->id = (int) $product->id;
+        $product->base_unit_id = (int) $product->base_unit_id;
 
         return $product;
     }
@@ -274,7 +280,7 @@ final class SqlInventoryOperations implements InventoryOperationsInterface
             ->value('conversion_factor_to_base');
 
         if ($factor === null) {
-            throw new DomainException('La unidad seleccionada no tiene una conversión de salida configurada.');
+            throw new DomainException(__('inventory.errors.issue_conversion_missing'));
         }
 
         return BigDecimal::of((string) $factor);
@@ -285,7 +291,7 @@ final class SqlInventoryOperations implements InventoryOperationsInterface
         $exact = $quantity->multipliedBy($factor);
         $rounded = $exact->toScale(4, RoundingMode::HALF_UP);
         if (! $exact->isEqualTo($rounded)) {
-            throw new DomainException('La conversión requiere más de cuatro decimales.');
+            throw new DomainException(__('inventory.errors.conversion_precision'));
         }
 
         return $rounded;
@@ -298,7 +304,7 @@ final class SqlInventoryOperations implements InventoryOperationsInterface
             ->where('locations.id', $id)->where('locations.active', true)->whereNull('locations.deleted_at')
             ->where('warehouses.active', true)->whereNull('warehouses.deleted_at')->exists();
         if (! $exists) {
-            throw new DomainException('La ubicación o su bodega no están disponibles.');
+            throw new DomainException(__('inventory.errors.location_unavailable'));
         }
     }
 
@@ -314,7 +320,7 @@ final class SqlInventoryOperations implements InventoryOperationsInterface
     private function saveBalance(int $productId, int $locationId, BigDecimal $quantity, ?object $balance, mixed $now): void
     {
         if ($quantity->isLessThan('0')) {
-            throw new DomainException('La operación produciría una existencia negativa.');
+            throw new DomainException(__('inventory.errors.negative_stock'));
         }
 
         DB::table('inventory_stock_balances')->updateOrInsert(
@@ -369,7 +375,7 @@ final class SqlInventoryOperations implements InventoryOperationsInterface
     {
         $value = trim($value);
         if (! preg_match('/^\d{1,14}(?:\.\d{1,4})?$/', $value)) {
-            throw new DomainException("El campo {$field} debe ser un número no negativo con hasta cuatro decimales.");
+            throw new DomainException(__('inventory.errors.invalid_decimal', ['field' => $field]));
         }
 
         return BigDecimal::of($value)->toScale(4);

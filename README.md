@@ -33,7 +33,7 @@ Las operaciones que modifican existencias se procesan de forma transaccional par
 
 ## Experiencia de usuario
 
-La interfaz está desarrollada para funcionar en computadoras, tabletas y dispositivos móviles. Cuenta con navegación centralizada, mensajes de confirmación, alertas visuales y opciones de personalización que permiten seleccionar el idioma, el tema de la interfaz y el color principal del sistema.
+La interfaz está desarrollada para funcionar en computadoras, tabletas y dispositivos móviles. Puede instalarse como aplicación web progresiva (PWA), ofrece navegación centralizada, mensajes de confirmación y alertas visuales. Todas las pantallas del módulo están disponibles en español e inglés y las opciones de personalización permiten elegir un tema oscuro, claro o claro suave, además del color principal del sistema.
 
 ## Arquitectura
 

@@ -34,8 +34,8 @@ final class InventoryEntryController extends Controller
 
         return response()->json([
             'message' => $result['repeated']
-                ? 'Esta entrada ya había sido registrada.'
-                : 'Entrada confirmada correctamente.',
+                ? __('inventory.responses.entry_repeated')
+                : __('inventory.responses.entry_created'),
             'data' => $result,
         ], $result['repeated'] ? 200 : 201);
     }

@@ -41,17 +41,17 @@ final class StoreProductRequest extends FormRequest
     public function attributes(): array
     {
         return [
-            'sku' => 'SKU',
-            'name' => 'nombre',
-            'category_id' => 'categoría',
-            'base_unit_id' => 'unidad base',
-            'product_type' => 'tipo de producto',
-            'barcode' => 'código de barras',
-            'description' => 'descripción',
-            'minimum_stock' => 'stock mínimo',
-            'maximum_stock' => 'stock máximo',
-            'reorder_point' => 'punto de reorden',
-            'sale_price' => 'precio de venta',
+            'sku' => __('inventory.attributes.sku'),
+            'name' => __('inventory.attributes.name'),
+            'category_id' => __('inventory.attributes.category_id'),
+            'base_unit_id' => __('inventory.attributes.base_unit_id'),
+            'product_type' => __('inventory.attributes.product_type'),
+            'barcode' => __('inventory.attributes.barcode'),
+            'description' => __('inventory.attributes.description'),
+            'minimum_stock' => __('inventory.attributes.minimum_stock'),
+            'maximum_stock' => __('inventory.attributes.maximum_stock'),
+            'reorder_point' => __('inventory.attributes.reorder_point'),
+            'sale_price' => __('inventory.attributes.sale_price'),
         ];
     }
 }

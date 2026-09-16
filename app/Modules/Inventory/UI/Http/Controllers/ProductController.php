@@ -83,16 +83,16 @@ final class ProductController extends Controller
             // La única restricción UNIQUE del producto, además de su ID
             // autogenerado, es actualmente el SKU.
             throw ValidationException::withMessages([
-                'sku' => 'El SKU ya está registrado.',
+                'sku' => __('inventory.errors.duplicate_sku'),
             ]);
         } catch (ProductCreationException | InvalidProductException $exception) {
             throw ValidationException::withMessages([
-                'product' => $exception->getMessage(),
+                'product' => $this->localizedProductError($exception->getMessage()),
             ]);
         }
 
         return response()->json([
-            'message' => 'Producto creado correctamente.',
+            'message' => __('inventory.responses.product_created'),
             'data' => [
                 'id' => $product->id(),
                 'sku' => $product->sku()->value(),
@@ -125,15 +125,15 @@ final class ProductController extends Controller
                 )
             );
         } catch (ProductNotFoundException $exception) {
-            abort(404, $exception->getMessage());
+            abort(404, __('inventory.errors.product_not_found'));
         } catch (InvalidProductException $exception) {
             throw ValidationException::withMessages([
-                'product' => $exception->getMessage(),
+                'product' => $this->localizedProductError($exception->getMessage()),
             ]);
         }
 
         return response()->json([
-            'message' => 'Producto actualizado correctamente.',
+            'message' => __('inventory.responses.product_updated'),
             'data' => ['id' => $product->id()],
         ]);
     }
@@ -155,17 +155,40 @@ final class ProductController extends Controller
                 (bool) $data['active'],
             );
         } catch (ProductNotFoundException $exception) {
-            abort(404, $exception->getMessage());
+            abort(404, __('inventory.errors.product_not_found'));
         }
 
         return response()->json([
             'message' => $product->isActive()
-                ? 'Producto activado correctamente.'
-                : 'Producto desactivado correctamente.',
+                ? __('inventory.responses.product_activated')
+                : __('inventory.responses.product_deactivated'),
             'data' => [
                 'id' => $product->id(),
                 'active' => $product->isActive(),
             ],
         ]);
+    }
+
+    private function localizedProductError(string $message): string
+    {
+        $messages = [
+            'El SKU ya está registrado, incluso si el producto fue eliminado.' => 'duplicate_sku_deleted',
+            'La categoría no existe o está inactiva.' => 'category_unavailable',
+            'La unidad base no existe o está inactiva.' => 'base_unit_unavailable',
+            'El tipo de producto no es válido.' => 'invalid_product_type',
+            'Para controlar lotes, retazos o existencias negativas, debes activar el control de stock.' => 'stock_tracking_required',
+            'El producto no existe o fue eliminado.' => 'product_not_found',
+            'El código SKU del producto es obligatorio.' => 'empty_sku',
+            'El código SKU solamente puede contener letras, números, puntos, guiones y guiones bajos.' => 'invalid_sku_format',
+            'El nombre del producto es obligatorio.' => 'empty_name',
+            'El nombre del producto no puede superar los 180 caracteres.' => 'name_too_long',
+            'El código de barras no puede superar los 80 caracteres.' => 'barcode_too_long',
+            'La descripción no puede superar los 1000 caracteres.' => 'description_too_long',
+            'El stock máximo no puede ser menor que el stock mínimo.' => 'maximum_below_minimum',
+        ];
+
+        $key = $messages[$message] ?? null;
+
+        return $key === null ? $message : __('inventory.errors.'.$key);
     }
 }

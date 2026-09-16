@@ -1,12 +1,13 @@
 <script setup lang="ts">
-import { computed, nextTick, reactive, ref, watch } from "vue";
-import { Head, Link, router, usePage } from "@inertiajs/vue3";
-import axios from "axios";
-import Button from "primevue/button";
-import Toast from "primevue/toast";
-import ConfirmDialog from "primevue/confirmdialog";
-import { useToast } from "primevue/usetoast";
-import { useConfirm } from "primevue/useconfirm";
+import { computed, nextTick, reactive, ref, watch } from 'vue';
+import { Head, Link, router, usePage } from '@inertiajs/vue3';
+import axios from 'axios';
+import Button from 'primevue/button';
+import Toast from 'primevue/toast';
+import ConfirmDialog from 'primevue/confirmdialog';
+import { useToast } from 'primevue/usetoast';
+import { useConfirm } from 'primevue/useconfirm';
+import { useI18n } from 'vue-i18n';
 
 interface ProductRow {
     id: number;
@@ -36,8 +37,8 @@ interface UnitOption extends Option {
 interface ProductForm {
     sku: string;
     name: string;
-    category_id: number | "";
-    base_unit_id: number | "";
+    category_id: number | '';
+    base_unit_id: number | '';
     product_type: string;
     barcode: string;
     description: string;
@@ -76,22 +77,22 @@ const page = usePage<{
 }>();
 
 const canCreate = computed(() =>
-    page.props.auth.permissions.includes("inventory.products.create"),
+    page.props.auth.permissions.includes('inventory.products.create'),
 );
 
 const canUpdate = computed(() =>
-    page.props.auth.permissions.includes("inventory.products.update"),
+    page.props.auth.permissions.includes('inventory.products.update'),
 );
 
 const canChangeStatus = computed(() =>
-    page.props.auth.permissions.includes("inventory.products.toggle-active"),
+    page.props.auth.permissions.includes('inventory.products.toggle-active'),
 );
 
 const search = ref(props.filters.search);
 const showEditor = ref(false);
 const editingId = ref<number | null>(null);
-const editingCategory = ref("");
-const editingUnit = ref("");
+const editingCategory = ref('');
+const editingUnit = ref('');
 const originalSalePrice = ref<string | null>(null);
 const salePriceEdited = ref(false);
 
@@ -99,29 +100,18 @@ const saving = ref(false);
 const loading = ref(false);
 const changingStatus = ref<number | null>(null);
 
-const success = ref("");
-const failure = ref("");
+const success = ref('');
+const failure = ref('');
 const errors = ref<Record<string, string[]>>({});
 const toast = useToast();
 const confirm = useConfirm();
+const { t } = useI18n();
 
 watch(success, (message) => {
-    if (message)
-        toast.add({
-            severity: "success",
-            summary: "Productos",
-            detail: message,
-            life: 5000,
-        });
+    if (message) toast.add({ severity: 'success', summary: t('inventory.products.toast'), detail: message, life: 5000 });
 });
 watch(failure, (message) => {
-    if (message)
-        toast.add({
-            severity: "error",
-            summary: "Revisa la operación",
-            detail: message,
-            life: 7000,
-        });
+    if (message) toast.add({ severity: 'error', summary: t('inventory.products.errorTitle'), detail: message, life: 7000 });
 });
 
 const editorHeading = ref<HTMLHeadingElement | null>(null);
@@ -142,42 +132,43 @@ const canSubmit = computed(() =>
         : canCreate.value && hasCreationOptions.value,
 );
 
-const decimalFields = [
+type DecimalFieldKey = 'minimum_stock' | 'maximum_stock' | 'reorder_point' | 'sale_price';
+const decimalFields = computed(() => [
     {
-        key: "minimum_stock",
-        label: "Existencia mínima",
+        key: 'minimum_stock',
+        label: t('inventory.products.minimum'),
         required: true,
     },
     {
-        key: "maximum_stock",
-        label: "Existencia máxima",
+        key: 'maximum_stock',
+        label: t('inventory.products.maximum'),
         required: false,
     },
     {
-        key: "reorder_point",
-        label: "Cantidad para solicitar reposición",
+        key: 'reorder_point',
+        label: t('inventory.products.reorder'),
         required: true,
     },
     {
-        key: "sale_price",
-        label: "Precio de venta",
+        key: 'sale_price',
+        label: t('inventory.products.salePrice'),
         required: true,
     },
-] as const;
+] as const);
 
 function emptyForm(): ProductForm {
     return {
-        sku: "",
-        name: "",
-        category_id: "",
-        base_unit_id: "",
-        product_type: "material",
-        barcode: "",
-        description: "",
-        minimum_stock: "0",
-        maximum_stock: "",
-        reorder_point: "0",
-        sale_price: "0.00",
+        sku: '',
+        name: '',
+        category_id: '',
+        base_unit_id: '',
+        product_type: 'material',
+        barcode: '',
+        description: '',
+        minimum_stock: '0',
+        maximum_stock: '',
+        reorder_point: '0',
+        sale_price: '0.00',
         track_stock: true,
         track_lots: false,
         track_remnants: false,
@@ -205,25 +196,23 @@ watch(
     },
 );
 function formatQuantity(value: string | null): string {
-    if (value === null || value === "") return "";
+    if (value === null || value === '') return '';
 
-    const [integerPart = "0", decimalPart = ""] = value.split(".");
-    const fraction = decimalPart.replace(/0+$/, "");
+    const [integerPart = '0', decimalPart = ''] = value.split('.');
+    const fraction = decimalPart.replace(/0+$/, '');
 
     return fraction ? `${integerPart}.${fraction}` : integerPart;
 }
 
 function priceForInput(value: string): string {
     // En el formulario no usamos separadores de miles.
-    return formatPrice(value).replace(/,/g, "");
+    return formatPrice(value).replace(/,/g, '');
 }
 
-function normalizeNumericField(
-    key: (typeof decimalFields)[number]["key"],
-): void {
+function normalizeNumericField(key: DecimalFieldKey): void {
     const value = form[key].trim();
 
-    if (key === "sale_price") {
+    if (key === 'sale_price') {
         if (/^\d{1,14}(?:\.\d{1,2})?$/.test(value)) {
             form.sale_price = priceForInput(value);
         }
@@ -235,13 +224,14 @@ function normalizeNumericField(
 function formatPrice(value: string): string {
     const match = /^(\d+)(?:\.(\d+))?$/.exec(value.trim());
 
-    if (!match) return "—";
+    if (!match) return '—';
 
-    const integerPart = match[1] ?? "0";
-    const decimals = (match[2] ?? "").padEnd(3, "0");
+    const integerPart = match[1] ?? '0';
+    const decimals = (match[2] ?? '').padEnd(3, '0');
 
     let cents =
-        BigInt(integerPart) * BigInt(100) + BigInt(decimals.slice(0, 2));
+        BigInt(integerPart) * BigInt(100) +
+        BigInt(decimals.slice(0, 2));
 
     if (Number(decimals.charAt(2)) >= 5) {
         cents += BigInt(1);
@@ -249,16 +239,18 @@ function formatPrice(value: string): string {
 
     const whole = (cents / BigInt(100))
         .toString()
-        .replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        .replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 
-    const fraction = (cents % BigInt(100)).toString().padStart(2, "0");
+    const fraction = (cents % BigInt(100))
+        .toString()
+        .padStart(2, '0');
 
     return `${whole}.${fraction}`;
 }
 
 function clearFeedback(): void {
-    success.value = "";
-    failure.value = "";
+    success.value = '';
+    failure.value = '';
     errors.value = {};
 }
 
@@ -272,8 +264,8 @@ function openCreate(): void {
 
     clearFeedback();
     editingId.value = null;
-    editingCategory.value = "";
-    editingUnit.value = "";
+    editingCategory.value = '';
+    editingUnit.value = '';
     originalSalePrice.value = null;
     salePriceEdited.value = false;
     Object.assign(form, emptyForm());
@@ -289,28 +281,27 @@ function openEdit(product: ProductRow): void {
 
     // Estos campos deben venir incluidos en la consulta del backend.
     if (
-        typeof product.minimum_stock !== "string" ||
-        typeof product.reorder_point !== "string" ||
-        !("maximum_stock" in product) ||
-        !("barcode" in product) ||
-        !("description" in product)
+        typeof product.minimum_stock !== 'string' ||
+        typeof product.reorder_point !== 'string' ||
+        !('maximum_stock' in product) ||
+        !('barcode' in product) ||
+        !('description' in product)
     ) {
-        failure.value =
-            "No se recibieron todos los datos del producto. No es posible abrir la edición.";
+        failure.value = t('inventory.products.incomplete');
         return;
     }
 
     editingId.value = product.id;
-    editingCategory.value = product.category_name ?? "Sin categoría";
-    editingUnit.value = product.unit_symbol ?? "Sin unidad";
+    editingCategory.value = product.category_name ?? t('inventory.products.noCategory');
+    editingUnit.value = product.unit_symbol ?? t('inventory.products.noUnit');
     originalSalePrice.value = product.sale_price;
     salePriceEdited.value = false;
 
     Object.assign(form, emptyForm(), {
         sku: product.sku,
         name: product.name,
-        barcode: product.barcode ?? "",
-        description: product.description ?? "",
+        barcode: product.barcode ?? '',
+        description: product.description ?? '',
         minimum_stock: formatQuantity(product.minimum_stock),
         maximum_stock: formatQuantity(product.maximum_stock),
         reorder_point: formatQuantity(product.reorder_point),
@@ -327,7 +318,7 @@ function closeEditor(): void {
 
     showEditor.value = false;
     editingId.value = null;
-    failure.value = "";
+    failure.value = '';
     errors.value = {};
 }
 
@@ -337,7 +328,7 @@ function refreshProducts(pageNumber = 1): void {
     loading.value = true;
 
     router.get(
-        "/inventory/products",
+        '/inventory/products',
         {
             search: search.value.trim(),
             page: pageNumber,
@@ -346,8 +337,7 @@ function refreshProducts(pageNumber = 1): void {
             preserveState: true,
             preserveScroll: true,
             onError: () => {
-                failure.value =
-                    "No se pudo actualizar el listado. Revisa la búsqueda o recarga la página.";
+                failure.value = t('inventory.products.refreshError');
             },
             onFinish: () => {
                 loading.value = false;
@@ -366,7 +356,7 @@ function searchProducts(): void {
 function clearSearch(): void {
     if (busy.value) return;
 
-    search.value = "";
+    search.value = '';
     searchProducts();
 }
 
@@ -384,29 +374,27 @@ function handleMutationError(error: unknown): void {
 
         if (status === 422) {
             errors.value = error.response?.data?.errors ?? {};
-            failure.value = "Revisa los datos indicados.";
+            failure.value = t('inventory.products.invalidData');
             return;
         }
 
         if (status === 403) {
-            failure.value = "No tienes permiso para esta operación.";
+            failure.value = t('inventory.products.forbidden');
             return;
         }
 
         if (status === 404) {
-            failure.value = "El producto no existe o fue eliminado.";
+            failure.value = t('inventory.products.notFound');
             return;
         }
 
         if (status === 401 || status === 419) {
-            failure.value =
-                "Tu sesión venció. Vuelve a iniciar sesión antes de continuar.";
+            failure.value = t('inventory.products.sessionExpired');
             return;
         }
     }
 
-    failure.value =
-        "No se pudo confirmar la operación. Revisa el catálogo antes de reintentar para comprobar si se guardó.";
+    failure.value = t('inventory.products.uncertain');
 }
 
 async function submitProduct(): Promise<void> {
@@ -415,7 +403,7 @@ async function submitProduct(): Promise<void> {
     clearFeedback();
     saving.value = true;
 
-    for (const field of decimalFields) {
+    for (const field of decimalFields.value) {
         normalizeNumericField(field.key);
     }
 
@@ -431,16 +419,15 @@ async function submitProduct(): Promise<void> {
         maximum_stock: form.maximum_stock.trim() || null,
         reorder_point: form.reorder_point.trim(),
         // Conservar la precisión original si el usuario no editó el precio.
-        sale_price:
-            originalSalePrice.value !== null && !salePriceEdited.value
-                ? originalSalePrice.value
-                : form.sale_price.trim(),
+        sale_price: originalSalePrice.value !== null && !salePriceEdited.value
+            ? originalSalePrice.value
+            : form.sale_price.trim(),
     };
 
     const config = {
         headers: {
-            Accept: "application/json",
-            "X-Requested-With": "XMLHttpRequest",
+            Accept: 'application/json',
+            'X-Requested-With': 'XMLHttpRequest',
         },
     };
 
@@ -454,7 +441,7 @@ async function submitProduct(): Promise<void> {
             );
         } else {
             await axios.post(
-                "/inventory/products",
+                '/inventory/products',
                 {
                     ...editableData,
                     sku: productCode,
@@ -473,10 +460,7 @@ async function submitProduct(): Promise<void> {
         showEditor.value = false;
         editingId.value = null;
 
-        success.value =
-            productId !== null
-                ? "Producto actualizado correctamente."
-                : "Producto creado correctamente.";
+        success.value = t(productId !== null ? 'inventory.products.updated' : 'inventory.products.created');
 
         // Mostrar el registro incluso si el nombre editado ya no coincide
         // con la búsqueda anterior.
@@ -493,29 +477,19 @@ async function changeStatus(product: ProductRow): Promise<void> {
     if (busy.value || !canChangeStatus.value || showEditor.value) return;
 
     const targetStatus = !product.active;
-    const action = targetStatus ? "Activar" : "Desactivar";
+    const action = t(targetStatus ? 'common.activate' : 'common.deactivate');
 
     confirm.require({
-        header: `${action} producto`,
-        message: `¿${action} el producto ${product.sku}: ${product.name}?`,
-        icon: "pi pi-question-circle",
-        rejectProps: {
-            label: "Cancelar",
-            severity: "secondary",
-            outlined: true,
-        },
-        acceptProps: {
-            label: action,
-            severity: targetStatus ? "success" : "danger",
-        },
+        header: t('inventory.products.toggleHeader', {action}),
+        message: t('inventory.products.confirmToggle', {action,sku:product.sku,name:product.name}),
+        icon: 'pi pi-question-circle',
+        rejectProps: { label: t('common.cancel'), severity: 'secondary', outlined: true },
+        acceptProps: { label: action, severity: targetStatus ? 'success' : 'danger' },
         accept: () => void performStatusChange(product, targetStatus),
     });
 }
 
-async function performStatusChange(
-    product: ProductRow,
-    targetStatus: boolean,
-): Promise<void> {
+async function performStatusChange(product: ProductRow, targetStatus: boolean): Promise<void> {
     if (busy.value) return;
 
     clearFeedback();
@@ -527,15 +501,13 @@ async function performStatusChange(
             { active: targetStatus },
             {
                 headers: {
-                    Accept: "application/json",
-                    "X-Requested-With": "XMLHttpRequest",
+                    Accept: 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
                 },
             },
         );
 
-        success.value = targetStatus
-            ? "Producto activado correctamente."
-            : "Producto desactivado correctamente.";
+        success.value = t(targetStatus ? 'inventory.products.activated' : 'inventory.products.deactivated');
 
         refreshProducts(props.products.current_page);
     } catch (error: unknown) {
@@ -547,24 +519,24 @@ async function performStatusChange(
 </script>
 
 <template>
-    <Head title="Productos | Vidriería Maradiaga" />
+    <Head :title="`${t('inventory.products.pageTitle')} | ${t('common.appName')}`" />
     <Toast />
     <ConfirmDialog />
 
     <main class="catalog">
         <header class="header">
             <div>
-                <Link href="/" class="back">← Panel principal</Link>
-                <h1>Catálogo de productos</h1>
+                <Link href="/" class="back">← {{t('nav.panel')}}</Link>
+                <h1>{{t('inventory.products.title')}}</h1>
                 <p class="subtitle">
-                    {{ products.total }} productos encontrados
+                    {{t('inventory.products.found',{count:products.total})}}
                 </p>
             </div>
 
             <Button
                 v-if="canCreate && !showEditor"
                 type="button"
-                label="Nuevo producto"
+                :label="t('inventory.products.new')"
                 icon="pi pi-plus"
                 :disabled="busy"
                 @click="openCreate"
@@ -576,7 +548,7 @@ async function performStatusChange(
 
             <ul v-if="Object.keys(errors).length">
                 <li v-for="(messages, field) in errors" :key="field">
-                    {{ messages.join(" ") }}
+                    {{ messages.join(' ') }}
                 </li>
             </ul>
         </div>
@@ -586,17 +558,16 @@ async function performStatusChange(
             class="panel"
             aria-labelledby="editor-heading"
         >
-            <h2 id="editor-heading" ref="editorHeading" tabindex="-1">
-                {{
-                    isEditing
-                        ? `Editar producto: ${form.sku}`
-                        : "Nuevo producto"
-                }}
+            <h2
+                id="editor-heading"
+                ref="editorHeading"
+                tabindex="-1"
+            >
+                {{ isEditing ? t('inventory.products.editTitle',{sku:form.sku}) : t('inventory.products.createTitle') }}
             </h2>
 
             <p v-if="isEditing" class="hint">
-                Categoría: {{ editingCategory }}. Unidad de control:
-                {{ editingUnit }}.
+                {{t('inventory.products.categoryHint',{category:editingCategory,unit:editingUnit})}}
             </p>
 
             <p
@@ -604,15 +575,14 @@ async function performStatusChange(
                 class="notice"
                 role="alert"
             >
-                Necesitas al menos una categoría y una unidad activas para crear
-                productos.
+                {{t('inventory.products.missingCatalogs')}}
             </p>
 
             <form @submit.prevent="submitProduct">
                 <fieldset :disabled="busy">
                     <div class="form-grid">
                         <label>
-                            Código único del producto *
+                            {{t('inventory.products.uniqueCode')}} *
                             <input
                                 v-model="form.sku"
                                 required
@@ -620,36 +590,34 @@ async function performStatusChange(
                                 pattern="[A-Za-z0-9][A-Za-z0-9._-]*"
                                 autocomplete="off"
                                 :readonly="isEditing"
-                                placeholder="Ejemplo: VID-TEMP-06"
+                                :placeholder="t('inventory.products.codeExample')"
                                 aria-describedby="product-code-help"
                             />
 
                             <small id="product-code-help" class="hint">
                                 {{
                                     isEditing
-                                        ? "El código se conserva al editar."
-                                        : "Identifica cada material o variante. No debe repetirse."
+                                        ? t('inventory.products.codeKept')
+                                        : t('inventory.products.codeHelp')
                                 }}
                             </small>
                         </label>
 
                         <label>
-                            Nombre *
+                            {{t('common.name')}} *
                             <input
                                 v-model="form.name"
                                 required
                                 maxlength="180"
-                                placeholder="Ejemplo: Vidrio templado de 6 mm"
+                                :placeholder="t('inventory.products.nameExample')"
                             />
                         </label>
 
                         <template v-if="!isEditing">
                             <label>
-                                Categoría *
+                                {{t('inventory.products.category')}} *
                                 <select v-model="form.category_id" required>
-                                    <option disabled value="">
-                                        Selecciona
-                                    </option>
+                                    <option disabled value="">{{t('common.select')}}</option>
 
                                     <option
                                         v-for="category in categories"
@@ -662,11 +630,9 @@ async function performStatusChange(
                             </label>
 
                             <label>
-                                Unidad de control del inventario *
+                                {{t('inventory.products.controlUnit')}} *
                                 <select v-model="form.base_unit_id" required>
-                                    <option disabled value="">
-                                        Selecciona
-                                    </option>
+                                    <option disabled value="">{{t('common.select')}}</option>
 
                                     <option
                                         v-for="unit in units"
@@ -679,51 +645,41 @@ async function performStatusChange(
                             </label>
 
                             <label>
-                                Tipo de producto *
+                                {{t('inventory.products.type')}} *
                                 <select v-model="form.product_type" required>
-                                    <option value="material">
-                                        Materia prima
-                                    </option>
+                                    <option value="material">{{t('inventory.products.rawMaterial')}}</option>
                                     <option value="finished_product">
-                                        Producto terminado
+                                        {{t('inventory.products.finishedProduct')}}
                                     </option>
-                                    <option value="consumable">
-                                        Consumible
-                                    </option>
+                                    <option value="consumable">{{t('inventory.products.consumable')}}</option>
                                 </select>
                             </label>
                         </template>
 
                         <label>
-                            Código de barras
+                            {{t('inventory.products.barcode')}}
                             <input v-model="form.barcode" maxlength="80" />
                         </label>
 
-                        <label v-for="field in decimalFields" :key="field.key">
-                            {{ field.label }}{{ field.required ? " *" : "" }}
+                        <label
+                            v-for="field in decimalFields"
+                            :key="field.key"
+                        >
+                            {{ field.label }}{{ field.required ? ' *' : '' }}
 
                             <input
                                 v-model="form[field.key]"
                                 type="text"
                                 inputmode="decimal"
-                                :pattern="
-                                    field.key === 'sale_price'
-                                        ? '[0-9]{1,14}(\\.[0-9]{1,2})?'
-                                        : '[0-9]{1,14}(\\.[0-9]{1,4})?'
-                                "
+                                :pattern="field.key === 'sale_price'
+                                    ? '[0-9]{1,14}(\\.[0-9]{1,2})?'
+                                    : '[0-9]{1,14}(\\.[0-9]{1,4})?'"
                                 :required="field.required"
-                                :placeholder="
-                                    field.key === 'sale_price' ? '0.00' : '0'
-                                "
-                                :title="
-                                    field.key === 'sale_price'
-                                        ? 'Usa punto decimal y hasta dos decimales.'
-                                        : 'Usa un entero o hasta cuatro decimales si la cantidad lo requiere.'
-                                "
-                                @input="
-                                    field.key === 'sale_price' &&
-                                    (salePriceEdited = true)
-                                "
+                                :placeholder="field.key === 'sale_price' ? '0.00' : '0'"
+                                :title="field.key === 'sale_price'
+                                    ? t('inventory.products.decimalPrice')
+                                    : t('inventory.products.decimalQuantity')"
+                                @input="field.key === 'sale_price' && (salePriceEdited = true)"
                                 @blur="normalizeNumericField(field.key)"
                             />
 
@@ -731,21 +687,19 @@ async function performStatusChange(
                                 v-if="field.key === 'reorder_point'"
                                 class="hint"
                             >
-                                Nivel de existencia a partir del cual conviene
-                                solicitar más material. No genera una compra
-                                automática.
+                                {{t('inventory.products.reorderHelp')}}
                             </small>
 
                             <small
                                 v-if="field.key === 'maximum_stock'"
                                 class="hint"
                             >
-                                Déjalo vacío si no deseas definir un máximo.
+                                {{t('inventory.products.maximumHelp')}}
                             </small>
                         </label>
 
                         <label class="full-width">
-                            Descripción
+                            {{t('common.description')}}
                             <textarea
                                 v-model="form.description"
                                 rows="3"
@@ -755,16 +709,13 @@ async function performStatusChange(
                     </div>
 
                     <p class="hint form-help">
-                        Los niveles de inventario se expresan en la unidad de
-                        control. Escribe los importes sin separadores de miles,
-                        por ejemplo 2500.00. Guardar el producto no modifica las
-                        existencias disponibles.
+                        {{t('inventory.products.formHelp')}}
                     </p>
 
                     <div v-if="!isEditing" class="checks">
                         <label>
                             <input v-model="form.track_stock" type="checkbox" />
-                            Controlar existencias
+                            {{t('inventory.products.trackStock')}}
                         </label>
 
                         <label>
@@ -773,7 +724,7 @@ async function performStatusChange(
                                 type="checkbox"
                                 :disabled="!form.track_stock"
                             />
-                            Controlar lotes
+                            {{t('inventory.products.trackLots')}}
                         </label>
 
                         <label>
@@ -782,7 +733,7 @@ async function performStatusChange(
                                 type="checkbox"
                                 :disabled="!form.track_stock"
                             />
-                            Controlar retazos
+                            {{t('inventory.products.trackRemnants')}}
                         </label>
 
                         <label>
@@ -791,18 +742,14 @@ async function performStatusChange(
                                 type="checkbox"
                                 :disabled="!form.track_stock"
                             />
-                            Permitir existencias negativas
+                            {{t('inventory.products.allowNegative')}}
                         </label>
                     </div>
 
                     <div class="actions">
                         <Button
                             type="submit"
-                            :label="
-                                isEditing
-                                    ? 'Guardar cambios'
-                                    : 'Guardar producto'
-                            "
+                            :label="isEditing ? t('inventory.products.saveChanges') : t('inventory.products.saveProduct')"
                             icon="pi pi-check"
                             :loading="saving"
                             :disabled="busy || !canSubmit"
@@ -810,7 +757,7 @@ async function performStatusChange(
 
                         <Button
                             type="button"
-                            label="Cancelar"
+                            :label="t('common.cancel')"
                             severity="secondary"
                             outlined
                             :disabled="busy"
@@ -823,7 +770,7 @@ async function performStatusChange(
 
         <section class="panel" :aria-busy="loading">
             <form class="search-bar" @submit.prevent="searchProducts">
-                <label for="product-search">Buscar por código o nombre</label>
+                <label for="product-search">{{t('inventory.products.search')}}</label>
 
                 <div class="search-controls">
                     <input
@@ -831,13 +778,13 @@ async function performStatusChange(
                         v-model="search"
                         type="search"
                         maxlength="180"
-                        placeholder="Ejemplo: perfil natural"
+                        :placeholder="t('inventory.products.searchExample')"
                         :disabled="busy"
                     />
 
                     <Button
                         type="submit"
-                        label="Buscar"
+                        :label="t('inventory.products.searchButton')"
                         icon="pi pi-search"
                         :loading="loading"
                         :disabled="busy"
@@ -846,7 +793,7 @@ async function performStatusChange(
                     <Button
                         v-if="search || filters.search"
                         type="button"
-                        label="Ver todos"
+                        :label="t('inventory.products.viewAll')"
                         severity="secondary"
                         outlined
                         :disabled="busy"
@@ -858,19 +805,19 @@ async function performStatusChange(
             <div class="table-scroll">
                 <table>
                     <caption class="table-caption">
-                        Productos registrados
+                        {{t('inventory.products.registered')}}
                     </caption>
 
                     <thead>
                         <tr>
-                            <th scope="col">Código</th>
-                            <th scope="col">Producto</th>
-                            <th scope="col">Categoría</th>
-                            <th scope="col">Unidad de control</th>
-                            <th scope="col">Existencia total</th>
-                            <th scope="col">Precio de venta</th>
-                            <th scope="col">Estado</th>
-                            <th scope="col">Acciones</th>
+                            <th scope="col">{{t('common.code')}}</th>
+                            <th scope="col">{{t('common.product')}}</th>
+                            <th scope="col">{{t('inventory.products.category')}}</th>
+                            <th scope="col">{{t('inventory.products.controlUnit')}}</th>
+                            <th scope="col">{{t('inventory.products.totalStock')}}</th>
+                            <th scope="col">{{t('inventory.products.salePriceColumn')}}</th>
+                            <th scope="col">{{t('common.status')}}</th>
+                            <th scope="col">{{t('common.actions')}}</th>
                         </tr>
                     </thead>
 
@@ -878,14 +825,10 @@ async function performStatusChange(
                         <tr v-for="product in products.data" :key="product.id">
                             <td class="sku">{{ product.sku }}</td>
                             <td>{{ product.name }}</td>
-                            <td>{{ product.category_name ?? "—" }}</td>
-                            <td>{{ product.unit_symbol ?? "—" }}</td>
+                            <td>{{ product.category_name ?? '—' }}</td>
+                            <td>{{ product.unit_symbol ?? '—' }}</td>
                             <td class="number">
-                                {{
-                                    formatQuantity(
-                                        product.stock_quantity ?? null,
-                                    ) || "—"
-                                }}
+                                {{ formatQuantity(product.stock_quantity ?? null) || '—' }}
                             </td>
 
                             <td class="number">
@@ -897,7 +840,7 @@ async function performStatusChange(
                                     class="badge"
                                     :class="{ inactive: !product.active }"
                                 >
-                                    {{ product.active ? "Activo" : "Inactivo" }}
+                                    {{ product.active ? t('common.active') : t('common.inactive') }}
                                 </span>
                             </td>
 
@@ -906,10 +849,10 @@ async function performStatusChange(
                                     <Button
                                         v-if="canUpdate"
                                         type="button"
-                                        label="Editar"
+                                        :label="t('inventory.products.edit')"
                                         icon="pi pi-pencil"
                                         severity="info"
-                                        :aria-label="`Editar ${product.sku}`"
+                                        :aria-label="`${t('inventory.products.edit')} ${product.sku}`"
                                         :disabled="busy || showEditor"
                                         @click="openEdit(product)"
                                     />
@@ -917,22 +860,10 @@ async function performStatusChange(
                                     <Button
                                         v-if="canChangeStatus"
                                         type="button"
-                                        :label="
-                                            product.active
-                                                ? 'Desactivar'
-                                                : 'Activar'
-                                        "
-                                        :icon="
-                                            product.active
-                                                ? 'pi pi-ban'
-                                                : 'pi pi-check'
-                                        "
-                                        :severity="
-                                            product.active
-                                                ? 'danger'
-                                                : 'success'
-                                        "
-                                        :aria-label="`${product.active ? 'Desactivar' : 'Activar'} ${product.sku}`"
+                                        :label="product.active ? t('common.deactivate') : t('common.activate')"
+                                        :icon="product.active ? 'pi pi-ban' : 'pi pi-check'"
+                                        :severity="product.active ? 'danger' : 'success'"
+                                        :aria-label="`${product.active ? t('common.deactivate') : t('common.activate')} ${product.sku}`"
                                         :loading="changingStatus === product.id"
                                         :disabled="busy || showEditor"
                                         @click="changeStatus(product)"
@@ -942,7 +873,7 @@ async function performStatusChange(
                                         v-if="!canUpdate && !canChangeStatus"
                                         class="hint"
                                     >
-                                        Solo consulta
+                                        {{t('inventory.products.viewOnly')}}
                                     </span>
                                 </div>
                             </td>
@@ -950,17 +881,17 @@ async function performStatusChange(
 
                         <tr v-if="products.data.length === 0">
                             <td colspan="8" class="empty">
-                                No hay productos que coincidan con la búsqueda.
+                                {{t('inventory.products.empty')}}
                             </td>
                         </tr>
                     </tbody>
                 </table>
             </div>
 
-            <nav class="pagination" aria-label="Paginación de productos">
+            <nav class="pagination" :aria-label="t('inventory.history.pagination')">
                 <Button
                     type="button"
-                    label="Anterior"
+                    :label="t('common.previous')"
                     severity="secondary"
                     outlined
                     :disabled="products.current_page <= 1 || busy"
@@ -968,13 +899,12 @@ async function performStatusChange(
                 />
 
                 <span>
-                    Página {{ products.current_page }} de
-                    {{ products.last_page }}
+                    {{t('common.page',{current:products.current_page,last:products.last_page})}}
                 </span>
 
                 <Button
                     type="button"
-                    label="Siguiente"
+                    :label="t('common.next')"
                     severity="secondary"
                     outlined
                     :disabled="
@@ -992,12 +922,7 @@ async function performStatusChange(
     max-width: 1440px;
     margin: 0 auto;
     padding: clamp(1rem, 3vw, 2.5rem);
-    font-family:
-        system-ui,
-        -apple-system,
-        BlinkMacSystemFont,
-        "Segoe UI",
-        sans-serif;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
 .header,
@@ -1070,7 +995,7 @@ fieldset {
     font-weight: 600;
 }
 
-input:not([type="checkbox"]),
+input:not([type='checkbox']),
 select,
 textarea {
     box-sizing: border-box;
