@@ -127,7 +127,7 @@ final class InventoryHistoryController extends Controller
             ];
             $rules['reason'] = [
                 'nullable',
-                Rule::in(['purchase', 'initial_balance']),
+                Rule::in(['purchase', 'initial_balance', 'sale', 'work_order', 'production', 'internal_consumption', 'waste', 'adjustment', 'transfer']),
             ];
             $rules['supplier_id'] = [
                 'nullable',

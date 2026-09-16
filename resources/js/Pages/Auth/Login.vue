@@ -1,18 +1,18 @@
 <script setup lang="ts">
-import { Head, useForm } from '@inertiajs/vue3';
-import Button from 'primevue/button';
-import InputText from 'primevue/inputtext';
+import { Head, useForm } from "@inertiajs/vue3";
+import Button from "primevue/button";
+import InputText from "primevue/inputtext";
 
 const form = useForm({
-    email: '',
-    password: '',
+    email: "",
+    password: "",
 });
 
 function submit(): void {
     form.clearErrors();
 
-    form.post('/login', {
-        onFinish: () => form.reset('password'),
+    form.post("/login", {
+        onFinish: () => form.reset("password"),
     });
 }
 </script>
@@ -58,7 +58,9 @@ function submit(): void {
                         autofocus
                         :invalid="Boolean(form.errors.email)"
                         :aria-invalid="Boolean(form.errors.email)"
-                        :aria-describedby="form.errors.email ? 'email-error' : undefined"
+                        :aria-describedby="
+                            form.errors.email ? 'email-error' : undefined
+                        "
                     />
 
                     <small
@@ -82,7 +84,9 @@ function submit(): void {
                         required
                         :invalid="Boolean(form.errors.password)"
                         :aria-invalid="Boolean(form.errors.password)"
-                        :aria-describedby="form.errors.password ? 'password-error' : undefined"
+                        :aria-describedby="
+                            form.errors.password ? 'password-error' : undefined
+                        "
                     />
 
                     <small

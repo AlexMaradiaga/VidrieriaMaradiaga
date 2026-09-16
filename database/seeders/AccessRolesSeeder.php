@@ -28,6 +28,19 @@ final class AccessRolesSeeder extends Seeder
                 'inventory.entries.post',
                 'inventory.entries.view',
                 'inventory.kardex.view',
+                'inventory.exits.create',
+                'inventory.exits.post',
+                'inventory.transfers.create',
+                'inventory.counts.view',
+                'inventory.counts.create',
+                'inventory.alerts.view',
+                'inventory.remnants.view',
+                'inventory.remnants.manage',
+                'inventory.kits.view',
+                'inventory.kits.manage',
+                'inventory.catalogs.view',
+                'inventory.catalogs.manage',
+                'inventory.cuts.use',
             ];
 
             foreach ($permissions as $permission) {
@@ -45,10 +58,24 @@ final class AccessRolesSeeder extends Seeder
                     'inventory.entries.post',
                     'inventory.entries.view',
                     'inventory.kardex.view',
+                    'inventory.exits.create',
+                    'inventory.exits.post',
+                    'inventory.transfers.create',
+                    'inventory.counts.view',
+                    'inventory.counts.create',
+                    'inventory.alerts.view',
+                    'inventory.remnants.view',
+                    'inventory.remnants.manage',
+                    'inventory.kits.view',
+                    'inventory.catalogs.view',
+                    'inventory.cuts.use',
                 ],
 
                 'Ventas' => [
                     'inventory.products.view',
+                    'inventory.exits.create',
+                    'inventory.exits.post',
+                    'inventory.kits.view',
                 ],
             ];
 

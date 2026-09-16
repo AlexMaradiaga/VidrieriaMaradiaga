@@ -19,6 +19,10 @@ use App\Modules\Inventory\Application\Ports\InventoryDashboardQueryInterface;
 use App\Modules\Inventory\Infrastructure\Persistence\Queries\SqlInventoryDashboardQuery;
 use App\Modules\Inventory\Application\Ports\InventoryMovementQueryInterface;
 use App\Modules\Inventory\Infrastructure\Persistence\Queries\SqlInventoryMovementQuery;
+use App\Modules\Inventory\Application\Ports\InventoryOperationsInterface;
+use App\Modules\Inventory\Application\Ports\InventoryOperationsQueryInterface;
+use App\Modules\Inventory\Infrastructure\Persistence\Queries\SqlInventoryOperationsQuery;
+use App\Modules\Inventory\Infrastructure\Persistence\Services\SqlInventoryOperations;
 
 final class InventoryServiceProvider extends ServiceProvider
 {
@@ -52,6 +56,14 @@ final class InventoryServiceProvider extends ServiceProvider
         $this->app->bind(
             InventoryMovementQueryInterface::class,
             SqlInventoryMovementQuery::class,
+        );
+        $this->app->bind(
+            InventoryOperationsInterface::class,
+            SqlInventoryOperations::class,
+        );
+        $this->app->bind(
+            InventoryOperationsQueryInterface::class,
+            SqlInventoryOperationsQuery::class,
         );
     }
 }

@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { computed, reactive, watch } from 'vue';
-import { Head, Link, router, usePage } from '@inertiajs/vue3';
-import Button from 'primevue/button';
-import Tag from 'primevue/tag';
+import { computed, reactive, watch } from "vue";
+import { Head, Link, router, usePage } from "@inertiajs/vue3";
+import Button from "primevue/button";
+import Tag from "primevue/tag";
 
 interface Option {
     id: number;
@@ -36,6 +36,7 @@ interface Filters {
 
 interface EntryRow {
     id: number;
+    direction: string;
     document_date: string;
     posted_at: string | null;
     reason: string;
@@ -69,7 +70,7 @@ interface EntryLine {
 }
 
 interface EntryDetail {
-    header: Omit<EntryRow, 'total_cost' | 'line_count'> & {
+    header: Omit<EntryRow, "total_cost" | "line_count"> & {
         notes: string | null;
         created_at: string;
         poster: string | null;
@@ -118,7 +119,7 @@ interface Ledger {
 }
 
 const props = defineProps<{
-    mode: 'entries' | 'detail' | 'kardex';
+    mode: "entries" | "detail" | "kardex";
     filters: Filters | null;
     options: Options | null;
     entries: Pagination<EntryRow> | null;
@@ -137,9 +138,9 @@ const emptyFilters = (): Filters => ({
     product_id: null,
     location_id: null,
     supplier_id: null,
-    search: '',
-    status: '',
-    reason: '',
+    search: "",
+    status: "",
+    reason: "",
     page: 1,
 });
 
@@ -156,31 +157,30 @@ watch(
 );
 
 const title = computed(() => {
-    if (props.mode === 'detail') {
-        return `Entrada #${props.entry?.header.id ?? ''}`;
+    if (props.mode === "detail") {
+        return `Movimiento #${props.entry?.header.id ?? ""}`;
     }
 
-    return props.mode === 'kardex'
-        ? 'Kardex por producto'
-        : 'Historial de entradas';
+    return props.mode === "kardex"
+        ? "Kardex por producto"
+        : "Historial de movimientos";
 });
 
 const listPath = computed(() =>
-    props.mode === 'kardex'
-        ? '/inventory/kardex'
-        : '/inventory/entries',
+    props.mode === "kardex" ? "/inventory/kardex" : "/inventory/entries",
 );
 
 const pagination = computed(() => {
-    if (props.mode === 'detail') return props.entry?.lines ?? null;
-    if (props.mode === 'kardex') return props.ledger?.rows ?? null;
+    if (props.mode === "detail") return props.entry?.lines ?? null;
+    if (props.mode === "kardex") return props.ledger?.rows ?? null;
     return props.entries;
 });
 
-const locationName = computed(() =>
-    props.options?.locations.find(
-        (location) => location.id === props.filters?.location_id,
-    )?.name ?? 'Todas las ubicaciones',
+const locationName = computed(
+    () =>
+        props.options?.locations.find(
+            (location) => location.id === props.filters?.location_id,
+        )?.name ?? "Todas las ubicaciones",
 );
 
 function allowed(permission: string): boolean {
@@ -188,71 +188,64 @@ function allowed(permission: string): boolean {
 }
 
 function money(value: string | null): string {
-    if (value === null) return '—';
+    if (value === null) return "—";
 
     const match = /^(-?)(\d+)(?:\.(\d+))?$/.exec(value);
 
-    if (!match) return '—';
+    if (!match) return "—";
 
-    const fraction = (match[3] ?? '').padEnd(3, '0');
+    const fraction = (match[3] ?? "").padEnd(3, "0");
 
-    let cents =
-        BigInt(match[2]!) * 100n +
-        BigInt(fraction.slice(0, 2));
+    let cents = BigInt(match[2]!) * 100n + BigInt(fraction.slice(0, 2));
 
     if (Number(fraction[2]) >= 5) cents += 1n;
 
     const whole = (cents / 100n)
         .toString()
-        .replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+        .replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 
-    const decimals = (cents % 100n)
-        .toString()
-        .padStart(2, '0');
+    const decimals = (cents % 100n).toString().padStart(2, "0");
 
-    return `${match[1] && cents !== 0n ? '-' : ''}${whole}.${decimals}`;
+    return `${match[1] && cents !== 0n ? "-" : ""}${whole}.${decimals}`;
 }
 
 function quantity(value: string | null): string {
-    if (value === null) return '—';
+    if (value === null) return "—";
 
     const match = /^(-?)(\d+)(?:\.(\d+))?$/.exec(value);
 
-    if (!match) return '—';
+    if (!match) return "—";
 
-    const whole = match[2]!
-        .replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    const whole = match[2]!.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 
-    const fraction = (match[3] ?? '').replace(/0+$/, '');
+    const fraction = (match[3] ?? "").replace(/0+$/, "");
 
-    return `${match[1]}${whole}${fraction ? `.${fraction}` : ''}`;
+    return `${match[1]}${whole}${fraction ? `.${fraction}` : ""}`;
 }
 
 function date(value: string | null, withTime = false): string {
-    if (!value) return '—';
+    if (!value) return "—";
 
     const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(value);
 
     if (!match) return value;
 
     const time =
-        withTime && value.length >= 19
-            ? ` ${value.slice(11, 19)}`
-            : '';
+        withTime && value.length >= 19 ? ` ${value.slice(11, 19)}` : "";
 
     return `${match[3]}/${match[2]}/${match[1]}${time}`;
 }
 
 function reason(value: string): string {
     const labels: Record<string, string> = {
-        purchase: 'Compra',
-        initial_balance: 'Saldo inicial',
-        sale: 'Venta',
-        work_order: 'Orden de trabajo',
-        production: 'Producción',
-        internal_consumption: 'Consumo interno',
-        waste: 'Merma',
-        adjustment: 'Ajuste',
+        purchase: "Compra",
+        initial_balance: "Saldo inicial",
+        sale: "Venta",
+        work_order: "Orden de trabajo",
+        production: "Producción",
+        internal_consumption: "Consumo interno",
+        waste: "Merma",
+        adjustment: "Ajuste",
     };
 
     return labels[value] ?? value;
@@ -260,12 +253,16 @@ function reason(value: string): string {
 
 function status(value: string): string {
     const labels: Record<string, string> = {
-        draft: 'Borrador',
-        posted: 'Confirmada',
-        cancelled: 'Cancelada',
+        draft: "Borrador",
+        posted: "Confirmada",
+        cancelled: "Cancelada",
     };
 
     return labels[value] ?? value;
+}
+
+function direction(value: string): string {
+    return value === "inbound" ? "Entrada" : "Salida";
 }
 
 function navigate(filters: Filters, targetPage = 1): void {
@@ -275,10 +272,10 @@ function navigate(filters: Filters, targetPage = 1): void {
 
     for (const [key, value] of Object.entries(filters)) {
         if (
-            key !== 'page' &&
+            key !== "page" &&
             value !== null &&
             value !== undefined &&
-            value !== ''
+            value !== ""
         ) {
             data[key] = value;
         }
@@ -295,7 +292,7 @@ function search(): void {
 }
 
 function changePage(targetPage: number): void {
-    if (props.mode === 'detail' && props.entry) {
+    if (props.mode === "detail" && props.entry) {
         router.get(
             `/inventory/entries/${props.entry.header.id}`,
             { page: targetPage },
@@ -328,7 +325,7 @@ function changePage(targetPage: number): void {
                 v-if="allowed('inventory.entries.view')"
                 href="/inventory/entries"
             >
-                Historial de entradas
+                Historial de movimientos
             </Link>
 
             <Link
@@ -358,9 +355,9 @@ function changePage(targetPage: number): void {
         </p>
 
         <p v-if="mode === 'kardex'" class="hint">
-            Movimientos confirmados en orden de confirmación.
-            Las fechas del filtro corresponden a cuándo se afectó el
-            inventario; la fecha del documento se muestra por separado.
+            Movimientos confirmados en orden de confirmación. Las fechas del
+            filtro corresponden a cuándo se afectó el inventario; la fecha del
+            documento se muestra por separado.
         </p>
 
         <form
@@ -379,20 +376,17 @@ function changePage(targetPage: number): void {
                 </label>
 
                 <label>
-                    {{ mode === 'kardex' ? 'Producto *' : 'Producto' }}
+                    {{ mode === "kardex" ? "Producto *" : "Producto" }}
 
                     <select
                         v-model="form.product_id"
                         :required="mode === 'kardex'"
                     >
-                        <option
-                            :value="null"
-                            :disabled="mode === 'kardex'"
-                        >
+                        <option :value="null" :disabled="mode === 'kardex'">
                             {{
-                                mode === 'kardex'
-                                    ? 'Seleccioná un producto'
-                                    : 'Todos'
+                                mode === "kardex"
+                                    ? "Seleccioná un producto"
+                                    : "Todos"
                             }}
                         </option>
 
@@ -410,9 +404,7 @@ function changePage(targetPage: number): void {
                     Ubicación
 
                     <select v-model="form.location_id">
-                        <option :value="null">
-                            Todas las ubicaciones
-                        </option>
+                        <option :value="null">Todas las ubicaciones</option>
 
                         <option
                             v-for="location in options.locations"
@@ -426,18 +418,18 @@ function changePage(targetPage: number): void {
 
                 <label>
                     {{
-                        mode === 'kardex'
-                            ? 'Desde la confirmación'
-                            : 'Desde el documento'
+                        mode === "kardex"
+                            ? "Desde la confirmación"
+                            : "Desde el documento"
                     }}
                     <input v-model="form.from" type="date" />
                 </label>
 
                 <label>
                     {{
-                        mode === 'kardex'
-                            ? 'Hasta la confirmación'
-                            : 'Hasta el documento'
+                        mode === "kardex"
+                            ? "Hasta la confirmación"
+                            : "Hasta el documento"
                     }}
                     <input
                         v-model="form.to"
@@ -483,6 +475,15 @@ function changePage(targetPage: number): void {
                             <option value="initial_balance">
                                 Saldo inicial
                             </option>
+                            <option value="sale">Venta</option>
+                            <option value="work_order">Orden de trabajo</option>
+                            <option value="production">Producción</option>
+                            <option value="internal_consumption">
+                                Consumo interno
+                            </option>
+                            <option value="waste">Merma</option>
+                            <option value="adjustment">Ajuste</option>
+                            <option value="transfer">Traslado</option>
                         </select>
                     </label>
                 </template>
@@ -493,47 +494,37 @@ function changePage(targetPage: number): void {
                 class="errors"
                 role="alert"
             >
-                <li
-                    v-for="(error, key) in page.props.errors"
-                    :key="key"
-                >
+                <li v-for="(error, key) in page.props.errors" :key="key">
                     {{ error }}
                 </li>
             </ul>
 
             <div class="actions">
-                <Button
-                    type="submit"
-                    label="Consultar"
-                    icon="pi pi-search"
-                />
+                <Button type="submit" label="Consultar" icon="pi pi-search" />
 
                 <Link :href="listPath">Limpiar filtros</Link>
             </div>
         </form>
 
-        <!-- Historial de entradas -->
-        <section
-            v-if="mode === 'entries' && entries"
-            class="panel"
-        >
-            <h2>{{ entries.total }} entradas encontradas</h2>
+        <!-- Historial de movimientos -->
+        <section v-if="mode === 'entries' && entries" class="panel">
+            <h2>{{ entries.total }} movimientos encontrados</h2>
 
             <p class="hint">
-                El importe corresponde al documento completo, incluso
-                al filtrar por un producto o ubicación.
+                El importe corresponde al documento completo, incluso al filtrar
+                por un producto o ubicación.
             </p>
 
             <div
                 class="table-wrap"
                 tabindex="0"
                 role="region"
-                aria-label="Historial de entradas"
+                aria-label="Historial de movimientos"
             >
                 <table>
                     <thead>
                         <tr>
-                            <th>Entrada</th>
+                            <th>Movimiento</th>
                             <th>Fecha documento</th>
                             <th>Motivo / referencia</th>
                             <th>Proveedor</th>
@@ -545,13 +536,13 @@ function changePage(targetPage: number): void {
                     </thead>
 
                     <tbody>
-                        <tr
-                            v-for="item in entries.data"
-                            :key="item.id"
-                        >
+                        <tr v-for="item in entries.data" :key="item.id">
                             <td>
                                 #{{ item.id }}
-                                <small>{{ item.line_count }} líneas</small>
+                                <small
+                                    >{{ direction(item.direction) }} ·
+                                    {{ item.line_count }} líneas</small
+                                >
                             </td>
 
                             <td>{{ date(item.document_date) }}</td>
@@ -559,11 +550,11 @@ function changePage(targetPage: number): void {
                             <td>
                                 {{ reason(item.reason) }}
                                 <small>
-                                    {{ item.reference ?? 'Sin referencia' }}
+                                    {{ item.reference ?? "Sin referencia" }}
                                 </small>
                             </td>
 
-                            <td>{{ item.supplier ?? 'No aplica' }}</td>
+                            <td>{{ item.supplier ?? "No aplica" }}</td>
 
                             <td>
                                 <Tag
@@ -582,12 +573,10 @@ function changePage(targetPage: number): void {
                                 {{ money(item.total_cost) }}
                             </td>
 
-                            <td>{{ item.creator ?? '—' }}</td>
+                            <td>{{ item.creator ?? "—" }}</td>
 
                             <td>
-                                <Link
-                                    :href="`/inventory/entries/${item.id}`"
-                                >
+                                <Link :href="`/inventory/entries/${item.id}`">
                                     Ver detalle
                                 </Link>
                             </td>
@@ -595,7 +584,7 @@ function changePage(targetPage: number): void {
 
                         <tr v-if="entries.data.length === 0">
                             <td colspan="8">
-                                No hay entradas en esta página con los
+                                No hay movimientos en esta página con los
                                 filtros aplicados.
                             </td>
                         </tr>
@@ -604,7 +593,7 @@ function changePage(targetPage: number): void {
             </div>
         </section>
 
-        <!-- Detalle de una entrada -->
+        <!-- Detalle de un movimiento -->
         <template v-if="mode === 'detail' && entry">
             <Tag
                 :value="status(entry.header.status)"
@@ -632,13 +621,13 @@ function changePage(targetPage: number): void {
                     <div>
                         <dt>Referencia</dt>
                         <dd>
-                            {{ entry.header.reference ?? 'Sin referencia' }}
+                            {{ entry.header.reference ?? "Sin referencia" }}
                         </dd>
                     </div>
 
                     <div>
                         <dt>Proveedor</dt>
-                        <dd>{{ entry.header.supplier ?? 'No aplica' }}</dd>
+                        <dd>{{ entry.header.supplier ?? "No aplica" }}</dd>
                     </div>
 
                     <div>
@@ -654,7 +643,7 @@ function changePage(targetPage: number): void {
                     <div>
                         <dt>Confirmada por</dt>
                         <dd>
-                            {{ entry.header.poster ?? '—' }}
+                            {{ entry.header.poster ?? "—" }}
                             <small>
                                 {{ date(entry.header.posted_at, true) }}
                             </small>
@@ -687,11 +676,10 @@ function changePage(targetPage: number): void {
                 <h2>Materiales registrados</h2>
 
                 <p class="hint">
-                    Cantidad y factor son los guardados al registrar
-                    la entrada. El saldo posterior pertenece a la
-                    ubicación; el costo promedio posterior es global
-                    por producto. Los nombres corresponden al catálogo
-                    actual.
+                    Cantidad y factor son los guardados al registrar la entrada.
+                    El saldo posterior pertenece a la ubicación; el costo
+                    promedio posterior es global por producto. Los nombres
+                    corresponden al catálogo actual.
                 </p>
 
                 <div
@@ -721,10 +709,7 @@ function changePage(targetPage: number): void {
                         </thead>
 
                         <tbody>
-                            <tr
-                                v-for="line in entry.lines.data"
-                                :key="line.id"
-                            >
+                            <tr v-for="line in entry.lines.data" :key="line.id">
                                 <td>
                                     {{ line.sku }} — {{ line.product }}
 
@@ -738,10 +723,7 @@ function changePage(targetPage: number): void {
                                         </Link>
                                     </small>
 
-                                    <small
-                                        v-if="line.notes"
-                                        class="notes"
-                                    >
+                                    <small v-if="line.notes" class="notes">
                                         {{ line.notes }}
                                     </small>
                                 </td>
@@ -796,8 +778,8 @@ function changePage(targetPage: number): void {
                 </div>
 
                 <p class="hint">
-                    Importes mostrados con dos decimales. Los cálculos
-                    conservan la precisión registrada.
+                    Importes mostrados con dos decimales. Los cálculos conservan
+                    la precisión registrada.
                 </p>
             </section>
         </template>
@@ -815,8 +797,8 @@ function changePage(targetPage: number): void {
                 </h2>
 
                 <p class="hint">
-                    Unidad de control: {{ ledger.product.unit }}.
-                    Alcance aplicado: {{ locationName }}.
+                    Unidad de control: {{ ledger.product.unit }}. Alcance
+                    aplicado: {{ locationName }}.
                 </p>
 
                 <div class="stats">
@@ -852,8 +834,8 @@ function changePage(targetPage: number): void {
                 <p class="hint">
                     Existencia actual del alcance:
                     {{ quantity(ledger.summary.current) }}
-                    {{ ledger.product.unit }}.
-                    Puede diferir del cierre si filtraste fechas anteriores.
+                    {{ ledger.product.unit }}. Puede diferir del cierre si
+                    filtraste fechas anteriores.
                 </p>
 
                 <p
@@ -861,19 +843,18 @@ function changePage(targetPage: number): void {
                     class="warning"
                     role="status"
                 >
-                    La existencia actual difiere de los movimientos
-                    confirmados por
+                    La existencia actual difiere de los movimientos confirmados
+                    por
                     {{ quantity(ledger.summary.difference) }}
-                    {{ ledger.product.unit }}.
-                    Actualizá la consulta; si persiste, revisá los
-                    registros antes de ajustar inventario.
+                    {{ ledger.product.unit }}. Actualizá la consulta; si
+                    persiste, revisá los registros antes de ajustar inventario.
                 </p>
 
                 <section class="panel">
                     <p class="hint">
-                        El saldo acumulado incluye movimientos anteriores
-                        al filtro y a la página. El costo promedio mostrado
-                        es global y corresponde al momento del movimiento.
+                        El saldo acumulado incluye movimientos anteriores al
+                        filtro y a la página. El costo promedio mostrado es
+                        global y corresponde al momento del movimiento.
                     </p>
 
                     <div
@@ -909,7 +890,10 @@ function changePage(targetPage: number): void {
                                     <td>
                                         {{ date(row.document_date) }}
                                         <small>
-                                            {{ row.reference ?? 'Sin referencia' }}
+                                            {{
+                                                row.reference ??
+                                                "Sin referencia"
+                                            }}
                                         </small>
                                     </td>
 
@@ -917,7 +901,9 @@ function changePage(targetPage: number): void {
                                         <Link
                                             v-if="
                                                 row.direction === 'inbound' &&
-                                                allowed('inventory.entries.view')
+                                                allowed(
+                                                    'inventory.entries.view',
+                                                )
                                             "
                                             :href="`/inventory/entries/${row.movement_id}`"
                                         >
@@ -938,22 +924,26 @@ function changePage(targetPage: number): void {
 
                                     <td class="number">
                                         {{
-                                            row.direction === 'inbound'
+                                            row.direction === "inbound"
                                                 ? quantity(row.base_quantity)
-                                                : '—'
+                                                : "—"
                                         }}
-                                        <small v-if="row.direction === 'inbound'">
+                                        <small
+                                            v-if="row.direction === 'inbound'"
+                                        >
                                             {{ row.unit }}
                                         </small>
                                     </td>
 
                                     <td class="number">
                                         {{
-                                            row.direction === 'outbound'
+                                            row.direction === "outbound"
                                                 ? quantity(row.base_quantity)
-                                                : '—'
+                                                : "—"
                                         }}
-                                        <small v-if="row.direction === 'outbound'">
+                                        <small
+                                            v-if="row.direction === 'outbound'"
+                                        >
                                             {{ row.unit }}
                                         </small>
                                     </td>
@@ -973,9 +963,8 @@ function changePage(targetPage: number): void {
 
                                 <tr v-if="ledger.rows.data.length === 0">
                                     <td colspan="9">
-                                        No hay movimientos en esta página
-                                        del período. El saldo anterior
-                                        se conserva.
+                                        No hay movimientos en esta página del
+                                        período. El saldo anterior se conserva.
                                     </td>
                                 </tr>
                             </tbody>
@@ -985,11 +974,7 @@ function changePage(targetPage: number): void {
             </template>
         </template>
 
-        <nav
-            v-if="pagination"
-            class="pagination"
-            aria-label="Paginación"
-        >
+        <nav v-if="pagination" class="pagination" aria-label="Paginación">
             <Button
                 label="Anterior"
                 icon="pi pi-angle-left"
@@ -999,9 +984,8 @@ function changePage(targetPage: number): void {
             />
 
             <span>
-                Página {{ pagination.current_page }}
-                de {{ pagination.last_page }} ·
-                {{ pagination.total }} registros
+                Página {{ pagination.current_page }} de
+                {{ pagination.last_page }} · {{ pagination.total }} registros
             </span>
 
             <Button

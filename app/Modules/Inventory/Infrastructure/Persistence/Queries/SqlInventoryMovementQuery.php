@@ -79,8 +79,7 @@ final class SqlInventoryMovementQuery implements InventoryMovementQueryInterface
                 '=',
                 'm.supplier_id'
             )
-            ->leftJoin('users as u', 'u.id', '=', 'm.created_by')
-            ->where('m.direction', 'inbound');
+            ->leftJoin('users as u', 'u.id', '=', 'm.created_by');
 
         foreach (['status', 'reason', 'supplier_id'] as $key) {
             if (! empty($filters[$key])) {
@@ -148,6 +147,7 @@ final class SqlInventoryMovementQuery implements InventoryMovementQueryInterface
         $query
             ->select([
                 'm.id',
+                'm.direction',
                 'm.document_date',
                 'm.reference',
                 'm.reason',
@@ -179,9 +179,9 @@ final class SqlInventoryMovementQuery implements InventoryMovementQueryInterface
             ->leftJoin('users as p', 'p.id', '=', 'm.posted_by')
             ->leftJoin('users as x', 'x.id', '=', 'm.cancelled_by')
             ->where('m.id', $movementId)
-            ->where('m.direction', 'inbound')
             ->first([
                 'm.id',
+                'm.direction',
                 'm.document_date',
                 'm.reference',
                 'm.reason',

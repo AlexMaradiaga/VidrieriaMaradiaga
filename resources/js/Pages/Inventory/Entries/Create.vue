@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref, watch } from 'vue';
-import { Head, Link } from '@inertiajs/vue3';
-import axios from 'axios';
-import Button from 'primevue/button';
-import Toast from 'primevue/toast';
-import ConfirmDialog from 'primevue/confirmdialog';
-import { useToast } from 'primevue/usetoast';
-import { useConfirm } from 'primevue/useconfirm';
+import { computed, onMounted, reactive, ref, watch } from "vue";
+import { Head, Link } from "@inertiajs/vue3";
+import axios from "axios";
+import Button from "primevue/button";
+import Toast from "primevue/toast";
+import ConfirmDialog from "primevue/confirmdialog";
+import { useToast } from "primevue/usetoast";
+import { useConfirm } from "primevue/useconfirm";
 
 const toast = useToast();
 const confirm = useConfirm();
@@ -61,12 +61,12 @@ const props = defineProps<{
     today: string;
 }>();
 
-const storageKey = 'vidrieria.inventory.pending-entry';
+const storageKey = "vidrieria.inventory.pending-entry";
 
 const saving = ref(false);
 const ready = ref(false);
-const failure = ref('');
-const success = ref('');
+const failure = ref("");
+const success = ref("");
 const movementId = ref<number | null>(null);
 const errors = ref<Record<string, string[]>>({});
 const pending = ref<EntryPayload | null>(null);
@@ -74,9 +74,9 @@ const pending = ref<EntryPayload | null>(null);
 watch(success, (message) => {
     if (!message) return;
     toast.add({
-        group: 'inventory-entry',
-        severity: 'success',
-        summary: 'Entrada registrada',
+        group: "inventory-entry",
+        severity: "success",
+        summary: "Entrada registrada",
         detail: message,
         life: 6000,
     });
@@ -84,26 +84,26 @@ watch(success, (message) => {
 
 watch(failure, (message) => {
     if (!message) return;
-    const details = Object.values(errors.value).flat().join(' ');
+    const details = Object.values(errors.value).flat().join(" ");
     toast.add({
-        group: 'inventory-entry',
-        severity: 'error',
-        summary: 'Revisá la entrada',
+        group: "inventory-entry",
+        severity: "error",
+        summary: "Revisá la entrada",
         detail: details ? `${message} ${details}` : message,
     });
 });
 
 const form = reactive({
-    product_id: '' as number | '',
-    location_id: '' as number | '',
-    unit_id: '' as number | '',
-    supplier_id: '' as number | '',
-    reason: 'purchase',
+    product_id: "" as number | "",
+    location_id: "" as number | "",
+    unit_id: "" as number | "",
+    supplier_id: "" as number | "",
+    reason: "purchase",
     document_date: props.today,
-    reference: '',
-    notes: '',
-    quantity: '',
-    unit_cost: '',
+    reference: "",
+    notes: "",
+    quantity: "",
+    unit_cost: "",
 });
 
 const selectedProduct = computed(() =>
@@ -117,27 +117,31 @@ const selectedUnit = computed(() =>
 );
 
 const locked = computed(
-    () => confirmationOpen.value || saving.value || pending.value !== null || movementId.value !== null,
+    () =>
+        confirmationOpen.value ||
+        saving.value ||
+        pending.value !== null ||
+        movementId.value !== null,
 );
 
 const canRegister = computed(
     () =>
         props.products.length > 0 &&
         props.locations.length > 0 &&
-        (form.reason !== 'purchase' || props.suppliers.length > 0),
+        (form.reason !== "purchase" || props.suppliers.length > 0),
 );
 
 watch(
     () => form.product_id,
     () => {
-        form.unit_id = selectedProduct.value?.units[0]?.id ?? '';
+        form.unit_id = selectedProduct.value?.units[0]?.id ?? "";
     },
 );
 
 watch(
     () => form.reason,
     (reason) => {
-        if (reason !== 'purchase') form.supplier_id = '';
+        if (reason !== "purchase") form.supplier_id = "";
     },
 );
 
@@ -149,22 +153,22 @@ onMounted(() => {
             const candidate = JSON.parse(saved) as EntryPayload;
 
             if (
-                typeof candidate.operation_key !== 'string' ||
-                typeof candidate.product_id !== 'number' ||
-                typeof candidate.quantity !== 'string'
+                typeof candidate.operation_key !== "string" ||
+                typeof candidate.product_id !== "number" ||
+                typeof candidate.quantity !== "string"
             ) {
-                throw new Error('Solicitud pendiente inválida.');
+                throw new Error("Solicitud pendiente inválida.");
             }
 
             pending.value = candidate;
             failure.value =
-                'Existe una entrada pendiente de confirmar. Reintenta esa misma solicitud antes de registrar otra.';
+                "Existe una entrada pendiente de confirmar. Reintenta esa misma solicitud antes de registrar otra.";
         }
 
         ready.value = true;
     } catch {
         failure.value =
-            'No se pudo recuperar el estado de la solicitud. Revisa los movimientos antes de iniciar otra entrada.';
+            "No se pudo recuperar el estado de la solicitud. Revisa los movimientos antes de iniciar otra entrada.";
     }
 });
 
@@ -174,9 +178,8 @@ function createPayload(): EntryPayload {
         product_id: Number(form.product_id),
         location_id: Number(form.location_id),
         unit_id: Number(form.unit_id),
-        supplier_id: form.reason === 'purchase'
-            ? Number(form.supplier_id)
-            : null,
+        supplier_id:
+            form.reason === "purchase" ? Number(form.supplier_id) : null,
         reason: form.reason,
         document_date: form.document_date,
         reference: form.reference.trim() || null,
@@ -193,7 +196,7 @@ async function saveEntry(): Promise<void> {
 
     if (!isRetry && !canRegister.value) return;
 
-    failure.value = '';
+    failure.value = "";
     errors.value = {};
     saving.value = true;
 
@@ -205,12 +208,12 @@ async function saveEntry(): Promise<void> {
         pending.value = payload;
 
         const response = await axios.post<EntryResponse>(
-            '/inventory/entries',
+            "/inventory/entries",
             payload,
             {
                 headers: {
-                    Accept: 'application/json',
-                    'X-Requested-With': 'XMLHttpRequest',
+                    Accept: "application/json",
+                    "X-Requested-With": "XMLHttpRequest",
                 },
             },
         );
@@ -226,7 +229,7 @@ async function saveEntry(): Promise<void> {
 
             if (status === 422) {
                 errors.value = error.response?.data.errors ?? {};
-                failure.value = 'La entrada fue rechazada. Revisa los datos.';
+                failure.value = "La entrada fue rechazada. Revisa los datos.";
 
                 // Una primera petición rechazada puede corregirse.
                 // Si era un reintento incierto, conservar su identidad.
@@ -236,17 +239,17 @@ async function saveEntry(): Promise<void> {
                 }
             } else if (status === 401 || status === 419) {
                 failure.value =
-                    'La sesión venció. Inicia sesión nuevamente y vuelve a esta pantalla para reintentar.';
+                    "La sesión venció. Inicia sesión nuevamente y vuelve a esta pantalla para reintentar.";
             } else if (status === 403) {
                 failure.value =
-                    'No tienes permiso para confirmar entradas. La solicitud pendiente se conserva.';
+                    "No tienes permiso para confirmar entradas. La solicitud pendiente se conserva.";
             } else {
                 failure.value =
-                    'No se pudo confirmar el resultado. Reintenta la misma solicitud; no registres otra entrada equivalente.';
+                    "No se pudo confirmar el resultado. Reintenta la misma solicitud; no registres otra entrada equivalente.";
             }
         } else {
             failure.value =
-                'No fue posible completar la operación o conservar su estado. Verifica el resultado antes de registrar otra entrada.';
+                "No fue posible completar la operación o conservar su estado. Verifica el resultado antes de registrar otra entrada.";
         }
     } finally {
         saving.value = false;
@@ -273,23 +276,23 @@ function submit(): void {
     confirmationOpen.value = true;
 
     confirm.require({
-        group: 'inventory-entry',
-        header: 'Confirmar entrada de inventario',
+        group: "inventory-entry",
+        header: "Confirmar entrada de inventario",
         message:
             `Se registrarán ${form.quantity} ` +
-            `${selectedUnit.value?.symbol ?? ''} de ` +
-            `${selectedProduct.value?.name ?? 'este producto'}. ` +
-            'Esta operación aumentará las existencias.',
-        icon: 'pi pi-question-circle',
+            `${selectedUnit.value?.symbol ?? ""} de ` +
+            `${selectedProduct.value?.name ?? "este producto"}. ` +
+            "Esta operación aumentará las existencias.",
+        icon: "pi pi-question-circle",
         rejectProps: {
-            label: 'Cancelar',
-            severity: 'secondary',
+            label: "Cancelar",
+            severity: "secondary",
             outlined: true,
         },
         acceptProps: {
-            label: 'Sí, registrar entrada',
-            icon: 'pi pi-check',
-            severity: 'success',
+            label: "Sí, registrar entrada",
+            icon: "pi pi-check",
+            severity: "success",
         },
         accept: () => {
             confirmationOpen.value = false;
@@ -308,14 +311,14 @@ function newEntry(): void {
     if (saving.value || pending.value !== null) return;
 
     movementId.value = null;
-    success.value = '';
-    failure.value = '';
+    success.value = "";
+    failure.value = "";
     errors.value = {};
 
-    form.reference = '';
-    form.notes = '';
-    form.quantity = '';
-    form.unit_cost = '';
+    form.reference = "";
+    form.notes = "";
+    form.quantity = "";
+    form.unit_cost = "";
 }
 </script>
 
@@ -347,7 +350,8 @@ function newEntry(): void {
         <h1>Registrar entrada de inventario</h1>
 
         <p class="subtitle">
-            Registra material recibido y actualiza las existencias de su ubicación.
+            Registra material recibido y actualiza las existencias de su
+            ubicación.
         </p>
 
         <div v-if="success" class="notice success" role="status">
@@ -367,7 +371,7 @@ function newEntry(): void {
 
             <ul>
                 <li v-for="(messages, field) in errors" :key="field">
-                    {{ messages.join(' ') }}
+                    {{ messages.join(" ") }}
                 </li>
             </ul>
         </div>
@@ -375,8 +379,8 @@ function newEntry(): void {
         <div v-if="pending && movementId === null" class="notice pending">
             <p>
                 Solicitud pendiente: producto #{{ pending.product_id }},
-                cantidad {{ pending.quantity }},
-                referencia {{ pending.reference ?? 'sin referencia' }}.
+                cantidad {{ pending.quantity }}, referencia
+                {{ pending.reference ?? "sin referencia" }}.
             </p>
 
             <Button
@@ -391,11 +395,14 @@ function newEntry(): void {
 
         <section class="panel">
             <p class="hint">
-                Solo aparecen productos activos con control de existencias
-                que no requieren detalle de lotes o retazos.
+                Solo aparecen productos activos con control de existencias que
+                no requieren detalle de lotes o retazos.
             </p>
 
-            <p v-if="products.length === 0 || locations.length === 0" role="alert">
+            <p
+                v-if="products.length === 0 || locations.length === 0"
+                role="alert"
+            >
                 No hay productos compatibles o ubicaciones activas disponibles.
             </p>
 
@@ -405,7 +412,9 @@ function newEntry(): void {
                         <label class="wide">
                             Producto *
                             <select v-model="form.product_id" required>
-                                <option disabled value="">Selecciona un producto</option>
+                                <option disabled value="">
+                                    Selecciona un producto
+                                </option>
 
                                 <option
                                     v-for="product in products"
@@ -420,7 +429,9 @@ function newEntry(): void {
                         <label>
                             Motivo *
                             <select v-model="form.reason" required>
-                                <option value="purchase">Compra a proveedor</option>
+                                <option value="purchase">
+                                    Compra a proveedor
+                                </option>
                                 <option value="initial_balance">
                                     Existencias al iniciar el sistema
                                 </option>
@@ -440,7 +451,9 @@ function newEntry(): void {
                         <label v-if="form.reason === 'purchase'" class="wide">
                             Proveedor *
                             <select v-model="form.supplier_id" required>
-                                <option disabled value="">Selecciona un proveedor</option>
+                                <option disabled value="">
+                                    Selecciona un proveedor
+                                </option>
 
                                 <option
                                     v-for="supplier in suppliers"
@@ -452,14 +465,17 @@ function newEntry(): void {
                             </select>
 
                             <small v-if="suppliers.length === 0">
-                                Debes registrar un proveedor antes de capturar una compra.
+                                Debes registrar un proveedor antes de capturar
+                                una compra.
                             </small>
                         </label>
 
                         <label class="wide">
                             Ubicación donde se recibe *
                             <select v-model="form.location_id" required>
-                                <option disabled value="">Selecciona una ubicación</option>
+                                <option disabled value="">
+                                    Selecciona una ubicación
+                                </option>
 
                                 <option
                                     v-for="location in locations"
@@ -474,7 +490,9 @@ function newEntry(): void {
                         <label>
                             Unidad recibida *
                             <select v-model="form.unit_id" required>
-                                <option disabled value="">Selecciona una unidad</option>
+                                <option disabled value="">
+                                    Selecciona una unidad
+                                </option>
 
                                 <option
                                     v-for="unit in availableUnits"
@@ -528,14 +546,14 @@ function newEntry(): void {
                     <p v-if="selectedUnit && selectedProduct" class="hint">
                         Cada {{ selectedUnit.symbol }} equivale a
                         {{ selectedUnit.factor }}
-                        {{ selectedProduct.base_unit_symbol }}.
-                        La conversión se verifica nuevamente al confirmar.
+                        {{ selectedProduct.base_unit_symbol }}. La conversión se
+                        verifica nuevamente al confirmar.
                     </p>
 
                     <p class="hint">
                         Escribe cantidades y costos sin separadores de miles,
-                        usando punto decimal. El costo es por la unidad recibida,
-                        no el precio de venta.
+                        usando punto decimal. El costo es por la unidad
+                        recibida, no el precio de venta.
                     </p>
 
                     <Button
