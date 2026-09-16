@@ -43,23 +43,23 @@ final class UpdateProductRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'required' => 'El campo :attribute es obligatorio.',
-            'regex' => 'El campo :attribute debe usar punto decimal y hasta cuatro decimales.',
-            'max' => 'El campo :attribute supera la longitud permitida.',
-            'prohibited' => 'El campo :attribute no se puede modificar en esta operación.',
+            'required' => __('inventory.validation.required'),
+            'regex' => __('inventory.validation.decimal'),
+            'max' => __('inventory.validation.max'),
+            'prohibited' => __('inventory.validation.prohibited'),
         ];
     }
 
     public function attributes(): array
     {
         return [
-            'name' => 'nombre',
-            'barcode' => 'código de barras',
-            'description' => 'descripción',
-            'minimum_stock' => 'existencia mínima',
-            'maximum_stock' => 'existencia máxima',
-            'reorder_point' => 'cantidad para solicitar reposición',
-            'sale_price' => 'precio de venta',
+            'name' => __('inventory.attributes.name'),
+            'barcode' => __('inventory.attributes.barcode'),
+            'description' => __('inventory.attributes.description'),
+            'minimum_stock' => __('inventory.attributes.minimum_stock'),
+            'maximum_stock' => __('inventory.attributes.maximum_stock'),
+            'reorder_point' => __('inventory.attributes.reorder_point'),
+            'sale_price' => __('inventory.attributes.sale_price'),
         ];
     }
 }

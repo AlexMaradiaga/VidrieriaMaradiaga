@@ -40,6 +40,7 @@ function applyAppearance(): void {
     localStorage.setItem('vidrieria.theme', theme.value);
     localStorage.setItem('vidrieria.accent', accent.value);
     localStorage.setItem('vidrieria.locale', language.value);
+    document.cookie = `vidrieria_locale=${language.value}; Path=/; Max-Age=31536000; SameSite=Lax`;
 }
 
 let initialized = false;

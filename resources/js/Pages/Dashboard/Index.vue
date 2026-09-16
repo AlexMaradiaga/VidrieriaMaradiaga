@@ -56,7 +56,7 @@ function refresh(): void {
     refreshError.value = '';
     router.reload({
         only: ['dashboard', 'auth'],
-        onError: () => { refreshError.value = 'No se pudo actualizar el resumen. Intentá nuevamente.'; },
+        onError: () => { refreshError.value = t('dashboard.refreshError'); },
         onFinish: () => { refreshing.value = false; },
     });
 }
@@ -88,7 +88,7 @@ function logout(): void {
                     :loading="refreshing" :disabled="refreshing" @click="refresh" />
             </div>
             <p v-if="refreshError" role="alert">{{ refreshError }}</p>
-            <section class="cards" aria-label="Indicadores de inventario" :aria-busy="refreshing">
+            <section class="cards" :aria-label="t('dashboard.indicatorsLabel')" :aria-busy="refreshing">
                 <Card>
                     <template #title>{{ t('dashboard.inventoryValue') }}</template>
                     <template #content>
@@ -126,7 +126,7 @@ function logout(): void {
                 </p>
                 <template v-else>
                     <p class="metric-note">{{ t('dashboard.showing', { shown: props.dashboard.low_stock.length, total: props.dashboard.critical_products }) }}</p>
-                    <div class="table-scroll" tabindex="0" role="region" aria-label="Productos en mínimo o menos">
+                    <div class="table-scroll" tabindex="0" role="region" :aria-label="t('dashboard.lowStockRegion')">
                         <table>
                             <thead><tr><th>{{ t('dashboard.code') }}</th><th>{{ t('dashboard.product') }}</th><th>{{ t('dashboard.unit') }}</th><th class="numeric">{{ t('dashboard.totalStock') }}</th><th class="numeric">{{ t('dashboard.minimum') }}</th></tr></thead>
                             <tbody>
@@ -143,14 +143,14 @@ function logout(): void {
                 </template>
             </section>
         </template>
-        <section class="actions" aria-label="Acciones de inventario">
+        <section class="actions" :aria-label="t('dashboard.actionsLabel')">
             <Link
                 v-if="canView"
                 href="/inventory/products"
                 class="catalog-link"
             >
                 <i class="pi pi-box" aria-hidden="true"></i>
-                Abrir catálogo de productos
+                {{ t('dashboard.openProducts') }}
             </Link>
 
             <Link
@@ -159,7 +159,7 @@ function logout(): void {
                 class="catalog-link"
             >
                 <i class="pi pi-plus" aria-hidden="true"></i>
-                Registrar entrada
+                {{ t('dashboard.registerEntry') }}
             </Link>
 
             <Link
@@ -168,7 +168,7 @@ function logout(): void {
                 class="catalog-link"
             >
                 <i class="pi pi-history" aria-hidden="true"></i>
-                Historial de entradas
+                {{ t('dashboard.entryHistory') }}
             </Link>
 
             <Link
@@ -177,16 +177,16 @@ function logout(): void {
                 class="catalog-link"
             >
                 <i class="pi pi-list" aria-hidden="true"></i>
-                Kardex por producto
+                {{ t('dashboard.productLedger') }}
             </Link>
-            <Link v-if="page.props.auth.permissions.includes('inventory.exits.create')" href="/inventory/exits/create" class="catalog-link"><i class="pi pi-minus" /> Registrar salida</Link>
-            <Link v-if="page.props.auth.permissions.includes('inventory.transfers.create')" href="/inventory/transfers/create" class="catalog-link"><i class="pi pi-arrow-right-arrow-left" /> Trasladar existencias</Link>
-            <Link v-if="page.props.auth.permissions.includes('inventory.counts.view')" href="/inventory/counts" class="catalog-link"><i class="pi pi-clipboard" /> Conteos físicos</Link>
-            <Link v-if="page.props.auth.permissions.includes('inventory.alerts.view')" href="/inventory/alerts" class="catalog-link"><i class="pi pi-bell" /> Alertas de reposición</Link>
-            <Link v-if="page.props.auth.permissions.includes('inventory.remnants.view')" href="/inventory/remnants" class="catalog-link"><i class="pi pi-th-large" /> Retazos</Link>
-            <Link v-if="page.props.auth.permissions.includes('inventory.kits.view')" href="/inventory/kits" class="catalog-link"><i class="pi pi-box" /> Kits</Link>
-            <Link v-if="page.props.auth.permissions.includes('inventory.cuts.use')" href="/inventory/cut-calculator" class="catalog-link"><i class="pi pi-calculator" /> Calculadora de cortes</Link>
-            <Link v-if="page.props.auth.permissions.includes('inventory.catalogs.view')" href="/inventory/catalogs" class="catalog-link"><i class="pi pi-cog" /> Catálogos maestros</Link>
+            <Link v-if="page.props.auth.permissions.includes('inventory.exits.create')" href="/inventory/exits/create" class="catalog-link"><i class="pi pi-minus" /> {{ t('dashboard.registerExit') }}</Link>
+            <Link v-if="page.props.auth.permissions.includes('inventory.transfers.create')" href="/inventory/transfers/create" class="catalog-link"><i class="pi pi-arrow-right-arrow-left" /> {{ t('dashboard.transferStock') }}</Link>
+            <Link v-if="page.props.auth.permissions.includes('inventory.counts.view')" href="/inventory/counts" class="catalog-link"><i class="pi pi-clipboard" /> {{ t('dashboard.physicalCounts') }}</Link>
+            <Link v-if="page.props.auth.permissions.includes('inventory.alerts.view')" href="/inventory/alerts" class="catalog-link"><i class="pi pi-bell" /> {{ t('dashboard.reorderAlerts') }}</Link>
+            <Link v-if="page.props.auth.permissions.includes('inventory.remnants.view')" href="/inventory/remnants" class="catalog-link"><i class="pi pi-th-large" /> {{ t('dashboard.remnants') }}</Link>
+            <Link v-if="page.props.auth.permissions.includes('inventory.kits.view')" href="/inventory/kits" class="catalog-link"><i class="pi pi-box" /> {{ t('dashboard.kits') }}</Link>
+            <Link v-if="page.props.auth.permissions.includes('inventory.cuts.use')" href="/inventory/cut-calculator" class="catalog-link"><i class="pi pi-calculator" /> {{ t('dashboard.cutCalculator') }}</Link>
+            <Link v-if="page.props.auth.permissions.includes('inventory.catalogs.view')" href="/inventory/catalogs" class="catalog-link"><i class="pi pi-cog" /> {{ t('dashboard.masterCatalogs') }}</Link>
         </section>
     </main>
 </template>

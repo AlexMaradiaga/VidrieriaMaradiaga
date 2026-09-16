@@ -1,0 +1,36 @@
+<?php
+
+return [
+    'array' => 'El campo :attribute debe ser una lista.',
+    'after_or_equal' => 'El campo :attribute debe ser una fecha posterior o igual a :date.',
+    'before_or_equal' => 'El campo :attribute debe ser una fecha anterior o igual a :date.',
+    'boolean' => 'El campo :attribute debe ser verdadero o falso.',
+    'date_format' => 'El campo :attribute debe tener el formato :format.',
+    'different' => 'Los campos :attribute y :other deben ser diferentes.',
+    'distinct' => 'El campo :attribute contiene un valor duplicado.',
+    'email' => 'El campo :attribute debe ser un correo válido.',
+    'exists' => 'El valor seleccionado para :attribute no es válido.',
+    'enum' => 'El valor seleccionado para :attribute no es válido.',
+    'gt' => ['numeric' => 'El campo :attribute debe ser mayor que :value.'],
+    'integer' => 'El campo :attribute debe ser un número entero.',
+    'in' => 'El valor seleccionado para :attribute no es válido.',
+    'max' => [
+        'array' => 'El campo :attribute no debe contener más de :max elementos.',
+        'numeric' => 'El campo :attribute no debe ser mayor que :max.',
+        'string' => 'El campo :attribute no debe superar :max caracteres.',
+    ],
+    'min' => [
+        'array' => 'El campo :attribute debe contener al menos :min elementos.',
+        'numeric' => 'El campo :attribute debe ser al menos :min.',
+        'string' => 'El campo :attribute debe tener al menos :min caracteres.',
+    ],
+    'numeric' => 'El campo :attribute debe ser numérico.',
+    'prohibited' => 'El campo :attribute está prohibido.',
+    'regex' => 'El formato del campo :attribute no es válido.',
+    'required' => 'El campo :attribute es obligatorio.',
+    'required_if' => 'El campo :attribute es obligatorio cuando :other es :value.',
+    'string' => 'El campo :attribute debe ser texto.',
+    'unique' => 'El valor de :attribute ya está registrado.',
+    'uuid' => 'El campo :attribute debe ser un UUID válido.',
+    'attributes' => [],
+];

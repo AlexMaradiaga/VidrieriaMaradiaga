@@ -1,4 +1,5 @@
 /// <reference types="vite/client" />
+/// <reference types="vite-plugin-pwa/client" />
 
 import '../css/app.css';
 import 'primeicons/primeicons.css';
@@ -15,8 +16,18 @@ import Aura from '@primevue/themes/aura';
 import AppSettings from './Components/Common/AppSettings.vue';
 import { i18n } from './i18n';
 import { initializeAppSettings } from './Composables/useAppSettings';
+import { registerSW } from 'virtual:pwa-register';
 
 initializeAppSettings();
+
+registerSW({
+    immediate: true,
+    onRegisteredSW(_url, registration) {
+        if (registration) {
+            window.setInterval(() => void registration.update(), 60 * 60 * 1000);
+        }
+    },
+});
 
 createInertiaApp({
     resolve: (name) =>

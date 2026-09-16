@@ -14,11 +14,11 @@ final class SqlRegisterInventoryEntry implements RegisterInventoryEntryInterface
 {
     public function register(array $data, int $userId): array
     {
-        $quantity = $this->inputDecimal($data['quantity'], 'cantidad');
-        $unitCost = $this->inputDecimal($data['unit_cost'], 'costo unitario');
+        $quantity = $this->inputDecimal($data['quantity'], __('inventory.fields.quantity'));
+        $unitCost = $this->inputDecimal($data['unit_cost'], __('inventory.fields.unit_cost'));
 
         if (! $quantity->isGreaterThan('0')) {
-            throw new DomainException('La cantidad debe ser mayor que cero.');
+            throw new DomainException(__('inventory.errors.quantity_positive'));
         }
 
         // Orden fijo de campos para obtener una huella reproducible.
@@ -65,9 +65,7 @@ final class SqlRegisterInventoryEntry implements RegisterInventoryEntryInterface
                     || $existing->direction !== 'inbound'
                     || $existing->status !== 'posted'
                 ) {
-                    throw new DomainException(
-                        'El identificador de solicitud ya pertenece a otra operación.'
-                    );
+                    throw new DomainException(__('inventory.errors.operation_key_used'));
                 }
 
                 return [
@@ -84,22 +82,15 @@ final class SqlRegisterInventoryEntry implements RegisterInventoryEntryInterface
                 ->first();
 
             if ($product === null || ! $product->active) {
-                throw new DomainException(
-                    'El producto no existe o está inactivo.'
-                );
+                throw new DomainException(__('inventory.errors.product_inactive'));
             }
 
             if (! $product->track_stock) {
-                throw new DomainException(
-                    'Este producto no tiene habilitado el control de existencias.'
-                );
+                throw new DomainException(__('inventory.errors.stock_disabled'));
             }
 
             if ($product->track_lots || $product->track_remnants) {
-                throw new DomainException(
-                    'Este producto requiere detalle de lotes o retazos. '
-                    .'Ese detalle todavía no está disponible en este flujo.'
-                );
+                throw new DomainException(__('inventory.errors.detail_unsupported'));
             }
 
             $location = DB::table('inventory_locations as locations')
@@ -117,9 +108,7 @@ final class SqlRegisterInventoryEntry implements RegisterInventoryEntryInterface
                 ->exists();
 
             if (! $location) {
-                throw new DomainException(
-                    'La ubicación o su bodega no están disponibles.'
-                );
+                throw new DomainException(__('inventory.errors.location_unavailable'));
             }
 
             $unitAvailable = DB::table('inventory_units')
@@ -135,18 +124,14 @@ final class SqlRegisterInventoryEntry implements RegisterInventoryEntryInterface
                 ->exists();
 
             if (! $unitAvailable || ! $baseUnitAvailable) {
-                throw new DomainException(
-                    'La unidad de entrada o la unidad base no están disponibles.'
-                );
+                throw new DomainException(__('inventory.errors.units_unavailable'));
             }
 
             if (
                 $payload['reason'] === 'purchase'
                 && $payload['supplier_id'] === null
             ) {
-                throw new DomainException(
-                    'Selecciona un proveedor para registrar una compra.'
-                );
+                throw new DomainException(__('inventory.errors.supplier_required'));
             }
 
             if ($payload['supplier_id'] !== null) {
@@ -157,9 +142,7 @@ final class SqlRegisterInventoryEntry implements RegisterInventoryEntryInterface
                     ->exists();
 
                 if (! $supplierAvailable) {
-                    throw new DomainException(
-                        'El proveedor no existe o está inactivo.'
-                    );
+                    throw new DomainException(__('inventory.errors.supplier_unavailable'));
                 }
             }
 
@@ -174,9 +157,7 @@ final class SqlRegisterInventoryEntry implements RegisterInventoryEntryInterface
                     ->first();
 
                 if ($conversion === null) {
-                    throw new DomainException(
-                        'La unidad seleccionada no tiene una conversión de compra configurada.'
-                    );
+                    throw new DomainException(__('inventory.errors.purchase_conversion_missing'));
                 }
 
                 $factor = BigDecimal::of(
@@ -185,7 +166,7 @@ final class SqlRegisterInventoryEntry implements RegisterInventoryEntryInterface
             }
 
             if (! $factor->isGreaterThan('0')) {
-                throw new DomainException('El factor de conversión no es válido.');
+                throw new DomainException(__('inventory.errors.invalid_conversion'));
             }
 
             $exactBaseQuantity = $quantity->multipliedBy($factor);
@@ -197,19 +178,16 @@ final class SqlRegisterInventoryEntry implements RegisterInventoryEntryInterface
 
             // No perder material por redondear silenciosamente una conversión.
             if (! $exactBaseQuantity->isEqualTo($baseQuantity)) {
-                throw new DomainException(
-                    'La conversión requiere más de cuatro decimales de cantidad. '
-                    .'Revisa la unidad de control o la cantidad ingresada.'
-                );
+                throw new DomainException(__('inventory.errors.conversion_quantity_precision'));
             }
 
-            $this->assertFits($baseQuantity, 18, 4, 'cantidad convertida');
+            $this->assertFits($baseQuantity, 18, 4, __('inventory.fields.converted_quantity'));
 
             $totalCost = $quantity
                 ->multipliedBy($unitCost)
                 ->toScale(4, RoundingMode::HALF_UP);
 
-            $this->assertFits($totalCost, 28, 4, 'importe');
+            $this->assertFits($totalCost, 28, 4, __('inventory.fields.amount'));
 
             // Usar el importe registrado para mantener coherente la valoración.
             $baseUnitCost = $totalCost->dividedBy(
@@ -218,7 +196,7 @@ final class SqlRegisterInventoryEntry implements RegisterInventoryEntryInterface
                 RoundingMode::HALF_UP
             );
 
-            $this->assertFits($baseUnitCost, 18, 8, 'costo por unidad base');
+            $this->assertFits($baseUnitCost, 18, 8, __('inventory.fields.base_unit_cost'));
 
             $balance = DB::table('inventory_stock_balances')
                 ->where('product_id', $product->id)
@@ -237,10 +215,7 @@ final class SqlRegisterInventoryEntry implements RegisterInventoryEntryInterface
             );
 
             if ($globalQuantity->isLessThan('0')) {
-                throw new DomainException(
-                    'El producto tiene saldo global negativo. '
-                    .'Su regularización requiere un flujo de valoración específico.'
-                );
+                throw new DomainException(__('inventory.errors.negative_global_balance'));
             }
 
             $newLocationQuantity = $locationQuantity
@@ -251,7 +226,7 @@ final class SqlRegisterInventoryEntry implements RegisterInventoryEntryInterface
                 $newLocationQuantity,
                 18,
                 4,
-                'existencia de la ubicación'
+                __('inventory.fields.location_stock')
             );
 
             $newGlobalQuantity = $globalQuantity->plus($baseQuantity);
@@ -269,7 +244,7 @@ final class SqlRegisterInventoryEntry implements RegisterInventoryEntryInterface
                     RoundingMode::HALF_UP
                 );
 
-            $this->assertFits($newAverage, 18, 4, 'costo promedio');
+            $this->assertFits($newAverage, 18, 4, __('inventory.fields.average_cost'));
 
             $lastPurchaseCost = $baseUnitCost->toScale(
                 4,
@@ -280,7 +255,7 @@ final class SqlRegisterInventoryEntry implements RegisterInventoryEntryInterface
                 $lastPurchaseCost,
                 18,
                 4,
-                'último costo de compra'
+                __('inventory.fields.last_purchase_cost')
             );
 
             $now = now();
@@ -359,7 +334,7 @@ final class SqlRegisterInventoryEntry implements RegisterInventoryEntryInterface
 
         if (! preg_match('/^\d{1,14}(?:\.\d{1,4})?$/', $value)) {
             throw new DomainException(
-                "El campo {$field} debe tener hasta cuatro decimales y no ser negativo."
+                __('inventory.errors.invalid_decimal', ['field' => $field])
             );
         }
 
@@ -380,7 +355,7 @@ final class SqlRegisterInventoryEntry implements RegisterInventoryEntryInterface
 
         if ($value->abs()->isGreaterThan($limit)) {
             throw new DomainException(
-                "El campo {$field} supera la capacidad permitida."
+                __('inventory.errors.capacity', ['field' => $field])
             );
         }
     }

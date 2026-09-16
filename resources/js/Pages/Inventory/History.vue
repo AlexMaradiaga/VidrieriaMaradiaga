@@ -1,8 +1,10 @@
 <script setup lang="ts">
-import { computed, reactive, watch } from "vue";
-import { Head, Link, router, usePage } from "@inertiajs/vue3";
-import Button from "primevue/button";
-import Tag from "primevue/tag";
+import { computed, reactive, watch } from 'vue';
+import { Head, Link, router, usePage } from '@inertiajs/vue3';
+import Button from 'primevue/button';
+import Tag from 'primevue/tag';
+import { useI18n } from 'vue-i18n';
+import InventoryNav from '../../Components/Common/InventoryNav.vue';
 
 interface Option {
     id: number;
@@ -70,7 +72,7 @@ interface EntryLine {
 }
 
 interface EntryDetail {
-    header: Omit<EntryRow, "total_cost" | "line_count"> & {
+    header: Omit<EntryRow, 'total_cost' | 'line_count'> & {
         notes: string | null;
         created_at: string;
         poster: string | null;
@@ -119,7 +121,7 @@ interface Ledger {
 }
 
 const props = defineProps<{
-    mode: "entries" | "detail" | "kardex";
+    mode: 'entries' | 'detail' | 'kardex';
     filters: Filters | null;
     options: Options | null;
     entries: Pagination<EntryRow> | null;
@@ -131,6 +133,7 @@ const page = usePage<{
     auth: { permissions: string[] };
     errors: Record<string, string>;
 }>();
+const { t } = useI18n();
 
 const emptyFilters = (): Filters => ({
     from: null,
@@ -138,9 +141,9 @@ const emptyFilters = (): Filters => ({
     product_id: null,
     location_id: null,
     supplier_id: null,
-    search: "",
-    status: "",
-    reason: "",
+    search: '',
+    status: '',
+    reason: '',
     page: 1,
 });
 
@@ -157,30 +160,31 @@ watch(
 );
 
 const title = computed(() => {
-    if (props.mode === "detail") {
-        return `Movimiento #${props.entry?.header.id ?? ""}`;
+    if (props.mode === 'detail') {
+        return t('inventory.history.movementTitle',{id:props.entry?.header.id ?? ''});
     }
 
-    return props.mode === "kardex"
-        ? "Kardex por producto"
-        : "Historial de movimientos";
+    return props.mode === 'kardex'
+        ? t('inventory.history.kardexTitle')
+        : t('inventory.history.entriesTitle');
 });
 
 const listPath = computed(() =>
-    props.mode === "kardex" ? "/inventory/kardex" : "/inventory/entries",
+    props.mode === 'kardex'
+        ? '/inventory/kardex'
+        : '/inventory/entries',
 );
 
 const pagination = computed(() => {
-    if (props.mode === "detail") return props.entry?.lines ?? null;
-    if (props.mode === "kardex") return props.ledger?.rows ?? null;
+    if (props.mode === 'detail') return props.entry?.lines ?? null;
+    if (props.mode === 'kardex') return props.ledger?.rows ?? null;
     return props.entries;
 });
 
-const locationName = computed(
-    () =>
-        props.options?.locations.find(
-            (location) => location.id === props.filters?.location_id,
-        )?.name ?? "Todas las ubicaciones",
+const locationName = computed(() =>
+    props.options?.locations.find(
+        (location) => location.id === props.filters?.location_id,
+    )?.name ?? t('inventory.history.allLocations'),
 );
 
 function allowed(permission: string): boolean {
@@ -188,64 +192,72 @@ function allowed(permission: string): boolean {
 }
 
 function money(value: string | null): string {
-    if (value === null) return "—";
+    if (value === null) return '—';
 
     const match = /^(-?)(\d+)(?:\.(\d+))?$/.exec(value);
 
-    if (!match) return "—";
+    if (!match) return '—';
 
-    const fraction = (match[3] ?? "").padEnd(3, "0");
+    const fraction = (match[3] ?? '').padEnd(3, '0');
 
-    let cents = BigInt(match[2]!) * 100n + BigInt(fraction.slice(0, 2));
+    let cents =
+        BigInt(match[2]!) * 100n +
+        BigInt(fraction.slice(0, 2));
 
     if (Number(fraction[2]) >= 5) cents += 1n;
 
     const whole = (cents / 100n)
         .toString()
-        .replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        .replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 
-    const decimals = (cents % 100n).toString().padStart(2, "0");
+    const decimals = (cents % 100n)
+        .toString()
+        .padStart(2, '0');
 
-    return `${match[1] && cents !== 0n ? "-" : ""}${whole}.${decimals}`;
+    return `${match[1] && cents !== 0n ? '-' : ''}${whole}.${decimals}`;
 }
 
 function quantity(value: string | null): string {
-    if (value === null) return "—";
+    if (value === null) return '—';
 
     const match = /^(-?)(\d+)(?:\.(\d+))?$/.exec(value);
 
-    if (!match) return "—";
+    if (!match) return '—';
 
-    const whole = match[2]!.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    const whole = match[2]!
+        .replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 
-    const fraction = (match[3] ?? "").replace(/0+$/, "");
+    const fraction = (match[3] ?? '').replace(/0+$/, '');
 
-    return `${match[1]}${whole}${fraction ? `.${fraction}` : ""}`;
+    return `${match[1]}${whole}${fraction ? `.${fraction}` : ''}`;
 }
 
 function date(value: string | null, withTime = false): string {
-    if (!value) return "—";
+    if (!value) return '—';
 
     const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(value);
 
     if (!match) return value;
 
     const time =
-        withTime && value.length >= 19 ? ` ${value.slice(11, 19)}` : "";
+        withTime && value.length >= 19
+            ? ` ${value.slice(11, 19)}`
+            : '';
 
     return `${match[3]}/${match[2]}/${match[1]}${time}`;
 }
 
 function reason(value: string): string {
     const labels: Record<string, string> = {
-        purchase: "Compra",
-        initial_balance: "Saldo inicial",
-        sale: "Venta",
-        work_order: "Orden de trabajo",
-        production: "Producción",
-        internal_consumption: "Consumo interno",
-        waste: "Merma",
-        adjustment: "Ajuste",
+        purchase: t('inventory.history.purchase'),
+        initial_balance: t('inventory.history.initialBalance'),
+        sale: t('inventory.history.sale'),
+        work_order: t('inventory.history.workOrder'),
+        production: t('inventory.history.production'),
+        internal_consumption: t('inventory.history.consumption'),
+        waste: t('inventory.history.waste'),
+        adjustment: t('inventory.history.adjustment'),
+        transfer: t('inventory.history.transfer'),
     };
 
     return labels[value] ?? value;
@@ -253,16 +265,16 @@ function reason(value: string): string {
 
 function status(value: string): string {
     const labels: Record<string, string> = {
-        draft: "Borrador",
-        posted: "Confirmada",
-        cancelled: "Cancelada",
+        draft: t('inventory.history.draft'),
+        posted: t('inventory.history.posted'),
+        cancelled: t('inventory.history.cancelled'),
     };
 
     return labels[value] ?? value;
 }
 
 function direction(value: string): string {
-    return value === "inbound" ? "Entrada" : "Salida";
+    return t(value === 'inbound' ? 'inventory.history.inbound' : 'inventory.history.outbound');
 }
 
 function navigate(filters: Filters, targetPage = 1): void {
@@ -272,10 +284,10 @@ function navigate(filters: Filters, targetPage = 1): void {
 
     for (const [key, value] of Object.entries(filters)) {
         if (
-            key !== "page" &&
+            key !== 'page' &&
             value !== null &&
             value !== undefined &&
-            value !== ""
+            value !== ''
         ) {
             data[key] = value;
         }
@@ -292,7 +304,7 @@ function search(): void {
 }
 
 function changePage(targetPage: number): void {
-    if (props.mode === "detail" && props.entry) {
+    if (props.mode === 'detail' && props.entry) {
         router.get(
             `/inventory/entries/${props.entry.header.id}`,
             { page: targetPage },
@@ -308,56 +320,19 @@ function changePage(targetPage: number): void {
 </script>
 
 <template>
-    <Head :title="`${title} | Vidriería Maradiaga`" />
+    <Head :title="`${title} | ${t('common.appName')}`" />
 
     <main class="history">
-        <nav class="navigation" aria-label="Navegación de inventario">
-            <Link href="/">Panel principal</Link>
-
-            <Link
-                v-if="allowed('inventory.products.view')"
-                href="/inventory/products"
-            >
-                Productos
-            </Link>
-
-            <Link
-                v-if="allowed('inventory.entries.view')"
-                href="/inventory/entries"
-            >
-                Historial de movimientos
-            </Link>
-
-            <Link
-                v-if="allowed('inventory.kardex.view')"
-                href="/inventory/kardex"
-            >
-                Kardex por producto
-            </Link>
-
-            <Link
-                v-if="
-                    allowed('inventory.entries.create') &&
-                    allowed('inventory.entries.post')
-                "
-                href="/inventory/entries/create"
-                class="primary"
-            >
-                Registrar entrada
-            </Link>
-        </nav>
+        <InventoryNav />
 
         <h1>{{ title }}</h1>
 
         <p v-if="mode === 'entries'" class="hint">
-            Consultá compras y saldos iniciales. Las fechas del filtro
-            corresponden al documento.
+            {{t('inventory.history.entriesHint')}}
         </p>
 
         <p v-if="mode === 'kardex'" class="hint">
-            Movimientos confirmados en orden de confirmación. Las fechas del
-            filtro corresponden a cuándo se afectó el inventario; la fecha del
-            documento se muestra por separado.
+            {{t('inventory.history.kardexHint')}}
         </p>
 
         <form
@@ -367,26 +342,29 @@ function changePage(targetPage: number): void {
         >
             <div class="filters">
                 <label v-if="mode === 'entries'">
-                    Referencia, código o producto
+                    {{t('inventory.history.search')}}
                     <input
                         v-model="form.search"
                         maxlength="100"
-                        placeholder="Factura o código del producto"
+                        :placeholder="t('inventory.history.searchPlaceholder')"
                     />
                 </label>
 
                 <label>
-                    {{ mode === "kardex" ? "Producto *" : "Producto" }}
+                    {{t('common.product')}}{{ mode === 'kardex' ? ' *' : '' }}
 
                     <select
                         v-model="form.product_id"
                         :required="mode === 'kardex'"
                     >
-                        <option :value="null" :disabled="mode === 'kardex'">
+                        <option
+                            :value="null"
+                            :disabled="mode === 'kardex'"
+                        >
                             {{
-                                mode === "kardex"
-                                    ? "Seleccioná un producto"
-                                    : "Todos"
+                                mode === 'kardex'
+                                    ? t('inventory.history.chooseProduct')
+                                    : t('common.all')
                             }}
                         </option>
 
@@ -401,10 +379,12 @@ function changePage(targetPage: number): void {
                 </label>
 
                 <label>
-                    Ubicación
+                    {{t('common.location')}}
 
                     <select v-model="form.location_id">
-                        <option :value="null">Todas las ubicaciones</option>
+                        <option :value="null">
+                            {{t('inventory.history.allLocations')}}
+                        </option>
 
                         <option
                             v-for="location in options.locations"
@@ -418,18 +398,18 @@ function changePage(targetPage: number): void {
 
                 <label>
                     {{
-                        mode === "kardex"
-                            ? "Desde la confirmación"
-                            : "Desde el documento"
+                        mode === 'kardex'
+                            ? t('inventory.history.fromPosted')
+                            : t('inventory.history.from')
                     }}
                     <input v-model="form.from" type="date" />
                 </label>
 
                 <label>
                     {{
-                        mode === "kardex"
-                            ? "Hasta la confirmación"
-                            : "Hasta el documento"
+                        mode === 'kardex'
+                            ? t('inventory.history.toPosted')
+                            : t('inventory.history.to')
                     }}
                     <input
                         v-model="form.to"
@@ -440,10 +420,10 @@ function changePage(targetPage: number): void {
 
                 <template v-if="mode === 'entries'">
                     <label>
-                        Proveedor
+                        {{t('inventory.history.supplier')}}
 
                         <select v-model="form.supplier_id">
-                            <option :value="null">Todos</option>
+                            <option :value="null">{{t('common.all')}}</option>
 
                             <option
                                 v-for="supplier in options.suppliers"
@@ -456,34 +436,32 @@ function changePage(targetPage: number): void {
                     </label>
 
                     <label>
-                        Estado
+                        {{t('common.status')}}
 
                         <select v-model="form.status">
-                            <option value="">Todos</option>
-                            <option value="posted">Confirmada</option>
-                            <option value="draft">Borrador</option>
-                            <option value="cancelled">Cancelada</option>
+                            <option value="">{{t('common.all')}}</option>
+                            <option value="posted">{{t('inventory.history.posted')}}</option>
+                            <option value="draft">{{t('inventory.history.draft')}}</option>
+                            <option value="cancelled">{{t('inventory.history.cancelled')}}</option>
                         </select>
                     </label>
 
                     <label>
-                        Motivo
+                        {{t('inventory.history.reason')}}
 
                         <select v-model="form.reason">
-                            <option value="">Todos</option>
-                            <option value="purchase">Compra</option>
+                            <option value="">{{t('common.all')}}</option>
+                            <option value="purchase">{{t('inventory.history.purchase')}}</option>
                             <option value="initial_balance">
-                                Saldo inicial
+                                {{t('inventory.history.initialBalance')}}
                             </option>
-                            <option value="sale">Venta</option>
-                            <option value="work_order">Orden de trabajo</option>
-                            <option value="production">Producción</option>
-                            <option value="internal_consumption">
-                                Consumo interno
-                            </option>
-                            <option value="waste">Merma</option>
-                            <option value="adjustment">Ajuste</option>
-                            <option value="transfer">Traslado</option>
+                            <option value="sale">{{t('inventory.history.sale')}}</option>
+                            <option value="work_order">{{t('inventory.history.workOrder')}}</option>
+                            <option value="production">{{t('inventory.history.production')}}</option>
+                            <option value="internal_consumption">{{t('inventory.history.consumption')}}</option>
+                            <option value="waste">{{t('inventory.history.waste')}}</option>
+                            <option value="adjustment">{{t('inventory.history.adjustment')}}</option>
+                            <option value="transfer">{{t('inventory.history.transfer')}}</option>
                         </select>
                     </label>
                 </template>
@@ -494,55 +472,64 @@ function changePage(targetPage: number): void {
                 class="errors"
                 role="alert"
             >
-                <li v-for="(error, key) in page.props.errors" :key="key">
+                <li
+                    v-for="(error, key) in page.props.errors"
+                    :key="key"
+                >
                     {{ error }}
                 </li>
             </ul>
 
             <div class="actions">
-                <Button type="submit" label="Consultar" icon="pi pi-search" />
+                <Button
+                    type="submit"
+                    :label="t('inventory.history.consult')"
+                    icon="pi pi-search"
+                />
 
-                <Link :href="listPath">Limpiar filtros</Link>
+                <Link :href="listPath">{{t('inventory.history.clear')}}</Link>
             </div>
         </form>
 
         <!-- Historial de movimientos -->
-        <section v-if="mode === 'entries' && entries" class="panel">
-            <h2>{{ entries.total }} movimientos encontrados</h2>
+        <section
+            v-if="mode === 'entries' && entries"
+            class="panel"
+        >
+            <h2>{{t('inventory.history.found',{total:entries.total})}}</h2>
 
             <p class="hint">
-                El importe corresponde al documento completo, incluso al filtrar
-                por un producto o ubicación.
+                {{t('inventory.history.filterHelp')}}
             </p>
 
             <div
                 class="table-wrap"
                 tabindex="0"
                 role="region"
-                aria-label="Historial de movimientos"
+                :aria-label="t('inventory.history.entriesTitle')"
             >
                 <table>
                     <thead>
                         <tr>
-                            <th>Movimiento</th>
-                            <th>Fecha documento</th>
-                            <th>Motivo / referencia</th>
-                            <th>Proveedor</th>
-                            <th>Estado</th>
-                            <th class="number">Importe</th>
-                            <th>Registrada por</th>
-                            <th>Acción</th>
+                            <th>{{t('inventory.history.movement')}}</th>
+                            <th>{{t('inventory.history.documentDate')}}</th>
+                            <th>{{t('inventory.history.reasonReference')}}</th>
+                            <th>{{t('inventory.history.supplier')}}</th>
+                            <th>{{t('common.status')}}</th>
+                            <th class="number">{{t('inventory.history.amount')}}</th>
+                            <th>{{t('inventory.history.registeredBy')}}</th>
+                            <th>{{t('common.action')}}</th>
                         </tr>
                     </thead>
 
                     <tbody>
-                        <tr v-for="item in entries.data" :key="item.id">
+                        <tr
+                            v-for="item in entries.data"
+                            :key="item.id"
+                        >
                             <td>
                                 #{{ item.id }}
-                                <small
-                                    >{{ direction(item.direction) }} ·
-                                    {{ item.line_count }} líneas</small
-                                >
+                                <small>{{ direction(item.direction) }} · {{t('inventory.history.lines',{count:item.line_count})}}</small>
                             </td>
 
                             <td>{{ date(item.document_date) }}</td>
@@ -550,11 +537,11 @@ function changePage(targetPage: number): void {
                             <td>
                                 {{ reason(item.reason) }}
                                 <small>
-                                    {{ item.reference ?? "Sin referencia" }}
+                                    {{ item.reference ?? t('inventory.history.noReference') }}
                                 </small>
                             </td>
 
-                            <td>{{ item.supplier ?? "No aplica" }}</td>
+                            <td>{{ item.supplier ?? t('inventory.history.notApplicable') }}</td>
 
                             <td>
                                 <Tag
@@ -573,19 +560,20 @@ function changePage(targetPage: number): void {
                                 {{ money(item.total_cost) }}
                             </td>
 
-                            <td>{{ item.creator ?? "—" }}</td>
+                            <td>{{ item.creator ?? '—' }}</td>
 
                             <td>
-                                <Link :href="`/inventory/entries/${item.id}`">
-                                    Ver detalle
+                                <Link
+                                    :href="`/inventory/entries/${item.id}`"
+                                >
+                                    {{t('inventory.history.viewDetail')}}
                                 </Link>
                             </td>
                         </tr>
 
                         <tr v-if="entries.data.length === 0">
                             <td colspan="8">
-                                No hay movimientos en esta página con los
-                                filtros aplicados.
+                                {{t('inventory.history.emptyPage')}}
                             </td>
                         </tr>
                     </tbody>
@@ -609,29 +597,29 @@ function changePage(targetPage: number): void {
             <section class="panel">
                 <dl class="details">
                     <div>
-                        <dt>Fecha del documento</dt>
+                        <dt>{{t('inventory.history.documentDate')}}</dt>
                         <dd>{{ date(entry.header.document_date) }}</dd>
                     </div>
 
                     <div>
-                        <dt>Motivo</dt>
+                        <dt>{{t('inventory.history.reason')}}</dt>
                         <dd>{{ reason(entry.header.reason) }}</dd>
                     </div>
 
                     <div>
-                        <dt>Referencia</dt>
+                        <dt>{{t('common.reference')}}</dt>
                         <dd>
-                            {{ entry.header.reference ?? "Sin referencia" }}
+                            {{ entry.header.reference ?? t('inventory.history.noReference') }}
                         </dd>
                     </div>
 
                     <div>
-                        <dt>Proveedor</dt>
-                        <dd>{{ entry.header.supplier ?? "No aplica" }}</dd>
+                        <dt>{{t('inventory.history.supplier')}}</dt>
+                        <dd>{{ entry.header.supplier ?? t('inventory.history.notApplicable') }}</dd>
                     </div>
 
                     <div>
-                        <dt>Registrada por</dt>
+                        <dt>{{t('inventory.history.registeredBy')}}</dt>
                         <dd>
                             {{ entry.header.creator }}
                             <small>
@@ -641,9 +629,9 @@ function changePage(targetPage: number): void {
                     </div>
 
                     <div>
-                        <dt>Confirmada por</dt>
+                        <dt>{{t('inventory.history.postedBy')}}</dt>
                         <dd>
-                            {{ entry.header.poster ?? "—" }}
+                            {{ entry.header.poster ?? '—' }}
                             <small>
                                 {{ date(entry.header.posted_at, true) }}
                             </small>
@@ -651,7 +639,7 @@ function changePage(targetPage: number): void {
                     </div>
 
                     <div>
-                        <dt>Importe total del documento</dt>
+                        <dt>{{t('inventory.history.totalDocument')}}</dt>
                         <dd>
                             <strong>{{ money(entry.total_cost) }}</strong>
                         </dd>
@@ -666,50 +654,50 @@ function changePage(targetPage: number): void {
                     v-if="entry.header.status === 'cancelled'"
                     class="warning notes"
                 >
-                    Cancelada por {{ entry.header.canceller }}.
+                    {{t('inventory.history.cancelledBy',{user:entry.header.canceller})}}
                     {{ date(entry.header.cancelled_at, true) }}.
                     {{ entry.header.cancellation_reason }}
                 </p>
             </section>
 
             <section class="panel">
-                <h2>Materiales registrados</h2>
+                <h2>{{t('inventory.history.materials')}}</h2>
 
                 <p class="hint">
-                    Cantidad y factor son los guardados al registrar la entrada.
-                    El saldo posterior pertenece a la ubicación; el costo
-                    promedio posterior es global por producto. Los nombres
-                    corresponden al catálogo actual.
+                    {{t('inventory.history.detailHelp')}}
                 </p>
 
                 <div
                     class="table-wrap"
                     tabindex="0"
                     role="region"
-                    aria-label="Detalle de materiales"
+                    :aria-label="t('inventory.history.materials')"
                 >
                     <table>
                         <thead>
                             <tr>
-                                <th>Producto</th>
-                                <th>Ubicación</th>
-                                <th class="number">Cantidad recibida</th>
-                                <th class="number">Factor</th>
-                                <th class="number">Cantidad base</th>
-                                <th class="number">Costo recibido</th>
-                                <th class="number">Costo base</th>
-                                <th class="number">Importe</th>
+                                <th>{{t('common.product')}}</th>
+                                <th>{{t('common.location')}}</th>
+                                <th class="number">{{t('inventory.history.receivedQuantity')}}</th>
+                                <th class="number">{{t('inventory.history.factor')}}</th>
+                                <th class="number">{{t('inventory.history.baseQuantity')}}</th>
+                                <th class="number">{{t('inventory.history.receivedCost')}}</th>
+                                <th class="number">{{t('inventory.history.baseCost')}}</th>
+                                <th class="number">{{t('inventory.history.amount')}}</th>
                                 <th class="number">
-                                    Saldo ubicación posterior
+                                    {{t('inventory.history.balanceAfter')}}
                                 </th>
                                 <th class="number">
-                                    Promedio global posterior
+                                    {{t('inventory.history.averageAfter')}}
                                 </th>
                             </tr>
                         </thead>
 
                         <tbody>
-                            <tr v-for="line in entry.lines.data" :key="line.id">
+                            <tr
+                                v-for="line in entry.lines.data"
+                                :key="line.id"
+                            >
                                 <td>
                                     {{ line.sku }} — {{ line.product }}
 
@@ -719,11 +707,14 @@ function changePage(targetPage: number): void {
                                         <Link
                                             :href="`/inventory/kardex?product_id=${line.product_id}`"
                                         >
-                                            Ver Kardex
+                                            {{t('inventory.history.viewKardex')}}
                                         </Link>
                                     </small>
 
-                                    <small v-if="line.notes" class="notes">
+                                    <small
+                                        v-if="line.notes"
+                                        class="notes"
+                                    >
                                         {{ line.notes }}
                                     </small>
                                 </td>
@@ -770,7 +761,7 @@ function changePage(targetPage: number): void {
 
                             <tr v-if="entry.lines.data.length === 0">
                                 <td colspan="10">
-                                    No hay líneas en esta página.
+                                    {{t('inventory.history.noLines')}}
                                 </td>
                             </tr>
                         </tbody>
@@ -778,8 +769,7 @@ function changePage(targetPage: number): void {
                 </div>
 
                 <p class="hint">
-                    Importes mostrados con dos decimales. Los cálculos conservan
-                    la precisión registrada.
+                    {{t('inventory.history.precision')}}
                 </p>
             </section>
         </template>
@@ -787,7 +777,7 @@ function changePage(targetPage: number): void {
         <!-- Kardex -->
         <template v-if="mode === 'kardex'">
             <p v-if="!ledger" class="panel">
-                Seleccioná un producto para consultar su historia.
+                {{t('inventory.history.chooseForLedger')}}
             </p>
 
             <template v-else>
@@ -797,34 +787,33 @@ function changePage(targetPage: number): void {
                 </h2>
 
                 <p class="hint">
-                    Unidad de control: {{ ledger.product.unit }}. Alcance
-                    aplicado: {{ locationName }}.
+                    {{t('inventory.history.ledgerScope',{unit:ledger.product.unit,location:locationName})}}
                 </p>
 
                 <div class="stats">
                     <div class="stat">
-                        Saldo anterior al período
+                        {{t('inventory.history.previousBalance')}}
                         <strong>
                             {{ quantity(ledger.summary.opening) }}
                         </strong>
                     </div>
 
                     <div class="stat">
-                        Entradas del período
+                        {{t('inventory.history.inboundPeriod')}}
                         <strong>
                             {{ quantity(ledger.summary.incoming) }}
                         </strong>
                     </div>
 
                     <div class="stat">
-                        Salidas del período
+                        {{t('inventory.history.outboundPeriod')}}
                         <strong>
                             {{ quantity(ledger.summary.outgoing) }}
                         </strong>
                     </div>
 
                     <div class="stat">
-                        Saldo al cierre del período
+                        {{t('inventory.history.closingBalance')}}
                         <strong>
                             {{ quantity(ledger.summary.closing) }}
                         </strong>
@@ -832,10 +821,7 @@ function changePage(targetPage: number): void {
                 </div>
 
                 <p class="hint">
-                    Existencia actual del alcance:
-                    {{ quantity(ledger.summary.current) }}
-                    {{ ledger.product.unit }}. Puede diferir del cierre si
-                    filtraste fechas anteriores.
+                    {{t('inventory.history.currentScope',{quantity:quantity(ledger.summary.current),unit:ledger.product.unit})}}
                 </p>
 
                 <p
@@ -843,39 +829,33 @@ function changePage(targetPage: number): void {
                     class="warning"
                     role="status"
                 >
-                    La existencia actual difiere de los movimientos confirmados
-                    por
-                    {{ quantity(ledger.summary.difference) }}
-                    {{ ledger.product.unit }}. Actualizá la consulta; si
-                    persiste, revisá los registros antes de ajustar inventario.
+                    {{t('inventory.history.differenceWarning',{quantity:quantity(ledger.summary.difference),unit:ledger.product.unit})}}
                 </p>
 
                 <section class="panel">
                     <p class="hint">
-                        El saldo acumulado incluye movimientos anteriores al
-                        filtro y a la página. El costo promedio mostrado es
-                        global y corresponde al momento del movimiento.
+                        {{t('inventory.history.ledgerHelp')}}
                     </p>
 
                     <div
                         class="table-wrap"
                         tabindex="0"
                         role="region"
-                        aria-label="Movimientos del Kardex"
+                        :aria-label="t('inventory.history.kardexTitle')"
                     >
                         <table>
                             <thead>
                                 <tr>
-                                    <th>Confirmación</th>
-                                    <th>Documento</th>
-                                    <th>Movimiento</th>
-                                    <th>Ubicación</th>
-                                    <th class="number">Entrada</th>
-                                    <th class="number">Salida</th>
-                                    <th class="number">Saldo acumulado</th>
-                                    <th class="number">Importe movimiento</th>
+                                    <th>{{t('inventory.history.confirmation')}}</th>
+                                    <th>{{t('inventory.history.document')}}</th>
+                                    <th>{{t('inventory.history.movement')}}</th>
+                                    <th>{{t('common.location')}}</th>
+                                    <th class="number">{{t('inventory.history.inbound')}}</th>
+                                    <th class="number">{{t('inventory.history.outbound')}}</th>
+                                    <th class="number">{{t('inventory.history.runningBalance')}}</th>
+                                    <th class="number">{{t('inventory.history.movementAmount')}}</th>
                                     <th class="number">
-                                        Promedio global posterior
+                                        {{t('inventory.history.averageAfter')}}
                                     </th>
                                 </tr>
                             </thead>
@@ -890,10 +870,7 @@ function changePage(targetPage: number): void {
                                     <td>
                                         {{ date(row.document_date) }}
                                         <small>
-                                            {{
-                                                row.reference ??
-                                                "Sin referencia"
-                                            }}
+                                            {{ row.reference ?? t('inventory.history.noReference') }}
                                         </small>
                                     </td>
 
@@ -901,9 +878,7 @@ function changePage(targetPage: number): void {
                                         <Link
                                             v-if="
                                                 row.direction === 'inbound' &&
-                                                allowed(
-                                                    'inventory.entries.view',
-                                                )
+                                                allowed('inventory.entries.view')
                                             "
                                             :href="`/inventory/entries/${row.movement_id}`"
                                         >
@@ -924,26 +899,22 @@ function changePage(targetPage: number): void {
 
                                     <td class="number">
                                         {{
-                                            row.direction === "inbound"
+                                            row.direction === 'inbound'
                                                 ? quantity(row.base_quantity)
-                                                : "—"
+                                                : '—'
                                         }}
-                                        <small
-                                            v-if="row.direction === 'inbound'"
-                                        >
+                                        <small v-if="row.direction === 'inbound'">
                                             {{ row.unit }}
                                         </small>
                                     </td>
 
                                     <td class="number">
                                         {{
-                                            row.direction === "outbound"
+                                            row.direction === 'outbound'
                                                 ? quantity(row.base_quantity)
-                                                : "—"
+                                                : '—'
                                         }}
-                                        <small
-                                            v-if="row.direction === 'outbound'"
-                                        >
+                                        <small v-if="row.direction === 'outbound'">
                                             {{ row.unit }}
                                         </small>
                                     </td>
@@ -963,8 +934,7 @@ function changePage(targetPage: number): void {
 
                                 <tr v-if="ledger.rows.data.length === 0">
                                     <td colspan="9">
-                                        No hay movimientos en esta página del
-                                        período. El saldo anterior se conserva.
+                                        {{t('inventory.history.emptyLedger')}}
                                     </td>
                                 </tr>
                             </tbody>
@@ -974,9 +944,13 @@ function changePage(targetPage: number): void {
             </template>
         </template>
 
-        <nav v-if="pagination" class="pagination" aria-label="Paginación">
+        <nav
+            v-if="pagination"
+            class="pagination"
+            :aria-label="t('inventory.history.pagination')"
+        >
             <Button
-                label="Anterior"
+                :label="t('common.previous')"
                 icon="pi pi-angle-left"
                 severity="info"
                 :disabled="pagination.current_page <= 1"
@@ -984,12 +958,12 @@ function changePage(targetPage: number): void {
             />
 
             <span>
-                Página {{ pagination.current_page }} de
-                {{ pagination.last_page }} · {{ pagination.total }} registros
+                {{t('common.page',{current:pagination.current_page,last:pagination.last_page})}} ·
+                {{t('inventory.history.records',{count:pagination.total})}}
             </span>
 
             <Button
-                label="Siguiente"
+                :label="t('common.next')"
                 icon="pi pi-angle-right"
                 iconPos="right"
                 severity="info"
