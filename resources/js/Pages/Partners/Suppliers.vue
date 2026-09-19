@@ -1,0 +1,16 @@
+<script setup lang="ts">
+import { Head, router, useForm } from '@inertiajs/vue3';
+import InventoryNav from '../../Components/Common/InventoryNav.vue';
+
+interface Supplier { id:number; code:string; legal_name:string; trade_name:string|null; tax_id:string|null; contact_name:string|null; email:string|null; phone:string|null; address:string|null; payment_terms_days:number; active:boolean }
+defineProps<{ suppliers: Supplier[] }>();
+const form = useForm({ code:'', legal_name:'', trade_name:'', tax_id:'', contact_name:'', email:'', phone:'', address:'', payment_terms_days:0 });
+const submit = () => form.post('/suppliers', { onSuccess: () => form.reset() });
+const toggle = (supplier:Supplier) => router.patch(`/suppliers/${supplier.id}/active`, { active: !supplier.active }, { preserveScroll:true });
+</script>
+<template>
+<Head title="Proveedores"/><main class="page"><InventoryNav/><h1>Proveedores</h1><p>Datos comerciales reutilizados por compras e inventario.</p>
+<form class="card grid" @submit.prevent="submit"><label>Código *<input v-model="form.code" required></label><label>Razón social *<input v-model="form.legal_name" required></label><label>Nombre comercial<input v-model="form.trade_name"></label><label>RTN/identificación<input v-model="form.tax_id"></label><label>Contacto<input v-model="form.contact_name"></label><label>Correo<input v-model="form.email" type="email"></label><label>Teléfono<input v-model="form.phone"></label><label>Días de crédito<input v-model.number="form.payment_terms_days" type="number" min="0"></label><label class="wide">Dirección<textarea v-model="form.address"/></label><button :disabled="form.processing">Guardar proveedor</button><p class="error">{{ form.errors.code || form.errors.legal_name }}</p></form>
+<section class="card"><h2>Proveedores registrados</h2><div class="table"><table><thead><tr><th>Código</th><th>Nombre</th><th>Contacto</th><th>Crédito</th><th>Estado</th><th></th></tr></thead><tbody><tr v-for="s in suppliers" :key="s.id"><td>{{s.code}}</td><td>{{s.legal_name}}</td><td>{{s.phone || s.email || '—'}}</td><td>{{s.payment_terms_days}} días</td><td>{{s.active?'Activo':'Inactivo'}}</td><td><button class="secondary" @click="toggle(s)">{{s.active?'Desactivar':'Activar'}}</button></td></tr></tbody></table></div></section></main>
+</template>
+<style scoped>.page{max-width:1400px;margin:auto;padding:2rem}.card{padding:1.5rem;border:1px solid var(--p-content-border-color);border-radius:1rem;margin:1rem 0;background:var(--p-content-background)}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem}.wide{grid-column:1/-1}label{display:grid;gap:.4rem;font-weight:600}input,textarea{padding:.75rem;border:1px solid var(--p-content-border-color);border-radius:.5rem;background:transparent;color:inherit}textarea{min-height:5rem}button{width:max-content;padding:.7rem 1rem;border:0;border-radius:.5rem;background:var(--p-primary-color);color:var(--p-primary-contrast-color);font-weight:700}.secondary{background:#ef4444;color:#fff}.table{overflow:auto}table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:.8rem;border-bottom:1px solid var(--p-content-border-color)}.error{color:#ef4444}@media(max-width:700px){.grid{grid-template-columns:1fr}.wide{grid-column:auto}}</style>

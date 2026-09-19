@@ -41,6 +41,23 @@ final class AccessRolesSeeder extends Seeder
                 'inventory.catalogs.view',
                 'inventory.catalogs.manage',
                 'inventory.cuts.use',
+                'access.users.view',
+                'access.users.manage',
+                'access.roles.manage',
+                'access.employees.manage',
+                'suppliers.view',
+                'suppliers.manage',
+                'sales.view',
+                'sales.create',
+                'sales.post',
+                'sales.payments.manage',
+                'sales.customers.manage',
+                'accounting.accounts.view',
+                'accounting.accounts.manage',
+                'accounting.periods.manage',
+                'accounting.entries.view',
+                'accounting.entries.create',
+                'accounting.reports.view',
             ];
 
             foreach ($permissions as $permission) {
@@ -76,6 +93,27 @@ final class AccessRolesSeeder extends Seeder
                     'inventory.exits.create',
                     'inventory.exits.post',
                     'inventory.kits.view',
+                    'sales.view',
+                    'sales.create',
+                    'sales.post',
+                    'sales.payments.manage',
+                    'sales.customers.manage',
+                ],
+
+                'Contabilidad' => [
+                    'sales.view',
+                    'suppliers.view',
+                    'accounting.accounts.view',
+                    'accounting.accounts.manage',
+                    'accounting.periods.manage',
+                    'accounting.entries.view',
+                    'accounting.entries.create',
+                    'accounting.reports.view',
+                ],
+
+                'Recursos Humanos' => [
+                    'access.users.view',
+                    'access.employees.manage',
                 ],
             ];
 

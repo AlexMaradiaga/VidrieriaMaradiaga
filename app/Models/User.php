@@ -17,10 +17,15 @@ class User extends Authenticatable
 
     protected string $guard_name = 'web';
 
+    protected $attributes = [
+        'active' => true,
+    ];
+
     protected $fillable = [
         'name',
         'email',
         'password',
+        'active',
     ];
 
     protected $hidden = [
@@ -33,6 +38,8 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'active' => 'boolean',
+            'last_login_at' => 'datetime',
         ];
     }
 }

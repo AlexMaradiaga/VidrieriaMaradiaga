@@ -49,6 +49,7 @@ final class AuthenticatedSessionController extends Controller
         if (! Auth::guard('web')->attempt([
             'email' => $email,
             'password' => $data['password'],
+            'active' => true,
         ])) {
             RateLimiter::hit($key, 60);
 
@@ -60,6 +61,8 @@ final class AuthenticatedSessionController extends Controller
         RateLimiter::clear($key);
 
         $request->session()->regenerate();
+
+        $request->user()?->forceFill(['last_login_at' => now()])->save();
 
         return redirect()->intended(route('dashboard'));
     }

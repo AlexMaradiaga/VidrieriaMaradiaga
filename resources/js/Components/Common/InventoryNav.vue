@@ -25,6 +25,11 @@ const { t } = useI18n();
         <Link v-if="can('inventory.kits.view')" href="/inventory/kits">{{ t('nav.kits') }}</Link>
         <Link v-if="can('inventory.cuts.use')" href="/inventory/cut-calculator">{{ t('nav.cuts') }}</Link>
         <Link v-if="can('inventory.catalogs.view')" href="/inventory/catalogs">{{ t('nav.catalogs') }}</Link>
+        <Link v-if="can('sales.view')" href="/sales"><i class="pi pi-shopping-cart" /> Ventas</Link>
+        <Link v-if="can('sales.customers.manage')" href="/sales/customers">Clientes</Link>
+        <Link v-if="can('suppliers.view')" href="/suppliers">Proveedores</Link>
+        <Link v-if="can('accounting.entries.view')" href="/accounting"><i class="pi pi-calculator" /> Contabilidad</Link>
+        <Link v-if="can('access.users.view')" href="/access"><i class="pi pi-users" /> Usuarios</Link>
     </nav>
 </template>
 

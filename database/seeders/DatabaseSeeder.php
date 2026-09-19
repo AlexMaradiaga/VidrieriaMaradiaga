@@ -12,5 +12,6 @@ class DatabaseSeeder extends Seeder
             InventoryCatalogSeeder::class,
         ]);
         $this->call(AccessRolesSeeder::class);
+        $this->call(AccountingSeeder::class);
     }
 }

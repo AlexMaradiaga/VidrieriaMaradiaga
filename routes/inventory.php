@@ -6,7 +6,7 @@ use App\Modules\Inventory\UI\Http\Controllers\ProductController;
 use App\Modules\Inventory\UI\Http\Controllers\InventoryOperationsController;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware('auth')
+Route::middleware(['auth', 'active'])
     ->prefix('inventory')
     ->name('inventory.')
     ->group(function (): void {
