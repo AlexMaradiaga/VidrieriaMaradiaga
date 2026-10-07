@@ -72,6 +72,12 @@ final class SqlSalesService implements SalesServiceInterface
             if (($data['payment_type'] ?? 'cash') === 'cash' && ! $paid->isEqualTo($grandTotal)) {
                 throw new DomainException('Una venta de contado debe quedar pagada totalmente.');
             }
+            $treasury = ! empty($data['treasury_account_id'])
+                ? DB::table('accounting_treasury_accounts')->where('id', (int) $data['treasury_account_id'])->where('active', true)->first()
+                : null;
+            if ($paid->isGreaterThan('0') && $treasury === null) {
+                throw new DomainException('Selecciona la caja o cuenta bancaria que recibió el cobro.');
+            }
 
             $sequence = (int) DB::table('sales_documents')->lockForUpdate()->max('id') + 1;
             $number = sprintf('VTA-%s-%06d', str_replace('-', '', (string) $data['document_date']), $sequence);
@@ -84,6 +90,7 @@ final class SqlSalesService implements SalesServiceInterface
                 'location_id' => $data['location_id'],
                 'status' => 'posted',
                 'payment_type' => $data['payment_type'],
+                'treasury_account_id' => $treasury?->id,
                 'subtotal' => (string) $subtotal,
                 'discount' => (string) $discountTotal,
                 'tax' => (string) $taxTotal,
@@ -141,6 +148,7 @@ final class SqlSalesService implements SalesServiceInterface
                 'paid' => (string) $paid, 'total' => (string) $grandTotal,
                 'net' => (string) $subtotal->minus($discountTotal),
                 'tax' => (string) $taxTotal, 'cost' => (string) $totalCost,
+                'treasury_accounting_id' => $treasury?->accounting_account_id,
             ], $userId);
             DB::table('sales_documents')->where('id', $saleId)->update(['journal_entry_id' => $entryId]);
 
@@ -148,6 +156,7 @@ final class SqlSalesService implements SalesServiceInterface
                 DB::table('sales_payments')->insert([
                     'sale_id' => $saleId, 'payment_date' => $data['document_date'], 'amount' => (string) $paid,
                     'method' => $data['payment_method'] ?? 'cash', 'reference' => null,
+                    'treasury_account_id' => $treasury->id,
                     'notes' => 'Pago registrado con la venta', 'received_by' => $userId,
                     'journal_entry_id' => $entryId, 'created_at' => $now, 'updated_at' => $now,
                 ]);
@@ -161,7 +170,8 @@ final class SqlSalesService implements SalesServiceInterface
     {
         return DB::transaction(function () use ($saleId, $data, $userId): int {
             $sale = DB::table('sales_documents')->where('id', $saleId)->lockForUpdate()->first();
-            if ($sale === null || $sale->status !== 'posted') {
+            $treasury = DB::table('accounting_treasury_accounts')->where('id', (int) $data['treasury_account_id'])->where('active', true)->first();
+            if ($sale === null || $sale->status !== 'posted' || $treasury === null) {
                 throw new DomainException('La venta no está disponible para cobros.');
             }
             $amount = BigDecimal::of((string) $data['amount'])->toScale(2, RoundingMode::HALF_UP);
@@ -173,10 +183,11 @@ final class SqlSalesService implements SalesServiceInterface
             $paymentId = DB::table('sales_payments')->insertGetId([
                 'sale_id' => $saleId, 'payment_date' => $data['payment_date'], 'amount' => (string) $amount,
                 'method' => $data['method'], 'reference' => trim((string) ($data['reference'] ?? '')) ?: null,
+                'treasury_account_id' => $treasury->id,
                 'notes' => trim((string) ($data['notes'] ?? '')) ?: null, 'received_by' => $userId,
                 'journal_entry_id' => null, 'created_at' => $now, 'updated_at' => $now,
             ]);
-            $entryId = $this->accounting->postPayment($paymentId, (string) $amount, $data['payment_date'], $userId);
+            $entryId = $this->accounting->postPayment($paymentId, (string) $amount, $data['payment_date'], $userId, (int) $treasury->accounting_account_id);
             DB::table('sales_payments')->where('id', $paymentId)->update(['journal_entry_id' => $entryId]);
             DB::table('sales_documents')->where('id', $saleId)->update([
                 'paid_amount' => (string) BigDecimal::of((string) $sale->paid_amount)->plus($amount), 'updated_at' => $now,

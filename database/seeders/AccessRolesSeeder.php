@@ -47,6 +47,10 @@ final class AccessRolesSeeder extends Seeder
                 'access.employees.manage',
                 'suppliers.view',
                 'suppliers.manage',
+                'purchases.view',
+                'purchases.create',
+                'purchases.post',
+                'purchases.payments.manage',
                 'sales.view',
                 'sales.create',
                 'sales.post',
@@ -58,6 +62,12 @@ final class AccessRolesSeeder extends Seeder
                 'accounting.entries.view',
                 'accounting.entries.create',
                 'accounting.reports.view',
+                'accounting.treasury.view',
+                'accounting.treasury.manage',
+                'accounting.expenses.view',
+                'accounting.expenses.manage',
+                'accounting.loans.view',
+                'accounting.loans.manage',
             ];
 
             foreach ($permissions as $permission) {
@@ -103,12 +113,31 @@ final class AccessRolesSeeder extends Seeder
                 'Contabilidad' => [
                     'sales.view',
                     'suppliers.view',
+                    'purchases.view',
+                    'purchases.payments.manage',
                     'accounting.accounts.view',
                     'accounting.accounts.manage',
                     'accounting.periods.manage',
                     'accounting.entries.view',
                     'accounting.entries.create',
                     'accounting.reports.view',
+                    'accounting.treasury.view',
+                    'accounting.treasury.manage',
+                    'accounting.expenses.view',
+                    'accounting.expenses.manage',
+                    'accounting.loans.view',
+                    'accounting.loans.manage',
+                ],
+
+                'Compras' => [
+                    'inventory.products.view',
+                    'inventory.entries.view',
+                    'suppliers.view',
+                    'suppliers.manage',
+                    'purchases.view',
+                    'purchases.create',
+                    'purchases.post',
+                    'purchases.payments.manage',
                 ],
 
                 'Recursos Humanos' => [

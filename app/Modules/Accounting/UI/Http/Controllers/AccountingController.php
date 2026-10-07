@@ -23,16 +23,32 @@ final class AccountingController extends Controller
         Gate::authorize('accounting.entries.view');
         $from = $request->string('from')->toString() ?: now()->startOfMonth()->toDateString();
         $to = $request->string('to')->toString() ?: now()->endOfMonth()->toDateString();
+        $trialBalance = DB::table('accounting_accounts as a')->leftJoin('accounting_journal_lines as l', 'l.account_id', '=', 'a.id')
+            ->leftJoin('accounting_journal_entries as e', function ($join) use ($from, $to): void {
+                $join->on('e.id', '=', 'l.entry_id')->where('e.status', 'posted')->whereBetween('e.entry_date', [$from, $to]);
+            })->groupBy('a.id', 'a.code', 'a.name', 'a.type')->orderBy('a.code')
+            ->get(['a.id', 'a.code', 'a.name', 'a.type', DB::raw('COALESCE(SUM(CASE WHEN e.id IS NOT NULL THEN l.debit ELSE 0 END),0) as debit'), DB::raw('COALESCE(SUM(CASE WHEN e.id IS NOT NULL THEN l.credit ELSE 0 END),0) as credit')]);
+        $totalDebit = $trialBalance->sum(fn ($row): float => (float) $row->debit);
+        $totalCredit = $trialBalance->sum(fn ($row): float => (float) $row->credit);
+        $revenue = $trialBalance->where('type', 'revenue')->sum(fn ($row): float => (float) $row->credit - (float) $row->debit);
+        $expenses = $trialBalance->where('type', 'expense')->sum(fn ($row): float => (float) $row->debit - (float) $row->credit);
+        $assets = $trialBalance->where('type', 'asset')->sum(fn ($row): float => (float) $row->debit - (float) $row->credit);
+        $liabilities = $trialBalance->where('type', 'liability')->sum(fn ($row): float => (float) $row->credit - (float) $row->debit);
+        $equity = $trialBalance->where('type', 'equity')->sum(fn ($row): float => (float) $row->credit - (float) $row->debit);
         return Inertia::render('Accounting/Index', [
             'filters' => compact('from', 'to'),
             'accounts' => DB::table('accounting_accounts')->orderBy('code')->get(),
             'periods' => DB::table('accounting_periods')->orderByDesc('year')->orderByDesc('month')->get(),
             'entries' => DB::table('accounting_journal_entries')->whereBetween('entry_date', [$from, $to])->orderByDesc('entry_date')->orderByDesc('id')->get(),
-            'trialBalance' => DB::table('accounting_accounts as a')->leftJoin('accounting_journal_lines as l', 'l.account_id', '=', 'a.id')
-                ->leftJoin('accounting_journal_entries as e', function ($join) use ($from, $to): void {
-                    $join->on('e.id', '=', 'l.entry_id')->where('e.status', 'posted')->whereBetween('e.entry_date', [$from, $to]);
-                })->groupBy('a.id', 'a.code', 'a.name')->orderBy('a.code')
-                ->get(['a.id', 'a.code', 'a.name', DB::raw('COALESCE(SUM(CASE WHEN e.id IS NOT NULL THEN l.debit ELSE 0 END),0) as debit'), DB::raw('COALESCE(SUM(CASE WHEN e.id IS NOT NULL THEN l.credit ELSE 0 END),0) as credit')]),
+            'trialBalance' => $trialBalance,
+            'statements' => [
+                'debits' => number_format($totalDebit, 2, '.', ''), 'credits' => number_format($totalCredit, 2, '.', ''),
+                'difference' => number_format($totalDebit - $totalCredit, 2, '.', ''),
+                'revenue' => number_format($revenue, 2, '.', ''), 'expenses' => number_format($expenses, 2, '.', ''),
+                'profit' => number_format($revenue - $expenses, 2, '.', ''), 'assets' => number_format($assets, 2, '.', ''),
+                'liabilities' => number_format($liabilities, 2, '.', ''), 'equity' => number_format($equity, 2, '.', ''),
+                'equation_difference' => number_format($assets - ($liabilities + $equity + $revenue - $expenses), 2, '.', ''),
+            ],
         ]);
     }
 

@@ -28,7 +28,11 @@ const { t } = useI18n();
         <Link v-if="can('sales.view')" href="/sales"><i class="pi pi-shopping-cart" /> Ventas</Link>
         <Link v-if="can('sales.customers.manage')" href="/sales/customers">Clientes</Link>
         <Link v-if="can('suppliers.view')" href="/suppliers">Proveedores</Link>
+        <Link v-if="can('purchases.view')" href="/purchases"><i class="pi pi-shopping-bag" /> Compras</Link>
         <Link v-if="can('accounting.entries.view')" href="/accounting"><i class="pi pi-calculator" /> Contabilidad</Link>
+        <Link v-if="can('accounting.treasury.view')" href="/accounting/treasury">Caja y bancos</Link>
+        <Link v-if="can('accounting.expenses.view')" href="/accounting/expenses">Gastos</Link>
+        <Link v-if="can('accounting.loans.view')" href="/accounting/loans">Préstamos</Link>
         <Link v-if="can('access.users.view')" href="/access"><i class="pi pi-users" /> Usuarios</Link>
     </nav>
 </template>

@@ -11,5 +11,17 @@ interface AccountingPostingInterface
 
     public function postSale(int $saleId, array $totals, int $userId): int;
 
-    public function postPayment(int $paymentId, string $amount, string $date, int $userId): int;
+    public function postPayment(int $paymentId, string $amount, string $date, int $userId, ?int $treasuryAccountingId = null): int;
+
+    public function postPurchase(int $purchaseId, array $totals, int $userId): int;
+
+    public function postSupplierPayment(int $paymentId, array $data, int $userId): int;
+
+    public function postExpense(int $expenseId, array $data, int $userId): int;
+
+    public function postExpensePayment(int $paymentId, array $data, int $userId): int;
+
+    public function postLoan(int $loanId, array $data, int $userId): int;
+
+    public function postLoanPayment(int $paymentId, array $data, int $userId): int;
 }

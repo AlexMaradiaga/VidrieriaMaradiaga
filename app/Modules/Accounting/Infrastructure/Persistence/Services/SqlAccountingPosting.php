@@ -31,11 +31,6 @@ final class SqlAccountingPosting implements AccountingPostingInterface
             $normalized = [];
 
             foreach ($lines as $line) {
-                $account = DB::table('accounting_accounts')->where('id', (int) $line['account_id'])->first();
-                if ($account === null || ! $account->active || ! $account->accepts_entries) {
-                    throw new DomainException('Una cuenta contable no está disponible para movimientos.');
-                }
-
                 $debit = BigDecimal::of((string) $line['debit'])->toScale(2, RoundingMode::HALF_UP);
                 $credit = BigDecimal::of((string) $line['credit'])->toScale(2, RoundingMode::HALF_UP);
                 if ($debit->isLessThan('0') || $credit->isLessThan('0') || ($debit->isGreaterThan('0') && $credit->isGreaterThan('0'))) {
@@ -43,6 +38,11 @@ final class SqlAccountingPosting implements AccountingPostingInterface
                 }
                 if ($debit->isZero() && $credit->isZero()) {
                     continue;
+                }
+
+                $account = DB::table('accounting_accounts')->where('id', (int) $line['account_id'])->first();
+                if ($account === null || ! $account->active || ! $account->accepts_entries) {
+                    throw new DomainException('Una cuenta contable no está disponible para movimientos.');
                 }
 
                 $debits = $debits->plus($debit);
@@ -92,9 +92,7 @@ final class SqlAccountingPosting implements AccountingPostingInterface
 
     public function postSale(int $saleId, array $totals, int $userId): int
     {
-        $accounts = $this->settings([
-            'cash', 'accounts_receivable', 'inventory', 'sales_revenue', 'sales_tax_payable', 'cost_of_goods_sold',
-        ]);
+        $accounts = $this->settings(['cash', 'accounts_receivable', 'inventory', 'sales_revenue', 'sales_tax_payable', 'cost_of_goods_sold']);
         $paid = BigDecimal::of((string) $totals['paid'])->toScale(2);
         $total = BigDecimal::of((string) $totals['total'])->toScale(2);
         $cost = BigDecimal::of((string) $totals['cost'])->toScale(2, RoundingMode::HALF_UP);
@@ -107,7 +105,7 @@ final class SqlAccountingPosting implements AccountingPostingInterface
             'description' => 'Venta '.$totals['number'],
             'reference' => $totals['number'],
         ], [
-            ['account_id' => $accounts['cash'], 'debit' => (string) $paid, 'credit' => '0'],
+            ['account_id' => (int) ($totals['treasury_accounting_id'] ?? $accounts['cash']), 'debit' => (string) $paid, 'credit' => '0'],
             ['account_id' => $accounts['accounts_receivable'], 'debit' => (string) $receivable, 'credit' => '0'],
             ['account_id' => $accounts['cost_of_goods_sold'], 'debit' => (string) $cost, 'credit' => '0'],
             ['account_id' => $accounts['sales_revenue'], 'debit' => '0', 'credit' => (string) $totals['net']],
@@ -116,7 +114,7 @@ final class SqlAccountingPosting implements AccountingPostingInterface
         ], $userId);
     }
 
-    public function postPayment(int $paymentId, string $amount, string $date, int $userId): int
+    public function postPayment(int $paymentId, string $amount, string $date, int $userId, ?int $treasuryAccountingId = null): int
     {
         $accounts = $this->settings(['cash', 'accounts_receivable']);
 
@@ -127,8 +125,98 @@ final class SqlAccountingPosting implements AccountingPostingInterface
             'description' => 'Cobro de venta',
             'reference' => 'COBRO-'.$paymentId,
         ], [
-            ['account_id' => $accounts['cash'], 'debit' => $amount, 'credit' => '0'],
+            ['account_id' => $treasuryAccountingId ?? $accounts['cash'], 'debit' => $amount, 'credit' => '0'],
             ['account_id' => $accounts['accounts_receivable'], 'debit' => '0', 'credit' => $amount],
+        ], $userId);
+    }
+
+    public function postPurchase(int $purchaseId, array $totals, int $userId): int
+    {
+        $accounts = $this->settings(['inventory', 'input_tax', 'accounts_payable']);
+        $total = BigDecimal::of((string) $totals['total'])->toScale(2);
+        $paid = BigDecimal::of((string) $totals['paid'])->toScale(2);
+        $payable = $total->minus($paid);
+
+        return $this->post([
+            'entry_date' => $totals['date'],
+            'source_type' => 'purchase',
+            'source_id' => $purchaseId,
+            'description' => 'Compra '.$totals['number'],
+            'reference' => $totals['reference'] ?? $totals['number'],
+        ], [
+            ['account_id' => $accounts['inventory'], 'debit' => $totals['net'], 'credit' => '0'],
+            ['account_id' => $accounts['input_tax'], 'debit' => $totals['tax'], 'credit' => '0'],
+            ['account_id' => (int) $totals['treasury_accounting_id'], 'debit' => '0', 'credit' => (string) $paid],
+            ['account_id' => $accounts['accounts_payable'], 'debit' => '0', 'credit' => (string) $payable],
+        ], $userId);
+    }
+
+    public function postSupplierPayment(int $paymentId, array $data, int $userId): int
+    {
+        $accounts = $this->settings(['accounts_payable']);
+
+        return $this->post([
+            'entry_date' => $data['date'], 'source_type' => 'supplier_payment', 'source_id' => $paymentId,
+            'description' => 'Pago a proveedor', 'reference' => $data['reference'] ?? 'PAGO-PROV-'.$paymentId,
+        ], [
+            ['account_id' => $accounts['accounts_payable'], 'debit' => $data['amount'], 'credit' => '0'],
+            ['account_id' => (int) $data['treasury_accounting_id'], 'debit' => '0', 'credit' => $data['amount']],
+        ], $userId);
+    }
+
+    public function postExpense(int $expenseId, array $data, int $userId): int
+    {
+        $accounts = $this->settings(['input_tax', 'accounts_payable']);
+        $total = BigDecimal::of((string) $data['total'])->toScale(2);
+        $paid = BigDecimal::of((string) $data['paid'])->toScale(2);
+
+        return $this->post([
+            'entry_date' => $data['date'], 'source_type' => 'expense', 'source_id' => $expenseId,
+            'description' => $data['description'], 'reference' => $data['reference'] ?? null,
+        ], [
+            ['account_id' => (int) $data['expense_account_id'], 'debit' => $data['subtotal'], 'credit' => '0'],
+            ['account_id' => $accounts['input_tax'], 'debit' => $data['tax'], 'credit' => '0'],
+            ['account_id' => (int) $data['treasury_accounting_id'], 'debit' => '0', 'credit' => (string) $paid],
+            ['account_id' => $accounts['accounts_payable'], 'debit' => '0', 'credit' => (string) $total->minus($paid)],
+        ], $userId);
+    }
+
+    public function postExpensePayment(int $paymentId, array $data, int $userId): int
+    {
+        $accounts = $this->settings(['accounts_payable']);
+
+        return $this->post([
+            'entry_date' => $data['date'], 'source_type' => 'expense_payment', 'source_id' => $paymentId,
+            'description' => 'Pago de gasto o servicio', 'reference' => $data['reference'] ?? 'PAGO-GTO-'.$paymentId,
+        ], [
+            ['account_id' => $accounts['accounts_payable'], 'debit' => $data['amount'], 'credit' => '0'],
+            ['account_id' => (int) $data['treasury_accounting_id'], 'debit' => '0', 'credit' => $data['amount']],
+        ], $userId);
+    }
+
+    public function postLoan(int $loanId, array $data, int $userId): int
+    {
+        return $this->post([
+            'entry_date' => $data['date'], 'source_type' => 'loan', 'source_id' => $loanId,
+            'description' => $data['description'], 'reference' => $data['reference'] ?? null,
+        ], [
+            ['account_id' => (int) $data['treasury_accounting_id'], 'debit' => $data['principal'], 'credit' => '0'],
+            ['account_id' => (int) $data['liability_account_id'], 'debit' => '0', 'credit' => $data['principal']],
+        ], $userId);
+    }
+
+    public function postLoanPayment(int $paymentId, array $data, int $userId): int
+    {
+        $accounts = $this->settings(['financial_fees']);
+
+        return $this->post([
+            'entry_date' => $data['date'], 'source_type' => 'loan_payment', 'source_id' => $paymentId,
+            'description' => 'Pago de préstamo '.$data['loan_number'], 'reference' => $data['reference'] ?? null,
+        ], [
+            ['account_id' => (int) $data['liability_account_id'], 'debit' => $data['principal'], 'credit' => '0'],
+            ['account_id' => (int) $data['interest_account_id'], 'debit' => $data['interest'], 'credit' => '0'],
+            ['account_id' => $accounts['financial_fees'], 'debit' => $data['late_fee'], 'credit' => '0'],
+            ['account_id' => (int) $data['treasury_accounting_id'], 'debit' => '0', 'credit' => $data['total']],
         ], $userId);
     }
 

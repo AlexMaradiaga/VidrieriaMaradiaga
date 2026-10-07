@@ -1,9 +1,9 @@
 <?php
 
-use App\Modules\Inventory\UI\Http\Controllers\InventoryDashboardController;
+use App\Modules\Business\UI\Http\Controllers\BusinessDashboardController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', InventoryDashboardController::class)
+Route::get('/', BusinessDashboardController::class)
     ->middleware(['auth', 'active'])
     ->name('dashboard');
 

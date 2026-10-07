@@ -6,6 +6,8 @@ namespace App\Modules\Business\Providers;
 
 use App\Modules\Accounting\Application\Ports\AccountingPostingInterface;
 use App\Modules\Accounting\Infrastructure\Persistence\Services\SqlAccountingPosting;
+use App\Modules\Purchasing\Application\Ports\PurchaseServiceInterface;
+use App\Modules\Purchasing\Infrastructure\Persistence\Services\SqlPurchaseService;
 use App\Modules\Sales\Application\Ports\SalesServiceInterface;
 use App\Modules\Sales\Infrastructure\Persistence\Services\SqlSalesService;
 use Illuminate\Support\ServiceProvider;
@@ -16,5 +18,6 @@ final class BusinessServiceProvider extends ServiceProvider
     {
         $this->app->bind(AccountingPostingInterface::class, SqlAccountingPosting::class);
         $this->app->bind(SalesServiceInterface::class, SqlSalesService::class);
+        $this->app->bind(PurchaseServiceInterface::class, SqlPurchaseService::class);
     }
 }
