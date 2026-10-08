@@ -1,0 +1,3012 @@
+[
+  {
+    "source_number": 1,
+    "sku": "VM-0001",
+    "name": "Acrílico “Black Ice” de 40",
+    "category_code": "GLASS",
+    "unit_code": "SHEET",
+    "track_remnants": false,
+    "sale_price": 497.83,
+    "source_price_with_tax": 571
+  },
+  {
+    "source_number": 2,
+    "sku": "VM-0002",
+    "name": "Acrílico “Cañaveral” bronce de 36",
+    "category_code": "GLASS",
+    "unit_code": "SHEET",
+    "track_remnants": false,
+    "sale_price": 447.83,
+    "source_price_with_tax": 515
+  },
+  {
+    "source_number": 3,
+    "sku": "VM-0003",
+    "name": "Acrílico “Cuadricula” humo de 40",
+    "category_code": "GLASS",
+    "unit_code": "SHEET",
+    "track_remnants": false,
+    "sale_price": 497.39,
+    "source_price_with_tax": 571
+  },
+  {
+    "source_number": 4,
+    "sku": "VM-0004",
+    "name": "Acrílico “Delfin Celeste” de 24",
+    "category_code": "GLASS",
+    "unit_code": "SHEET",
+    "track_remnants": false,
+    "sale_price": 331.3,
+    "source_price_with_tax": 380
+  },
+  {
+    "source_number": 5,
+    "sku": "VM-0005",
+    "name": "Acrílico “Estrella Bronce” de 36",
+    "category_code": "GLASS",
+    "unit_code": "SHEET",
+    "track_remnants": false,
+    "sale_price": 495.65,
+    "source_price_with_tax": 570
+  },
+  {
+    "source_number": 6,
+    "sku": "VM-0006",
+    "name": "Acrílico “Lluvia Celeste” de 30",
+    "category_code": "GLASS",
+    "unit_code": "SHEET",
+    "track_remnants": false,
+    "sale_price": 413.04,
+    "source_price_with_tax": 474
+  },
+  {
+    "source_number": 7,
+    "sku": "VM-0007",
+    "name": "Acrílico “Nevado Neutro” de 40",
+    "category_code": "GLASS",
+    "unit_code": "SHEET",
+    "track_remnants": false,
+    "sale_price": 331.3,
+    "source_price_with_tax": 380
+  },
+  {
+    "source_number": 8,
+    "sku": "VM-0008",
+    "name": "Acrílico “Transparente” 3mm de 4X8",
+    "category_code": "GLASS",
+    "unit_code": "SHEET",
+    "track_remnants": false,
+    "sale_price": 1608.7,
+    "source_price_with_tax": 1850
+  },
+  {
+    "source_number": 9,
+    "sku": "VM-0009",
+    "name": "Angulo de 1 ½ X 1/8",
+    "category_code": "ALUMINUM",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 608.7,
+    "source_price_with_tax": 700
+  },
+  {
+    "source_number": 10,
+    "sku": "VM-0010",
+    "name": "Angulo de 1 x 1 x 0.62 Natural",
+    "category_code": "ALUMINUM",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 212.95,
+    "source_price_with_tax": 245
+  },
+  {
+    "source_number": 11,
+    "sku": "VM-0011",
+    "name": "Angulo de 1/2X3/8 - BR",
+    "category_code": "ALUMINUM",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 86.96,
+    "source_price_with_tax": 100
+  },
+  {
+    "source_number": 12,
+    "sku": "VM-0012",
+    "name": "Angulo galvanizado de 1 ¼ X 1 ¼ 1 ¼ X 10 para tablilla",
+    "category_code": "PVC",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 20,
+    "source_price_with_tax": 23
+  },
+  {
+    "source_number": 13,
+    "sku": "VM-0013",
+    "name": "Barra de empuje PTA abatible - AL",
+    "category_code": "HARDWARE",
+    "unit_code": "UNIT",
+    "track_remnants": false,
+    "sale_price": 217.39,
+    "source_price_with_tax": 250
+  },
+  {
+    "source_number": 14,
+    "sku": "VM-0014",
+    "name": "Barra decorativa 9x15 PVC - BL",
+    "category_code": "PVC",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 52.17,
+    "source_price_with_tax": 60
+  },
+  {
+    "source_number": 15,
+    "sku": "VM-0015",
+    "name": "Barra decorativa de 9X5 madera",
+    "category_code": "ACCESSORIES",
+    "unit_code": "UNIT",
+    "track_remnants": false,
+    "sale_price": 68.7,
+    "source_price_with_tax": 79
+  },
+  {
+    "source_number": 16,
+    "sku": "VM-0016",
+    "name": "Batiente BK sencillo P/V Abat. C/Sello",
+    "category_code": "ALUMINUM",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 132.06,
+    "source_price_with_tax": 152
+  },
+  {
+    "source_number": 17,
+    "sku": "VM-0017",
+    "name": "Batiente BL sencillo P/V Abat. C/Sello",
+    "category_code": "ALUMINUM",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 118.44,
+    "source_price_with_tax": 136
+  },
+  {
+    "source_number": 18,
+    "sku": "VM-0018",
+    "name": "Batiente cristal Black sencillo C/Sello",
+    "category_code": "ALUMINUM",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 46.49,
+    "source_price_with_tax": 53
+  },
+  {
+    "source_number": 19,
+    "sku": "VM-0019",
+    "name": "Batiente cristal sencillo 88 BK C/Sello",
+    "category_code": "ALUMINUM",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 105.29,
+    "source_price_with_tax": 121
+  },
+  {
+    "source_number": 20,
+    "sku": "VM-0020",
+    "name": "Batiente de presion - BL",
+    "category_code": "ALUMINUM",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 100,
+    "source_price_with_tax": 115
+  },
+  {
+    "source_number": 21,
+    "sku": "VM-0021",
+    "name": "Batiente de presion - Nogal",
+    "category_code": "ALUMINUM",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 139.13,
+    "source_price_with_tax": 160
+  },
+  {
+    "source_number": 22,
+    "sku": "VM-0022",
+    "name": "Batiente para abatible - Negro",
+    "category_code": "ALUMINUM",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 117.39,
+    "source_price_with_tax": 135
+  },
+  {
+    "source_number": 23,
+    "sku": "VM-0023",
+    "name": "Batiente para abatible PVC - BL",
+    "category_code": "PVC",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 134.78,
+    "source_price_with_tax": 154
+  },
+  {
+    "source_number": 24,
+    "sku": "VM-0024",
+    "name": "Batiente para corrediza PVC - BL",
+    "category_code": "PVC",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 60,
+    "source_price_with_tax": 69
+  },
+  {
+    "source_number": 25,
+    "sku": "VM-0025",
+    "name": "Batiente para corrediza PVC - N",
+    "category_code": "PVC",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 93.91,
+    "source_price_with_tax": 107
+  },
+  {
+    "source_number": 26,
+    "sku": "VM-0026",
+    "name": "Batiente vidrio ventana proyectable bro",
+    "category_code": "ALUMINUM",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 342.36,
+    "source_price_with_tax": 394
+  },
+  {
+    "source_number": 27,
+    "sku": "VM-0027",
+    "name": "Bisagra de friccion 10pulg",
+    "category_code": "HARDWARE",
+    "unit_code": "UNIT",
+    "track_remnants": false,
+    "sale_price": 117.79,
+    "source_price_with_tax": 135
+  },
+  {
+    "source_number": 28,
+    "sku": "VM-0028",
+    "name": "Bisagra de piano",
+    "category_code": "HARDWARE",
+    "unit_code": "UNIT",
+    "track_remnants": false,
+    "sale_price": 260.87,
+    "source_price_with_tax": 300
+  },
+  {
+    "source_number": 29,
+    "sku": "VM-0029",
+    "name": "Bisagra para proyectable de 12",
+    "category_code": "HARDWARE",
+    "unit_code": "UNIT",
+    "track_remnants": false,
+    "sale_price": 103.48,
+    "source_price_with_tax": 119
+  },
+  {
+    "source_number": 30,
+    "sku": "VM-0030",
+    "name": "Cabezal C/M XLT C/Canal - BL",
+    "category_code": "ALUMINUM",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 482.61,
+    "source_price_with_tax": 555
+  },
+  {
+    "source_number": 31,
+    "sku": "VM-0031",
+    "name": "Cabezal C/M XLT C/Canal - BR",
+    "category_code": "ALUMINUM",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 433.04,
+    "source_price_with_tax": 497
+  },
+  {
+    "source_number": 32,
+    "sku": "VM-0032",
+    "name": "Cabezal C/M XLT C/Canal - Nogal",
+    "category_code": "ALUMINUM",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 533.04,
+    "source_price_with_tax": 612
+  },
+  {
+    "source_number": 33,
+    "sku": "VM-0033",
+    "name": "Cabezal celosia - MF",
+    "category_code": "ALUMINUM",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 260.87,
+    "source_price_with_tax": 300
+  },
+  {
+    "source_number": 34,
+    "sku": "VM-0034",
+    "name": "Cabezal hoja PTA corrediza clasica - BL",
+    "category_code": "ALUMINUM",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 439.32,
+    "source_price_with_tax": 505
+  },
+  {
+    "source_number": 35,
+    "sku": "VM-0035",
+    "name": "Cabezal hoja PTA corrediza clasica - BR",
+    "category_code": "ALUMINUM",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 448.16,
+    "source_price_with_tax": 515
+  },
+  {
+    "source_number": 36,
+    "sku": "VM-0036",
+    "name": "Cabezal hoja XLT - BL",
+    "category_code": "ALUMINUM",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 420.87,
+    "source_price_with_tax": 484
+  },
+  {
+    "source_number": 37,
+    "sku": "VM-0037",
+    "name": "Cabezal hoja XLT - BR",
+    "category_code": "ALUMINUM",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 443.48,
+    "source_price_with_tax": 510
+  },
+  {
+    "source_number": 38,
+    "sku": "VM-0038",
+    "name": "Cabezal hoja XLT - Nogal",
+    "category_code": "ALUMINUM",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 484.35,
+    "source_price_with_tax": 556
+  },
+  {
+    "source_number": 39,
+    "sku": "VM-0039",
+    "name": "Caja de madera P/Vidrio en \"M\"",
+    "category_code": "ACCESSORIES",
+    "unit_code": "UNIT",
+    "track_remnants": false,
+    "sale_price": 592.5,
+    "source_price_with_tax": 681
+  },
+  {
+    "source_number": 40,
+    "sku": "VM-0040",
+    "name": "Canal de 1/2x1/2 blanco",
+    "category_code": "ALUMINUM",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 111.66,
+    "source_price_with_tax": 128
+  },
+  {
+    "source_number": 41,
+    "sku": "VM-0041",
+    "name": "Canal de 1/2X1/2 liviano - AL",
+    "category_code": "ALUMINUM",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 91.3,
+    "source_price_with_tax": 104
+  },
+  {
+    "source_number": 42,
+    "sku": "VM-0042",
+    "name": "Canal de 1/2X1/2 liviano - BR",
+    "category_code": "ALUMINUM",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 106.96,
+    "source_price_with_tax": 123
+  },
+  {
+    "source_number": 43,
+    "sku": "VM-0043",
+    "name": "Canal de 1/2X1/2 liviano - Nogal",
+    "category_code": "ALUMINUM",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 121.74,
+    "source_price_with_tax": 140
+  },
+  {
+    "source_number": 44,
+    "sku": "VM-0044",
+    "name": "Canal de 1/2X1/2 pesado - AL",
+    "category_code": "ALUMINUM",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 130.43,
+    "source_price_with_tax": 150
+  },
+  {
+    "source_number": 45,
+    "sku": "VM-0045",
+    "name": "Canal de 1/2X1/2 pesado - BR",
+    "category_code": "ALUMINUM",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 147.83,
+    "source_price_with_tax": 170
+  },
+  {
+    "source_number": 46,
+    "sku": "VM-0046",
+    "name": "Canal de carga",
+    "category_code": "ALUMINUM",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 54.78,
+    "source_price_with_tax": 63
+  },
+  {
+    "source_number": 47,
+    "sku": "VM-0047",
+    "name": "Canal de furring",
+    "category_code": "ALUMINUM",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 33.48,
+    "source_price_with_tax": 39
+  },
+  {
+    "source_number": 48,
+    "sku": "VM-0048",
+    "name": "Canal H zapato - AL",
+    "category_code": "ALUMINUM",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 191.3,
+    "source_price_with_tax": 219
+  },
+  {
+    "source_number": 49,
+    "sku": "VM-0049",
+    "name": "Carrete felpa V/C clasica y PVC 400mts",
+    "category_code": "PVC",
+    "unit_code": "UNIT",
+    "track_remnants": false,
+    "sale_price": 684.52,
+    "source_price_with_tax": 787
+  },
+  {
+    "source_number": 50,
+    "sku": "VM-0050",
+    "name": "Cerradura “ DIP ” negra P/Vent. Corrediza",
+    "category_code": "HARDWARE",
+    "unit_code": "UNIT",
+    "track_remnants": false,
+    "sale_price": 47.83,
+    "source_price_with_tax": 56
+  },
+  {
+    "source_number": 51,
+    "sku": "VM-0051",
+    "name": "Cerradura “ DIP ” P/PTA Corrediza - BR",
+    "category_code": "HARDWARE",
+    "unit_code": "UNIT",
+    "track_remnants": false,
+    "sale_price": 65.22,
+    "source_price_with_tax": 75
+  },
+  {
+    "source_number": 52,
+    "sku": "VM-0052",
+    "name": "Cerradura automática P/Vent. Económico - AL",
+    "category_code": "HARDWARE",
+    "unit_code": "UNIT",
+    "track_remnants": false,
+    "sale_price": 47.83,
+    "source_price_with_tax": 55
+  },
+  {
+    "source_number": 53,
+    "sku": "VM-0053",
+    "name": "Cerradura automática P/Vent. Económico - BL",
+    "category_code": "HARDWARE",
+    "unit_code": "UNIT",
+    "track_remnants": false,
+    "sale_price": 56.52,
+    "source_price_with_tax": 65
+  },
+  {
+    "source_number": 54,
+    "sku": "VM-0054",
+    "name": "Cerradura completa P/PTA abatible “ DIP ” - AL",
+    "category_code": "HARDWARE",
+    "unit_code": "UNIT",
+    "track_remnants": false,
+    "sale_price": 317.39,
+    "source_price_with_tax": 365
+  },
+  {
+    "source_number": 55,
+    "sku": "VM-0055",
+    "name": "Cerradura media luna blanca con recibidor",
+    "category_code": "HARDWARE",
+    "unit_code": "UNIT",
+    "track_remnants": false,
+    "sale_price": 39.13,
+    "source_price_with_tax": 44
+  },
+  {
+    "source_number": 56,
+    "sku": "VM-0056",
+    "name": "Cerradura P/Vent. Guillotina - BR",
+    "category_code": "HARDWARE",
+    "unit_code": "UNIT",
+    "track_remnants": false,
+    "sale_price": 30.43,
+    "source_price_with_tax": 34
+  },
+  {
+    "source_number": 57,
+    "sku": "VM-0057",
+    "name": "Cerradura resilencia “ DIP ” (Blanca)",
+    "category_code": "HARDWARE",
+    "unit_code": "UNIT",
+    "track_remnants": false,
+    "sale_price": 404.35,
+    "source_price_with_tax": 465
+  },
+  {
+    "source_number": 58,
+    "sku": "VM-0058",
+    "name": "Cierrapuertas “ DIPROC ” pesado natural",
+    "category_code": "HARDWARE",
+    "unit_code": "UNIT",
+    "track_remnants": false,
+    "sale_price": 413.04,
+    "source_price_with_tax": 474
+  },
+  {
+    "source_number": 59,
+    "sku": "VM-0059",
+    "name": "Cierrapuertas “ OLIMPIA ” pesado - BR",
+    "category_code": "HARDWARE",
+    "unit_code": "UNIT",
+    "track_remnants": false,
+    "sale_price": 730.43,
+    "source_price_with_tax": 840
+  },
+  {
+    "source_number": 60,
+    "sku": "VM-0060",
+    "name": "Cierre automático derecho P/ PVC - N",
+    "category_code": "PVC",
+    "unit_code": "UNIT",
+    "track_remnants": false,
+    "sale_price": 34.78,
+    "source_price_with_tax": 40
+  },
+  {
+    "source_number": 61,
+    "sku": "VM-0061",
+    "name": "Cierre automático derecho para PVC - BL",
+    "category_code": "PVC",
+    "unit_code": "UNIT",
+    "track_remnants": false,
+    "sale_price": 43.47,
+    "source_price_with_tax": 50
+  },
+  {
+    "source_number": 62,
+    "sku": "VM-0062",
+    "name": "Cierre automático izquierdo P/ PVC - N",
+    "category_code": "PVC",
+    "unit_code": "UNIT",
+    "track_remnants": false,
+    "sale_price": 34.78,
+    "source_price_with_tax": 40
+  },
+  {
+    "source_number": 63,
+    "sku": "VM-0063",
+    "name": "Cierre automático izquierdo para PVC - BL",
+    "category_code": "PVC",
+    "unit_code": "UNIT",
+    "track_remnants": false,
+    "sale_price": 43.47,
+    "source_price_with_tax": 50
+  },
+  {
+    "source_number": 64,
+    "sku": "VM-0064",
+    "name": "Cierre para ventana Guillotina WH",
+    "category_code": "HARDWARE",
+    "unit_code": "UNIT",
+    "track_remnants": false,
+    "sale_price": 21.45,
+    "source_price_with_tax": 25
+  },
+  {
+    "source_number": 65,
+    "sku": "VM-0065",
+    "name": "Cilindro P/Cerradura completa “ DIP ” - AL",
+    "category_code": "HARDWARE",
+    "unit_code": "UNIT",
+    "track_remnants": false,
+    "sale_price": 152.17,
+    "source_price_with_tax": 175
+  },
+  {
+    "source_number": 66,
+    "sku": "VM-0066",
+    "name": "Cilindro P/Cerradura completa “ DIP ” - BL",
+    "category_code": "HARDWARE",
+    "unit_code": "UNIT",
+    "track_remnants": false,
+    "sale_price": 173.91,
+    "source_price_with_tax": 200
+  },
+  {
+    "source_number": 67,
+    "sku": "VM-0067",
+    "name": "Clavo de acero de 1",
+    "category_code": "HARDWARE",
+    "unit_code": "UNIT",
+    "track_remnants": false,
+    "sale_price": 56.52,
+    "source_price_with_tax": 64
+  },
+  {
+    "source_number": 68,
+    "sku": "VM-0068",
+    "name": "Contramarco 2 carriles PVC - BL",
+    "category_code": "PVC",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 221.74,
+    "source_price_with_tax": 255
+  },
+  {
+    "source_number": 69,
+    "sku": "VM-0069",
+    "name": "Contramarco 3 carriles Liviano PVC - BL",
+    "category_code": "PVC",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 304.35,
+    "source_price_with_tax": 350
+  },
+  {
+    "source_number": 70,
+    "sku": "VM-0070",
+    "name": "Contramarco 3 carriles para corrediza PVC - BL",
+    "category_code": "PVC",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 307.83,
+    "source_price_with_tax": 354
+  },
+  {
+    "source_number": 71,
+    "sku": "VM-0071",
+    "name": "Contramarco Black P/V fijo",
+    "category_code": "ALUMINUM",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 447.98,
+    "source_price_with_tax": 515
+  },
+  {
+    "source_number": 72,
+    "sku": "VM-0072",
+    "name": "Contramarco blanco P/V fija con sello",
+    "category_code": "ALUMINUM",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 319.65,
+    "source_price_with_tax": 367
+  },
+  {
+    "source_number": 73,
+    "sku": "VM-0073",
+    "name": "Contramarco de 2 carriles PVC - N",
+    "category_code": "PVC",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 355.65,
+    "source_price_with_tax": 408
+  },
+  {
+    "source_number": 74,
+    "sku": "VM-0074",
+    "name": "Contramarco de 3 carriles P/ PVC - N",
+    "category_code": "PVC",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 487.83,
+    "source_price_with_tax": 561
+  },
+  {
+    "source_number": 75,
+    "sku": "VM-0075",
+    "name": "Contramarco fijo 60 negro",
+    "category_code": "ALUMINUM",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 364.35,
+    "source_price_with_tax": 419
+  },
+  {
+    "source_number": 76,
+    "sku": "VM-0076",
+    "name": "Contramarco fijo 60 PVC - BL",
+    "category_code": "PVC",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 343,
+    "source_price_with_tax": 394
+  },
+  {
+    "source_number": 77,
+    "sku": "VM-0077",
+    "name": "Contramarco ventana Proyectable - BR",
+    "category_code": "ALUMINUM",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 808.95,
+    "source_price_with_tax": 930
+  },
+  {
+    "source_number": 78,
+    "sku": "VM-0078",
+    "name": "Cornisa PVC - BL",
+    "category_code": "PVC",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 86.96,
+    "source_price_with_tax": 100
+  },
+  {
+    "source_number": 79,
+    "sku": "VM-0079",
+    "name": "Cornisa PVC Madera Cerezo C-L001",
+    "category_code": "PVC",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 95.65,
+    "source_price_with_tax": 111
+  },
+  {
+    "source_number": 80,
+    "sku": "VM-0080",
+    "name": "Corte especial",
+    "category_code": "ACCESSORIES",
+    "unit_code": "UNIT",
+    "track_remnants": false,
+    "sale_price": 86.96,
+    "source_price_with_tax": 100
+  },
+  {
+    "source_number": 81,
+    "sku": "VM-0081",
+    "name": "Cremona para corrediza de 1600MM - PVC",
+    "category_code": "PVC",
+    "unit_code": "UNIT",
+    "track_remnants": false,
+    "sale_price": 143.48,
+    "source_price_with_tax": 165
+  },
+  {
+    "source_number": 82,
+    "sku": "VM-0082",
+    "name": "Cremona para corrediza de 800MM - PVC",
+    "category_code": "PVC",
+    "unit_code": "UNIT",
+    "track_remnants": false,
+    "sale_price": 89.57,
+    "source_price_with_tax": 103
+  },
+  {
+    "source_number": 83,
+    "sku": "VM-0083",
+    "name": "Division vent. y ventanilla Proyectable - BR",
+    "category_code": "ALUMINUM",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 770.38,
+    "source_price_with_tax": 885
+  },
+  {
+    "source_number": 84,
+    "sku": "VM-0084",
+    "name": "Doble canal para vitrina - AL",
+    "category_code": "ALUMINUM",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 189.57,
+    "source_price_with_tax": 217
+  },
+  {
+    "source_number": 85,
+    "sku": "VM-0085",
+    "name": "Empaque 730 TYPSA P/Vidrio de 5mm",
+    "category_code": "ACCESSORIES",
+    "unit_code": "UNIT",
+    "track_remnants": false,
+    "sale_price": 1226.08,
+    "source_price_with_tax": 1410
+  },
+  {
+    "source_number": 86,
+    "sku": "VM-0086",
+    "name": "Empaque 734 TYPSA 1m",
+    "category_code": "ACCESSORIES",
+    "unit_code": "METER",
+    "track_remnants": false,
+    "sale_price": 10.43,
+    "source_price_with_tax": 12
+  },
+  {
+    "source_number": 87,
+    "sku": "VM-0087",
+    "name": "Empaque grande P/Malla PVC R/L 12.5",
+    "category_code": "PVC",
+    "unit_code": "UNIT",
+    "track_remnants": false,
+    "sale_price": 591.3,
+    "source_price_with_tax": 680
+  },
+  {
+    "source_number": 88,
+    "sku": "VM-0088",
+    "name": "Empaque para malla de aluminio H-111 (48/35)",
+    "category_code": "ACCESSORIES",
+    "unit_code": "UNIT",
+    "track_remnants": false,
+    "sale_price": 613.04,
+    "source_price_with_tax": 704
+  },
+  {
+    "source_number": 89,
+    "sku": "VM-0089",
+    "name": "Empaque para malla PVC",
+    "category_code": "PVC",
+    "unit_code": "UNIT",
+    "track_remnants": false,
+    "sale_price": 121.74,
+    "source_price_with_tax": 140
+  },
+  {
+    "source_number": 90,
+    "sku": "VM-0090",
+    "name": "Encuentro central color Black S80",
+    "category_code": "ALUMINUM",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 107.63,
+    "source_price_with_tax": 124
+  },
+  {
+    "source_number": 91,
+    "sku": "VM-0091",
+    "name": "Encuentro central color blanco S80",
+    "category_code": "ALUMINUM",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 97,
+    "source_price_with_tax": 111
+  },
+  {
+    "source_number": 92,
+    "sku": "VM-0092",
+    "name": "Enmallador",
+    "category_code": "ACCESSORIES",
+    "unit_code": "UNIT",
+    "track_remnants": false,
+    "sale_price": 171.91,
+    "source_price_with_tax": 200
+  },
+  {
+    "source_number": 93,
+    "sku": "VM-0093",
+    "name": "Escuadra metalica P/Malla",
+    "category_code": "HARDWARE",
+    "unit_code": "UNIT",
+    "track_remnants": false,
+    "sale_price": 147.83,
+    "source_price_with_tax": 170
+  },
+  {
+    "source_number": 94,
+    "sku": "VM-0094",
+    "name": "Escuadra plastica - BL",
+    "category_code": "HARDWARE",
+    "unit_code": "UNIT",
+    "track_remnants": false,
+    "sale_price": 3.04,
+    "source_price_with_tax": 4
+  },
+  {
+    "source_number": 95,
+    "sku": "VM-0095",
+    "name": "Escuadra plastica - BR",
+    "category_code": "HARDWARE",
+    "unit_code": "UNIT",
+    "track_remnants": false,
+    "sale_price": 2.35,
+    "source_price_with_tax": 3
+  },
+  {
+    "source_number": 96,
+    "sku": "VM-0096",
+    "name": "Espejo 3mm (1/8) - 1.83X2.44",
+    "category_code": "GLASS",
+    "unit_code": "SHEET",
+    "track_remnants": false,
+    "sale_price": 782.61,
+    "source_price_with_tax": 900
+  },
+  {
+    "source_number": 97,
+    "sku": "VM-0097",
+    "name": "Espejo biselado miralite 5mm en metros",
+    "category_code": "GLASS",
+    "unit_code": "METER",
+    "track_remnants": false,
+    "sale_price": 1700,
+    "source_price_with_tax": 1955
+  },
+  {
+    "source_number": 98,
+    "sku": "VM-0098",
+    "name": "Esquinera para malla color blanco",
+    "category_code": "ACCESSORIES",
+    "unit_code": "UNIT",
+    "track_remnants": false,
+    "sale_price": 2.9,
+    "source_price_with_tax": 4
+  },
+  {
+    "source_number": 99,
+    "sku": "VM-0099",
+    "name": "Esquinera para malla color natural",
+    "category_code": "ACCESSORIES",
+    "unit_code": "UNIT",
+    "track_remnants": false,
+    "sale_price": 1.87,
+    "source_price_with_tax": 2.15
+  },
+  {
+    "source_number": 100,
+    "sku": "VM-0100",
+    "name": "Felpa P/Corrediza \" DIP \" rollo",
+    "category_code": "ACCESSORIES",
+    "unit_code": "UNIT",
+    "track_remnants": false,
+    "sale_price": 782.61,
+    "source_price_with_tax": 899
+  },
+  {
+    "source_number": 101,
+    "sku": "VM-0101",
+    "name": "Felpa P/Económico - BR 1M",
+    "category_code": "ACCESSORIES",
+    "unit_code": "METER",
+    "track_remnants": false,
+    "sale_price": 2.61,
+    "source_price_with_tax": 3
+  },
+  {
+    "source_number": 102,
+    "sku": "VM-0102",
+    "name": "Felpa P/PVC Metros",
+    "category_code": "PVC",
+    "unit_code": "UNIT",
+    "track_remnants": false,
+    "sale_price": 2.61,
+    "source_price_with_tax": 3
+  },
+  {
+    "source_number": 103,
+    "sku": "VM-0103",
+    "name": "Felpa P/PVC Rollo",
+    "category_code": "PVC",
+    "unit_code": "UNIT",
+    "track_remnants": false,
+    "sale_price": 739.13,
+    "source_price_with_tax": 849
+  },
+  {
+    "source_number": 104,
+    "sku": "VM-0104",
+    "name": "Fiberglass negra de 42 rollo de 30.5m",
+    "category_code": "ACCESSORIES",
+    "unit_code": "UNIT",
+    "track_remnants": false,
+    "sale_price": 556.52,
+    "source_price_with_tax": 639
+  },
+  {
+    "source_number": 105,
+    "sku": "VM-0105",
+    "name": "Fiberglass negra de 48",
+    "category_code": "ACCESSORIES",
+    "unit_code": "UNIT",
+    "track_remnants": false,
+    "sale_price": 634.78,
+    "source_price_with_tax": 730
+  },
+  {
+    "source_number": 106,
+    "sku": "VM-0106",
+    "name": "Guias para corrediza blanca",
+    "category_code": "HARDWARE",
+    "unit_code": "UNIT",
+    "track_remnants": false,
+    "sale_price": 2.61,
+    "source_price_with_tax": 3
+  },
+  {
+    "source_number": 107,
+    "sku": "VM-0107",
+    "name": "Guias para corrediza negras",
+    "category_code": "HARDWARE",
+    "unit_code": "UNIT",
+    "track_remnants": false,
+    "sale_price": 2.61,
+    "source_price_with_tax": 3
+  },
+  {
+    "source_number": 108,
+    "sku": "VM-0108",
+    "name": "Haladera de concha – AL",
+    "category_code": "HARDWARE",
+    "unit_code": "UNIT",
+    "track_remnants": false,
+    "sale_price": 47.83,
+    "source_price_with_tax": 55
+  },
+  {
+    "source_number": 109,
+    "sku": "VM-0109",
+    "name": "Haladera de concha blanco",
+    "category_code": "HARDWARE",
+    "unit_code": "UNIT",
+    "track_remnants": false,
+    "sale_price": 115.98,
+    "source_price_with_tax": 134
+  },
+  {
+    "source_number": 110,
+    "sku": "VM-0110",
+    "name": "Haladera de lujo “ DIP ” - BR",
+    "category_code": "HARDWARE",
+    "unit_code": "UNIT",
+    "track_remnants": false,
+    "sale_price": 373.91,
+    "source_price_with_tax": 430
+  },
+  {
+    "source_number": 111,
+    "sku": "VM-0111",
+    "name": "Haladera de lujo turbular “ OLIMPIA ” - AL",
+    "category_code": "HARDWARE",
+    "unit_code": "UNIT",
+    "track_remnants": false,
+    "sale_price": 485.22,
+    "source_price_with_tax": 557
+  },
+  {
+    "source_number": 112,
+    "sku": "VM-0112",
+    "name": "Haladera doblada negra 1\" 9 (10/Caja)",
+    "category_code": "HARDWARE",
+    "unit_code": "UNIT",
+    "track_remnants": false,
+    "sale_price": 385.25,
+    "source_price_with_tax": 443
+  },
+  {
+    "source_number": 113,
+    "sku": "VM-0113",
+    "name": "Haladera para malla corrediza negra",
+    "category_code": "HARDWARE",
+    "unit_code": "UNIT",
+    "track_remnants": false,
+    "sale_price": 6.96,
+    "source_price_with_tax": 8
+  },
+  {
+    "source_number": 114,
+    "sku": "VM-0114",
+    "name": "Haladera para PVC - BL",
+    "category_code": "PVC",
+    "unit_code": "UNIT",
+    "track_remnants": false,
+    "sale_price": 56.52,
+    "source_price_with_tax": 64
+  },
+  {
+    "source_number": 115,
+    "sku": "VM-0115",
+    "name": "Haladera para PVC - N",
+    "category_code": "PVC",
+    "unit_code": "UNIT",
+    "track_remnants": false,
+    "sale_price": 56.52,
+    "source_price_with_tax": 65
+  },
+  {
+    "source_number": 116,
+    "sku": "VM-0116",
+    "name": "Haladera recta cromada de 1.20mts",
+    "category_code": "HARDWARE",
+    "unit_code": "UNIT",
+    "track_remnants": false,
+    "sale_price": 956.52,
+    "source_price_with_tax": 1100
+  },
+  {
+    "source_number": 117,
+    "sku": "VM-0117",
+    "name": "Haladera recta cromada de 60cm",
+    "category_code": "HARDWARE",
+    "unit_code": "UNIT",
+    "track_remnants": false,
+    "sale_price": 482.61,
+    "source_price_with_tax": 554
+  },
+  {
+    "source_number": 118,
+    "sku": "VM-0118",
+    "name": "Haladera recta cromada de 90cm",
+    "category_code": "HARDWARE",
+    "unit_code": "UNIT",
+    "track_remnants": false,
+    "sale_price": 680,
+    "source_price_with_tax": 782
+  },
+  {
+    "source_number": 119,
+    "sku": "VM-0119",
+    "name": "Hoja de puerta abatible para apertura extra PVC - BL",
+    "category_code": "PVC",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 639.13,
+    "source_price_with_tax": 734
+  },
+  {
+    "source_number": 120,
+    "sku": "VM-0120",
+    "name": "Hoja de puerta corrediza PVC – BL",
+    "category_code": "PVC",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 300,
+    "source_price_with_tax": 345
+  },
+  {
+    "source_number": 121,
+    "sku": "VM-0121",
+    "name": "Hoja de ventana corrediza PVC - BL",
+    "category_code": "PVC",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 229.56,
+    "source_price_with_tax": 264
+  },
+  {
+    "source_number": 122,
+    "sku": "VM-0122",
+    "name": "Hoja de ventana corrediza PVC - N",
+    "category_code": "PVC",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 362.61,
+    "source_price_with_tax": 417
+  },
+  {
+    "source_number": 123,
+    "sku": "VM-0123",
+    "name": "Hoja de vidrio Dark Blue 1.65X2.14 5mm",
+    "category_code": "GLASS",
+    "unit_code": "SHEET",
+    "track_remnants": false,
+    "sale_price": 1109.01,
+    "source_price_with_tax": 1275
+  },
+  {
+    "source_number": 124,
+    "sku": "VM-0124",
+    "name": "Hoja de vidrio Reflec Bronce 1.65X2.14 5mm",
+    "category_code": "GLASS",
+    "unit_code": "SHEET",
+    "track_remnants": false,
+    "sale_price": 758.45,
+    "source_price_with_tax": 872
+  },
+  {
+    "source_number": 125,
+    "sku": "VM-0125",
+    "name": "Hoja externa de ventana abatible negro",
+    "category_code": "ACCESSORIES",
+    "unit_code": "UNIT",
+    "track_remnants": false,
+    "sale_price": 516.52,
+    "source_price_with_tax": 594
+  },
+  {
+    "source_number": 126,
+    "sku": "VM-0126",
+    "name": "Hoja mosquitera para corrediza PVC - BL",
+    "category_code": "PVC",
+    "unit_code": "UNIT",
+    "track_remnants": false,
+    "sale_price": 112.17,
+    "source_price_with_tax": 129
+  },
+  {
+    "source_number": 127,
+    "sku": "VM-0127",
+    "name": "Hoja mosquitera V2 PVC - BL",
+    "category_code": "PVC",
+    "unit_code": "UNIT",
+    "track_remnants": false,
+    "sale_price": 132.17,
+    "source_price_with_tax": 152
+  },
+  {
+    "source_number": 128,
+    "sku": "VM-0128",
+    "name": "Hoja mosquitero negro",
+    "category_code": "ACCESSORIES",
+    "unit_code": "UNIT",
+    "track_remnants": false,
+    "sale_price": 209.57,
+    "source_price_with_tax": 241
+  },
+  {
+    "source_number": 129,
+    "sku": "VM-0129",
+    "name": "Hoja Vid Ref Dark Blue 1.65X2.14 5mm",
+    "category_code": "ACCESSORIES",
+    "unit_code": "UNIT",
+    "track_remnants": false,
+    "sale_price": 824.4,
+    "source_price_with_tax": 948
+  },
+  {
+    "source_number": 130,
+    "sku": "VM-0130",
+    "name": "Hoja vidrio claro 1.65X2.14 5mm",
+    "category_code": "ACCESSORIES",
+    "unit_code": "UNIT",
+    "track_remnants": false,
+    "sale_price": 700.24,
+    "source_price_with_tax": 805
+  },
+  {
+    "source_number": 131,
+    "sku": "VM-0131",
+    "name": "Hoja vidrio gris oscuro 1.65X2.14 6mm",
+    "category_code": "ACCESSORIES",
+    "unit_code": "UNIT",
+    "track_remnants": false,
+    "sale_price": 1609.28,
+    "source_price_with_tax": 1850
+  },
+  {
+    "source_number": 132,
+    "sku": "VM-0132",
+    "name": "Hoja vidrio laminado bronce 1.65X2.14 6mm",
+    "category_code": "ACCESSORIES",
+    "unit_code": "UNIT",
+    "track_remnants": false,
+    "sale_price": 1057.49,
+    "source_price_with_tax": 1216
+  },
+  {
+    "source_number": 133,
+    "sku": "VM-0133",
+    "name": "Jamba C/M PTA corrediza clasica 21# - BL",
+    "category_code": "ALUMINUM",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 527.72,
+    "source_price_with_tax": 606
+  },
+  {
+    "source_number": 134,
+    "sku": "VM-0134",
+    "name": "Jamba C/M PTA corrediza clasica 21# - BR",
+    "category_code": "ALUMINUM",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 545.65,
+    "source_price_with_tax": 627
+  },
+  {
+    "source_number": 135,
+    "sku": "VM-0135",
+    "name": "Jamba C/M XLT - BL",
+    "category_code": "ALUMINUM",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 594.78,
+    "source_price_with_tax": 684
+  },
+  {
+    "source_number": 136,
+    "sku": "VM-0136",
+    "name": "Jamba C/M XLT - BR",
+    "category_code": "ALUMINUM",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 626.09,
+    "source_price_with_tax": 720
+  },
+  {
+    "source_number": 137,
+    "sku": "VM-0137",
+    "name": "Jamba C/M XLT - Nogal",
+    "category_code": "ALUMINUM",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 690.43,
+    "source_price_with_tax": 794
+  },
+  {
+    "source_number": 138,
+    "sku": "VM-0138",
+    "name": "Jamba doble enclipada 5",
+    "category_code": "ALUMINUM",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 86.78,
+    "source_price_with_tax": 100
+  },
+  {
+    "source_number": 139,
+    "sku": "VM-0139",
+    "name": "Jamba hoja Económico - BR",
+    "category_code": "ALUMINUM",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 188.7,
+    "source_price_with_tax": 216
+  },
+  {
+    "source_number": 140,
+    "sku": "VM-0140",
+    "name": "Jamba hoja PTA de baño - BL",
+    "category_code": "ALUMINUM",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 126.96,
+    "source_price_with_tax": 146
+  },
+  {
+    "source_number": 141,
+    "sku": "VM-0141",
+    "name": "Jamba hoja puerta de baño - AL",
+    "category_code": "ALUMINUM",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 127.83,
+    "source_price_with_tax": 147
+  },
+  {
+    "source_number": 142,
+    "sku": "VM-0142",
+    "name": "Jamba llavín Económico - AL",
+    "category_code": "ALUMINUM",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 246.09,
+    "source_price_with_tax": 282
+  },
+  {
+    "source_number": 143,
+    "sku": "VM-0143",
+    "name": "Jamba llavín Económico - BL",
+    "category_code": "ALUMINUM",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 300,
+    "source_price_with_tax": 345
+  },
+  {
+    "source_number": 144,
+    "sku": "VM-0144",
+    "name": "Jamba llavín Económico - BR",
+    "category_code": "ALUMINUM",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 313.04,
+    "source_price_with_tax": 360
+  },
+  {
+    "source_number": 145,
+    "sku": "VM-0145",
+    "name": "Jamba llavín Económico - Nogal",
+    "category_code": "ALUMINUM",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 333.91,
+    "source_price_with_tax": 384
+  },
+  {
+    "source_number": 146,
+    "sku": "VM-0146",
+    "name": "Jamba llavin PTA abatible - BR",
+    "category_code": "ALUMINUM",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 853.91,
+    "source_price_with_tax": 982
+  },
+  {
+    "source_number": 147,
+    "sku": "VM-0147",
+    "name": "Jamba llavín XLT - BL",
+    "category_code": "ALUMINUM",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 475.65,
+    "source_price_with_tax": 547
+  },
+  {
+    "source_number": 148,
+    "sku": "VM-0148",
+    "name": "Jamba llavín XLT - BR",
+    "category_code": "ALUMINUM",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 500,
+    "source_price_with_tax": 575
+  },
+  {
+    "source_number": 149,
+    "sku": "VM-0149",
+    "name": "Jamba llavín XLT - Nogal",
+    "category_code": "ALUMINUM",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 586.96,
+    "source_price_with_tax": 675
+  },
+  {
+    "source_number": 150,
+    "sku": "VM-0150",
+    "name": "Jamba traslape XLT - BL",
+    "category_code": "ALUMINUM",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 451.3,
+    "source_price_with_tax": 518
+  },
+  {
+    "source_number": 151,
+    "sku": "VM-0151",
+    "name": "Jamba traslape XLT - BR",
+    "category_code": "ALUMINUM",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 474.78,
+    "source_price_with_tax": 546
+  },
+  {
+    "source_number": 152,
+    "sku": "VM-0152",
+    "name": "Jamba traslape XLT - Nogal",
+    "category_code": "ALUMINUM",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 526.09,
+    "source_price_with_tax": 604
+  },
+  {
+    "source_number": 153,
+    "sku": "VM-0153",
+    "name": "Jamba y cabezal C/M Económico si canal - BL",
+    "category_code": "ALUMINUM",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 384.34,
+    "source_price_with_tax": 442
+  },
+  {
+    "source_number": 154,
+    "sku": "VM-0154",
+    "name": "Jamba y cabezal C/M Económico sin canal - AL",
+    "category_code": "ALUMINUM",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 326.96,
+    "source_price_with_tax": 374
+  },
+  {
+    "source_number": 155,
+    "sku": "VM-0155",
+    "name": "Jamba y cabezal C/M Económico sin canal - BR",
+    "category_code": "ALUMINUM",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 288.7,
+    "source_price_with_tax": 332
+  },
+  {
+    "source_number": 156,
+    "sku": "VM-0156",
+    "name": "Jamba y cabezal C/M Económico sin canal - Nogal",
+    "category_code": "ALUMINUM",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 426.09,
+    "source_price_with_tax": 489
+  },
+  {
+    "source_number": 157,
+    "sku": "VM-0157",
+    "name": "Kit de varilla roscada",
+    "category_code": "ACCESSORIES",
+    "unit_code": "UNIT",
+    "track_remnants": false,
+    "sale_price": 97.39,
+    "source_price_with_tax": 111
+  },
+  {
+    "source_number": 158,
+    "sku": "VM-0158",
+    "name": "Lamina de bronce nevado 1.83X2.44 5mm",
+    "category_code": "GLASS",
+    "unit_code": "SHEET",
+    "track_remnants": false,
+    "sale_price": 1611.32,
+    "source_price_with_tax": 1853
+  },
+  {
+    "source_number": 159,
+    "sku": "VM-0159",
+    "name": "Lamina de espejo 2.44X1.83 3mm",
+    "category_code": "GLASS",
+    "unit_code": "SHEET",
+    "track_remnants": false,
+    "sale_price": 685.42,
+    "source_price_with_tax": 788
+  },
+  {
+    "source_number": 160,
+    "sku": "VM-0160",
+    "name": "Lamina doble capa claro 3.30X2.14 6.38mm",
+    "category_code": "GLASS",
+    "unit_code": "SHEET",
+    "track_remnants": false,
+    "sale_price": 2601.36,
+    "source_price_with_tax": 2992
+  },
+  {
+    "source_number": 161,
+    "sku": "VM-0161",
+    "name": "Lamina Vid claro 3.30X2.44 5+5 (10.38mm)",
+    "category_code": "GLASS",
+    "unit_code": "SHEET",
+    "track_remnants": false,
+    "sale_price": 4117.49,
+    "source_price_with_tax": 4735
+  },
+  {
+    "source_number": 162,
+    "sku": "VM-0162",
+    "name": "Lamina Vid laminado bronce 3.30X2.14 6.38mm",
+    "category_code": "GLASS",
+    "unit_code": "SHEET",
+    "track_remnants": false,
+    "sale_price": 3197.58,
+    "source_price_with_tax": 3677
+  },
+  {
+    "source_number": 163,
+    "sku": "VM-0163",
+    "name": "Lamina Vid. Laminado bronce 10mm - 3.30X2.44",
+    "category_code": "GLASS",
+    "unit_code": "SHEET",
+    "track_remnants": false,
+    "sale_price": 5183.82,
+    "source_price_with_tax": 5960
+  },
+  {
+    "source_number": 164,
+    "sku": "VM-0164",
+    "name": "Lamina vidrio bronce 3.3X2.44 5mm",
+    "category_code": "GLASS",
+    "unit_code": "SHEET",
+    "track_remnants": false,
+    "sale_price": 2011.85,
+    "source_price_with_tax": 2313
+  },
+  {
+    "source_number": 165,
+    "sku": "VM-0165",
+    "name": "Lamina vidrio gris oscuro 1.83X2.44 5mm",
+    "category_code": "GLASS",
+    "unit_code": "SHEET",
+    "track_remnants": false,
+    "sale_price": 1180.43,
+    "source_price_with_tax": 1357
+  },
+  {
+    "source_number": 166,
+    "sku": "VM-0166",
+    "name": "Llavin P/Vitrina",
+    "category_code": "ACCESSORIES",
+    "unit_code": "UNIT",
+    "track_remnants": false,
+    "sale_price": 60.87,
+    "source_price_with_tax": 70
+  },
+  {
+    "source_number": 167,
+    "sku": "VM-0167",
+    "name": "Manecilla doble con llave para PVC - N",
+    "category_code": "PVC",
+    "unit_code": "UNIT",
+    "track_remnants": false,
+    "sale_price": 200,
+    "source_price_with_tax": 230
+  },
+  {
+    "source_number": 168,
+    "sku": "VM-0168",
+    "name": "Manecilla doble con llaves para PVC - BL",
+    "category_code": "PVC",
+    "unit_code": "UNIT",
+    "track_remnants": false,
+    "sale_price": 200,
+    "source_price_with_tax": 230
+  },
+  {
+    "source_number": 169,
+    "sku": "VM-0169",
+    "name": "Manecilla sencilla sin llave para PVC - BL",
+    "category_code": "PVC",
+    "unit_code": "UNIT",
+    "track_remnants": false,
+    "sale_price": 73.91,
+    "source_price_with_tax": 84
+  },
+  {
+    "source_number": 170,
+    "sku": "VM-0170",
+    "name": "Maquina soldadora de PVC portátil",
+    "category_code": "PVC",
+    "unit_code": "UNIT",
+    "track_remnants": false,
+    "sale_price": 5739.13,
+    "source_price_with_tax": 6599
+  },
+  {
+    "source_number": 171,
+    "sku": "VM-0171",
+    "name": "Marco mosquitero americano - BL",
+    "category_code": "ALUMINUM",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 318.26,
+    "source_price_with_tax": 366
+  },
+  {
+    "source_number": 172,
+    "sku": "VM-0172",
+    "name": "Marco mosquitero americano - BR",
+    "category_code": "ALUMINUM",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 278.26,
+    "source_price_with_tax": 319
+  },
+  {
+    "source_number": 173,
+    "sku": "VM-0173",
+    "name": "Marco mosquitero americano - Nogal",
+    "category_code": "ALUMINUM",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 330.43,
+    "source_price_with_tax": 380
+  },
+  {
+    "source_number": 174,
+    "sku": "VM-0174",
+    "name": "Masilla blanca",
+    "category_code": "SEALANTS",
+    "unit_code": "UNIT",
+    "track_remnants": false,
+    "sale_price": 56.52,
+    "source_price_with_tax": 64
+  },
+  {
+    "source_number": 175,
+    "sku": "VM-0175",
+    "name": "Masilla negra",
+    "category_code": "SEALANTS",
+    "unit_code": "UNIT",
+    "track_remnants": false,
+    "sale_price": 56.52,
+    "source_price_with_tax": 64
+  },
+  {
+    "source_number": 176,
+    "sku": "VM-0176",
+    "name": "Media lamina gris intermed 1.65X2.14 5mm",
+    "category_code": "GLASS",
+    "unit_code": "SHEET",
+    "track_remnants": false,
+    "sale_price": 973.61,
+    "source_price_with_tax": 1119
+  },
+  {
+    "source_number": 177,
+    "sku": "VM-0177",
+    "name": "Media lamina Vid bronce 1.65X2.14 5mm",
+    "category_code": "GLASS",
+    "unit_code": "SHEET",
+    "track_remnants": false,
+    "sale_price": 707.52,
+    "source_price_with_tax": 813
+  },
+  {
+    "source_number": 178,
+    "sku": "VM-0178",
+    "name": "Media lamina vidrio bronce 1.65X2.44 5mm",
+    "category_code": "GLASS",
+    "unit_code": "SHEET",
+    "track_remnants": false,
+    "sale_price": 867.49,
+    "source_price_with_tax": 997
+  },
+  {
+    "source_number": 179,
+    "sku": "VM-0179",
+    "name": "Moldura clásica - BR",
+    "category_code": "ALUMINUM",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 117.39,
+    "source_price_with_tax": 134
+  },
+  {
+    "source_number": 180,
+    "sku": "VM-0180",
+    "name": "Moldura colonial - BL",
+    "category_code": "ALUMINUM",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 93.12,
+    "source_price_with_tax": 107
+  },
+  {
+    "source_number": 181,
+    "sku": "VM-0181",
+    "name": "Moldura colonial - Madera",
+    "category_code": "ALUMINUM",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 143.48,
+    "source_price_with_tax": 165
+  },
+  {
+    "source_number": 182,
+    "sku": "VM-0182",
+    "name": "Moldura externa PVC Madera Cerezo",
+    "category_code": "PVC",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 78.26,
+    "source_price_with_tax": 90
+  },
+  {
+    "source_number": 183,
+    "sku": "VM-0183",
+    "name": "Moldura para malla blanca",
+    "category_code": "ALUMINUM",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 64.61,
+    "source_price_with_tax": 74
+  },
+  {
+    "source_number": 184,
+    "sku": "VM-0184",
+    "name": "Moldura para malla natural",
+    "category_code": "ALUMINUM",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 65.89,
+    "source_price_with_tax": 75
+  },
+  {
+    "source_number": 185,
+    "sku": "VM-0185",
+    "name": "Moldura PVC externa blanca",
+    "category_code": "PVC",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 86.96,
+    "source_price_with_tax": 100
+  },
+  {
+    "source_number": 186,
+    "sku": "VM-0186",
+    "name": "Moldura trapezoidal - BR",
+    "category_code": "ALUMINUM",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 114.78,
+    "source_price_with_tax": 131
+  },
+  {
+    "source_number": 187,
+    "sku": "VM-0187",
+    "name": "Moldura trapezoidal - Nogal",
+    "category_code": "ALUMINUM",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 128.7,
+    "source_price_with_tax": 148
+  },
+  {
+    "source_number": 188,
+    "sku": "VM-0188",
+    "name": "Operador P/Celosia",
+    "category_code": "HARDWARE",
+    "unit_code": "UNIT",
+    "track_remnants": false,
+    "sale_price": 60.87,
+    "source_price_with_tax": 70
+  },
+  {
+    "source_number": 189,
+    "sku": "VM-0189",
+    "name": "Papel Teflón para maquina PVC",
+    "category_code": "PVC",
+    "unit_code": "UNIT",
+    "track_remnants": false,
+    "sale_price": 260.87,
+    "source_price_with_tax": 300
+  },
+  {
+    "source_number": 190,
+    "sku": "VM-0190",
+    "name": "Pata P/Puerta",
+    "category_code": "HARDWARE",
+    "unit_code": "UNIT",
+    "track_remnants": false,
+    "sale_price": 92.17,
+    "source_price_with_tax": 105
+  },
+  {
+    "source_number": 191,
+    "sku": "VM-0191",
+    "name": "Perfil malla - BL",
+    "category_code": "ALUMINUM",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 56.52,
+    "source_price_with_tax": 65
+  },
+  {
+    "source_number": 192,
+    "sku": "VM-0192",
+    "name": "Perfil malla - BR",
+    "category_code": "ALUMINUM",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 60.87,
+    "source_price_with_tax": 70
+  },
+  {
+    "source_number": 193,
+    "sku": "VM-0193",
+    "name": "Perfil malla - MF",
+    "category_code": "ALUMINUM",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 50.53,
+    "source_price_with_tax": 58
+  },
+  {
+    "source_number": 194,
+    "sku": "VM-0194",
+    "name": "Perfil malla - Nogal",
+    "category_code": "ALUMINUM",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 69.57,
+    "source_price_with_tax": 80
+  },
+  {
+    "source_number": 195,
+    "sku": "VM-0195",
+    "name": "Picaporte \" DIP \" - BR",
+    "category_code": "HARDWARE",
+    "unit_code": "UNIT",
+    "track_remnants": false,
+    "sale_price": 78.26,
+    "source_price_with_tax": 89
+  },
+  {
+    "source_number": 196,
+    "sku": "VM-0196",
+    "name": "Pivote “ DIP ” - AL",
+    "category_code": "HARDWARE",
+    "unit_code": "UNIT",
+    "track_remnants": false,
+    "sale_price": 147.83,
+    "source_price_with_tax": 170
+  },
+  {
+    "source_number": 197,
+    "sku": "VM-0197",
+    "name": "Pivote “ DIP ” - BR",
+    "category_code": "HARDWARE",
+    "unit_code": "UNIT",
+    "track_remnants": false,
+    "sale_price": 147.83,
+    "source_price_with_tax": 170
+  },
+  {
+    "source_number": 198,
+    "sku": "VM-0198",
+    "name": "Pivote “ OLIMPIA ” - AL",
+    "category_code": "HARDWARE",
+    "unit_code": "UNIT",
+    "track_remnants": false,
+    "sale_price": 189.57,
+    "source_price_with_tax": 217
+  },
+  {
+    "source_number": 199,
+    "sku": "VM-0199",
+    "name": "Planchuela 1m",
+    "category_code": "ALUMINUM",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 173.91,
+    "source_price_with_tax": 198
+  },
+  {
+    "source_number": 200,
+    "sku": "VM-0200",
+    "name": "Refuerzo para hoja mosquitero",
+    "category_code": "ACCESSORIES",
+    "unit_code": "UNIT",
+    "track_remnants": false,
+    "sale_price": 93.91,
+    "source_price_with_tax": 108
+  },
+  {
+    "source_number": 201,
+    "sku": "VM-0201",
+    "name": "Remaches 5/32X1/2",
+    "category_code": "HARDWARE",
+    "unit_code": "UNIT",
+    "track_remnants": false,
+    "sale_price": 0.41,
+    "source_price_with_tax": 0.47
+  },
+  {
+    "source_number": 202,
+    "sku": "VM-0202",
+    "name": "Resorte Guillotina 24",
+    "category_code": "HARDWARE",
+    "unit_code": "UNIT",
+    "track_remnants": false,
+    "sale_price": 194.64,
+    "source_price_with_tax": 223
+  },
+  {
+    "source_number": 203,
+    "sku": "VM-0203",
+    "name": "Resorte P/Guillotina de 22",
+    "category_code": "HARDWARE",
+    "unit_code": "UNIT",
+    "track_remnants": false,
+    "sale_price": 126.09,
+    "source_price_with_tax": 145
+  },
+  {
+    "source_number": 204,
+    "sku": "VM-0204",
+    "name": "Resorte P/Guillotina de 28",
+    "category_code": "HARDWARE",
+    "unit_code": "UNIT",
+    "track_remnants": false,
+    "sale_price": 142.61,
+    "source_price_with_tax": 164
+  },
+  {
+    "source_number": 205,
+    "sku": "VM-0205",
+    "name": "Rodo de acero de 1 ¼",
+    "category_code": "HARDWARE",
+    "unit_code": "UNIT",
+    "track_remnants": false,
+    "sale_price": 20,
+    "source_price_with_tax": 23
+  },
+  {
+    "source_number": 206,
+    "sku": "VM-0206",
+    "name": "Rodo de acero de 1 ½",
+    "category_code": "HARDWARE",
+    "unit_code": "UNIT",
+    "track_remnants": false,
+    "sale_price": 22.61,
+    "source_price_with_tax": 26
+  },
+  {
+    "source_number": 207,
+    "sku": "VM-0207",
+    "name": "Rodo de acero para malla corrediza",
+    "category_code": "HARDWARE",
+    "unit_code": "UNIT",
+    "track_remnants": false,
+    "sale_price": 14.78,
+    "source_price_with_tax": 16
+  },
+  {
+    "source_number": 208,
+    "sku": "VM-0208",
+    "name": "Rodo doble para PVC",
+    "category_code": "PVC",
+    "unit_code": "UNIT",
+    "track_remnants": false,
+    "sale_price": 9.57,
+    "source_price_with_tax": 11
+  },
+  {
+    "source_number": 209,
+    "sku": "VM-0209",
+    "name": "Rodo P/PTA de baño",
+    "category_code": "HARDWARE",
+    "unit_code": "UNIT",
+    "track_remnants": false,
+    "sale_price": 6.09,
+    "source_price_with_tax": 7
+  },
+  {
+    "source_number": 210,
+    "sku": "VM-0210",
+    "name": "Rodo P/Vent. Económico",
+    "category_code": "HARDWARE",
+    "unit_code": "UNIT",
+    "track_remnants": false,
+    "sale_price": 10.43,
+    "source_price_with_tax": 12
+  },
+  {
+    "source_number": 211,
+    "sku": "VM-0211",
+    "name": "Rodo para mosquitero PVC",
+    "category_code": "PVC",
+    "unit_code": "UNIT",
+    "track_remnants": false,
+    "sale_price": 4.34,
+    "source_price_with_tax": 5
+  },
+  {
+    "source_number": 212,
+    "sku": "VM-0212",
+    "name": "Rodo sencillo para PVC",
+    "category_code": "PVC",
+    "unit_code": "UNIT",
+    "track_remnants": false,
+    "sale_price": 6.08,
+    "source_price_with_tax": 7
+  },
+  {
+    "source_number": 213,
+    "sku": "VM-0213",
+    "name": "S62 rodo sencillo de ventana",
+    "category_code": "HARDWARE",
+    "unit_code": "UNIT",
+    "track_remnants": false,
+    "sale_price": 4.13,
+    "source_price_with_tax": 5
+  },
+  {
+    "source_number": 214,
+    "sku": "VM-0214",
+    "name": "Silicon Contrupega",
+    "category_code": "SEALANTS",
+    "unit_code": "TUBE",
+    "track_remnants": false,
+    "sale_price": 73.04,
+    "source_price_with_tax": 83
+  },
+  {
+    "source_number": 215,
+    "sku": "VM-0215",
+    "name": "Silicon transparente \" ABRO \"",
+    "category_code": "SEALANTS",
+    "unit_code": "TUBE",
+    "track_remnants": false,
+    "sale_price": 86.09,
+    "source_price_with_tax": 100
+  },
+  {
+    "source_number": 216,
+    "sku": "VM-0216",
+    "name": "SOP. Pasamanos muro para tubo de 42.4mm",
+    "category_code": "ALUMINUM",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 346.48,
+    "source_price_with_tax": 398
+  },
+  {
+    "source_number": 217,
+    "sku": "VM-0217",
+    "name": "Soporte de barra (sapo) - AL",
+    "category_code": "HARDWARE",
+    "unit_code": "UNIT",
+    "track_remnants": false,
+    "sale_price": 21.74,
+    "source_price_with_tax": 25
+  },
+  {
+    "source_number": 218,
+    "sku": "VM-0218",
+    "name": "Soporte de barra de empuje blanco",
+    "category_code": "HARDWARE",
+    "unit_code": "UNIT",
+    "track_remnants": false,
+    "sale_price": 92.21,
+    "source_price_with_tax": 106
+  },
+  {
+    "source_number": 219,
+    "sku": "VM-0219",
+    "name": "Sujetador tela metalica nat.",
+    "category_code": "HARDWARE",
+    "unit_code": "UNIT",
+    "track_remnants": false,
+    "sale_price": 0.88,
+    "source_price_with_tax": 1
+  },
+  {
+    "source_number": 220,
+    "sku": "VM-0220",
+    "name": "Tablilla PVC - BL brillante de 25CM/P-009",
+    "category_code": "PVC",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 171.3,
+    "source_price_with_tax": 197
+  },
+  {
+    "source_number": 221,
+    "sku": "VM-0221",
+    "name": "Tablilla PVC - BL estampado de 25CM/P-003",
+    "category_code": "PVC",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 171.3,
+    "source_price_with_tax": 197
+  },
+  {
+    "source_number": 222,
+    "sku": "VM-0222",
+    "name": "Tablilla PVC - BL huno de 25CM/P-005",
+    "category_code": "PVC",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 156.52,
+    "source_price_with_tax": 179
+  },
+  {
+    "source_number": 223,
+    "sku": "VM-0223",
+    "name": "Tablilla PVC - BL Matte de 25CM/P-007",
+    "category_code": "PVC",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 140.87,
+    "source_price_with_tax": 162
+  },
+  {
+    "source_number": 224,
+    "sku": "VM-0224",
+    "name": "Tablilla PVC machimbrada Madera Cerezo de 25CM",
+    "category_code": "PVC",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 173.04,
+    "source_price_with_tax": 198
+  },
+  {
+    "source_number": 225,
+    "sku": "VM-0225",
+    "name": "Taco fischer S6",
+    "category_code": "HARDWARE",
+    "unit_code": "UNIT",
+    "track_remnants": false,
+    "sale_price": 0.39,
+    "source_price_with_tax": 0.45
+  },
+  {
+    "source_number": 226,
+    "sku": "VM-0226",
+    "name": "Tapa decorativa",
+    "category_code": "HARDWARE",
+    "unit_code": "UNIT",
+    "track_remnants": false,
+    "sale_price": 0.21,
+    "source_price_with_tax": 0.24
+  },
+  {
+    "source_number": 227,
+    "sku": "VM-0227",
+    "name": "Tapa decorativa para PVC - BL",
+    "category_code": "PVC",
+    "unit_code": "UNIT",
+    "track_remnants": false,
+    "sale_price": 1.74,
+    "source_price_with_tax": 2
+  },
+  {
+    "source_number": 228,
+    "sku": "VM-0228",
+    "name": "Tapa drenaje PVC - BL",
+    "category_code": "PVC",
+    "unit_code": "UNIT",
+    "track_remnants": false,
+    "sale_price": 2.74,
+    "source_price_with_tax": 2
+  },
+  {
+    "source_number": 229,
+    "sku": "VM-0229",
+    "name": "Teflon 1# x 3# pie de 0.16mm",
+    "category_code": "ACCESSORIES",
+    "unit_code": "UNIT",
+    "track_remnants": false,
+    "sale_price": 188.55,
+    "source_price_with_tax": 216
+  },
+  {
+    "source_number": 230,
+    "sku": "VM-0230",
+    "name": "Tornillo de (7X7/16) punta broca para vitrina",
+    "category_code": "HARDWARE",
+    "unit_code": "UNIT",
+    "track_remnants": false,
+    "sale_price": 0.17,
+    "source_price_with_tax": 0.19
+  },
+  {
+    "source_number": 231,
+    "sku": "VM-0231",
+    "name": "Tornillo de (7X7/16) punta fina",
+    "category_code": "HARDWARE",
+    "unit_code": "UNIT",
+    "track_remnants": false,
+    "sale_price": 0.17,
+    "source_price_with_tax": 0.19
+  },
+  {
+    "source_number": 232,
+    "sku": "VM-0232",
+    "name": "Tornillo de armar goloso (10X3/4)",
+    "category_code": "HARDWARE",
+    "unit_code": "UNIT",
+    "track_remnants": false,
+    "sale_price": 0.61,
+    "source_price_with_tax": 0.7
+  },
+  {
+    "source_number": 233,
+    "sku": "VM-0233",
+    "name": "Tornillo de económica (10X3)",
+    "category_code": "HARDWARE",
+    "unit_code": "UNIT",
+    "track_remnants": false,
+    "sale_price": 1.49,
+    "source_price_with_tax": 1.71
+  },
+  {
+    "source_number": 234,
+    "sku": "VM-0234",
+    "name": "Tornillo de instalar avellanado (10X1 ½)",
+    "category_code": "HARDWARE",
+    "unit_code": "UNIT",
+    "track_remnants": false,
+    "sale_price": 0.83,
+    "source_price_with_tax": 0.95
+  },
+  {
+    "source_number": 235,
+    "sku": "VM-0235",
+    "name": "Tornillo de instalar goloso (10X1 ½)",
+    "category_code": "HARDWARE",
+    "unit_code": "UNIT",
+    "track_remnants": false,
+    "sale_price": 0.83,
+    "source_price_with_tax": 0.95
+  },
+  {
+    "source_number": 236,
+    "sku": "VM-0236",
+    "name": "Tornillo P/Abatible (14X3) avellanado",
+    "category_code": "HARDWARE",
+    "unit_code": "UNIT",
+    "track_remnants": false,
+    "sale_price": 1.91,
+    "source_price_with_tax": 2.19
+  },
+  {
+    "source_number": 237,
+    "sku": "VM-0237",
+    "name": "Tornillo P/Haladera recta negro",
+    "category_code": "HARDWARE",
+    "unit_code": "UNIT",
+    "track_remnants": false,
+    "sale_price": 13.04,
+    "source_price_with_tax": 15
+  },
+  {
+    "source_number": 238,
+    "sku": "VM-0238",
+    "name": "Tornillo P/PTA de baño (8X1)",
+    "category_code": "HARDWARE",
+    "unit_code": "UNIT",
+    "track_remnants": false,
+    "sale_price": 0.48,
+    "source_price_with_tax": 0.55
+  },
+  {
+    "source_number": 239,
+    "sku": "VM-0239",
+    "name": "Tornillo punta broca P/Tapicería (8X1/2)",
+    "category_code": "HARDWARE",
+    "unit_code": "UNIT",
+    "track_remnants": false,
+    "sale_price": 0.31,
+    "source_price_with_tax": 0.35
+  },
+  {
+    "source_number": 240,
+    "sku": "VM-0240",
+    "name": "Tornillo punta fina P/Tapicería (8X1/2)",
+    "category_code": "HARDWARE",
+    "unit_code": "UNIT",
+    "track_remnants": false,
+    "sale_price": 0.28,
+    "source_price_with_tax": 0.32
+  },
+  {
+    "source_number": 241,
+    "sku": "VM-0241",
+    "name": "Trancador de proyectable blanco",
+    "category_code": "HARDWARE",
+    "unit_code": "UNIT",
+    "track_remnants": false,
+    "sale_price": 80,
+    "source_price_with_tax": 92
+  },
+  {
+    "source_number": 242,
+    "sku": "VM-0242",
+    "name": "Trancador para Proyectable - BR",
+    "category_code": "HARDWARE",
+    "unit_code": "UNIT",
+    "track_remnants": false,
+    "sale_price": 38.96,
+    "source_price_with_tax": 45
+  },
+  {
+    "source_number": 243,
+    "sku": "VM-0243",
+    "name": "Traslape 4 hojas color black",
+    "category_code": "ALUMINUM",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 107.09,
+    "source_price_with_tax": 123
+  },
+  {
+    "source_number": 244,
+    "sku": "VM-0244",
+    "name": "Traslape 4 hojas color blanco",
+    "category_code": "ALUMINUM",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 95.02,
+    "source_price_with_tax": 109
+  },
+  {
+    "source_number": 245,
+    "sku": "VM-0245",
+    "name": "Traslape black",
+    "category_code": "ALUMINUM",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 94.86,
+    "source_price_with_tax": 109
+  },
+  {
+    "source_number": 246,
+    "sku": "VM-0246",
+    "name": "Traslape black 4 hojas 88",
+    "category_code": "ALUMINUM",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 104.3,
+    "source_price_with_tax": 120
+  },
+  {
+    "source_number": 247,
+    "sku": "VM-0247",
+    "name": "Travesaño fijo 60 negro",
+    "category_code": "ALUMINUM",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 394.78,
+    "source_price_with_tax": 454
+  },
+  {
+    "source_number": 248,
+    "sku": "VM-0248",
+    "name": "Tubo 1 3/4 x 1 3/4 1Pestaña blanco",
+    "category_code": "ALUMINUM",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 705.5,
+    "source_price_with_tax": 811
+  },
+  {
+    "source_number": 249,
+    "sku": "VM-0249",
+    "name": "Tubo 1 3/4 x 4 - BL",
+    "category_code": "ALUMINUM",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 895.47,
+    "source_price_with_tax": 1029
+  },
+  {
+    "source_number": 250,
+    "sku": "VM-0250",
+    "name": "Tubo 1 3/4 x 4 - BR",
+    "category_code": "ALUMINUM",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 857.56,
+    "source_price_with_tax": 986
+  },
+  {
+    "source_number": 251,
+    "sku": "VM-0251",
+    "name": "Tubo acero Inox 42.4mm x 1 5mm x 6000mm",
+    "category_code": "ALUMINUM",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 1376.62,
+    "source_price_with_tax": 1583
+  },
+  {
+    "source_number": 252,
+    "sku": "VM-0252",
+    "name": "Tubo de 1 ¾ X 1 - AL",
+    "category_code": "ALUMINUM",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 434.49,
+    "source_price_with_tax": 500
+  },
+  {
+    "source_number": 253,
+    "sku": "VM-0253",
+    "name": "Tubo de 1 ¾ X 1 - BL",
+    "category_code": "ALUMINUM",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 417.39,
+    "source_price_with_tax": 480
+  },
+  {
+    "source_number": 254,
+    "sku": "VM-0254",
+    "name": "Tubo de 1 ¾ X 1 ¾ con 1 pestaña - AL",
+    "category_code": "ALUMINUM",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 622.61,
+    "source_price_with_tax": 716
+  },
+  {
+    "source_number": 255,
+    "sku": "VM-0255",
+    "name": "Tubo de 1 ¾ X 1 ¾ con 1 pestaña - BL",
+    "category_code": "ALUMINUM",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 582.61,
+    "source_price_with_tax": 670
+  },
+  {
+    "source_number": 256,
+    "sku": "VM-0256",
+    "name": "Tubo de 1 ¾ X 1 ¾ con 1 pestaña - Nogal",
+    "category_code": "ALUMINUM",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 622.61,
+    "source_price_with_tax": 715
+  },
+  {
+    "source_number": 257,
+    "sku": "VM-0257",
+    "name": "Tubo de 1 ¾ X 4 con 1 pestana - AL",
+    "category_code": "ALUMINUM",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 1066.95,
+    "source_price_with_tax": 1226
+  },
+  {
+    "source_number": 258,
+    "sku": "VM-0258",
+    "name": "Tubo de 1 ¾ X 4 con 1 pestaña - BR",
+    "category_code": "ALUMINUM",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 1076.52,
+    "source_price_with_tax": 1238
+  },
+  {
+    "source_number": 259,
+    "sku": "VM-0259",
+    "name": "Tubo de 1 ¾ X 4 con 1 pestaña - Nogal",
+    "category_code": "ALUMINUM",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 1061.74,
+    "source_price_with_tax": 1221
+  },
+  {
+    "source_number": 260,
+    "sku": "VM-0260",
+    "name": "Tubo de 1 ¾ X 4 con 2 pestaña - BR",
+    "category_code": "ALUMINUM",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 1100,
+    "source_price_with_tax": 1265
+  },
+  {
+    "source_number": 261,
+    "sku": "VM-0261",
+    "name": "Tubo de 1 ¾ X 4 con 2 pestaña - Nogal",
+    "category_code": "ALUMINUM",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 1330.43,
+    "source_price_with_tax": 1530
+  },
+  {
+    "source_number": 262,
+    "sku": "VM-0262",
+    "name": "Tubo de 1 ¾ X 4 liso - AL",
+    "category_code": "ALUMINUM",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 992.17,
+    "source_price_with_tax": 1140
+  },
+  {
+    "source_number": 263,
+    "sku": "VM-0263",
+    "name": "Tubo de 1 ¾ X 4 liso - BR",
+    "category_code": "ALUMINUM",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 1022.61,
+    "source_price_with_tax": 1176
+  },
+  {
+    "source_number": 264,
+    "sku": "VM-0264",
+    "name": "Tubo de 1X1 - AL",
+    "category_code": "ALUMINUM",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 267.83,
+    "source_price_with_tax": 308
+  },
+  {
+    "source_number": 265,
+    "sku": "VM-0265",
+    "name": "Tubo de 1X1 con 2 canales incorporado tipo “ L ”",
+    "category_code": "ALUMINUM",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 395.65,
+    "source_price_with_tax": 455
+  },
+  {
+    "source_number": 266,
+    "sku": "VM-0266",
+    "name": "Tubo de 1X1 con 2 canales incorporado tipo “ T ”",
+    "category_code": "ALUMINUM",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 395.65,
+    "source_price_with_tax": 455
+  },
+  {
+    "source_number": 267,
+    "sku": "VM-0267",
+    "name": "Tubo de 1X1 con canal incorporado",
+    "category_code": "ALUMINUM",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 330.43,
+    "source_price_with_tax": 379
+  },
+  {
+    "source_number": 268,
+    "sku": "VM-0268",
+    "name": "Umbral C/M Económico sin canal - AL",
+    "category_code": "ALUMINUM",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 199.13,
+    "source_price_with_tax": 228
+  },
+  {
+    "source_number": 269,
+    "sku": "VM-0269",
+    "name": "Umbral C/M Económico sin canal - BL",
+    "category_code": "ALUMINUM",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 217.39,
+    "source_price_with_tax": 250
+  },
+  {
+    "source_number": 270,
+    "sku": "VM-0270",
+    "name": "Umbral C/M Económico sin canal - Nogal",
+    "category_code": "ALUMINUM",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 260,
+    "source_price_with_tax": 299
+  },
+  {
+    "source_number": 271,
+    "sku": "VM-0271",
+    "name": "Umbral C/M XLT C/Canal - BL",
+    "category_code": "ALUMINUM",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 402.61,
+    "source_price_with_tax": 463
+  },
+  {
+    "source_number": 272,
+    "sku": "VM-0272",
+    "name": "Umbral C/M XLT C/Canal - BR",
+    "category_code": "ALUMINUM",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 361.74,
+    "source_price_with_tax": 415
+  },
+  {
+    "source_number": 273,
+    "sku": "VM-0273",
+    "name": "Umbral C/M XLT C/Canal - Nogal",
+    "category_code": "ALUMINUM",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 445.22,
+    "source_price_with_tax": 511
+  },
+  {
+    "source_number": 274,
+    "sku": "VM-0274",
+    "name": "Umbral celosia - MF",
+    "category_code": "ALUMINUM",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 260.87,
+    "source_price_with_tax": 300
+  },
+  {
+    "source_number": 275,
+    "sku": "VM-0275",
+    "name": "Umbral hoja PTA corrediza clasica - BR",
+    "category_code": "ALUMINUM",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 376.6,
+    "source_price_with_tax": 433
+  },
+  {
+    "source_number": 276,
+    "sku": "VM-0276",
+    "name": "Umbral hoja PTA corrediza clasica - BL",
+    "category_code": "ALUMINUM",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 346.2,
+    "source_price_with_tax": 398
+  },
+  {
+    "source_number": 277,
+    "sku": "VM-0277",
+    "name": "Umbral hoja XLT - BL",
+    "category_code": "ALUMINUM",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 355.65,
+    "source_price_with_tax": 410
+  },
+  {
+    "source_number": 278,
+    "sku": "VM-0278",
+    "name": "Umbral hoja XLT - BR",
+    "category_code": "ALUMINUM",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 321.74,
+    "source_price_with_tax": 370
+  },
+  {
+    "source_number": 279,
+    "sku": "VM-0279",
+    "name": "Umbral hoja XLT - Nogal",
+    "category_code": "ALUMINUM",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 408.7,
+    "source_price_with_tax": 470
+  },
+  {
+    "source_number": 280,
+    "sku": "VM-0280",
+    "name": "Umbral y cabezal hoja de Económico - AL",
+    "category_code": "ALUMINUM",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 200,
+    "source_price_with_tax": 230
+  },
+  {
+    "source_number": 281,
+    "sku": "VM-0281",
+    "name": "Umbral y cabezal hoja de Económico - BL",
+    "category_code": "ALUMINUM",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 220.87,
+    "source_price_with_tax": 254
+  },
+  {
+    "source_number": 282,
+    "sku": "VM-0282",
+    "name": "Umbral y cabezal hoja de Económico - BR",
+    "category_code": "ALUMINUM",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 256.52,
+    "source_price_with_tax": 295
+  },
+  {
+    "source_number": 283,
+    "sku": "VM-0283",
+    "name": "Umbral y cabezal hoja de Económico - Nogal",
+    "category_code": "ALUMINUM",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 263.48,
+    "source_price_with_tax": 302
+  },
+  {
+    "source_number": 284,
+    "sku": "VM-0284",
+    "name": "Unión PVC - BL",
+    "category_code": "PVC",
+    "unit_code": "BAR",
+    "track_remnants": false,
+    "sale_price": 86.96,
+    "source_price_with_tax": 100
+  },
+  {
+    "source_number": 285,
+    "sku": "VM-0285",
+    "name": "Uñas de 1/8 P/Espejo",
+    "category_code": "HARDWARE",
+    "unit_code": "UNIT",
+    "track_remnants": false,
+    "sale_price": 6.96,
+    "source_price_with_tax": 8
+  },
+  {
+    "source_number": 286,
+    "sku": "VM-0286",
+    "name": "Uñas de 3/16 P/Espejo",
+    "category_code": "HARDWARE",
+    "unit_code": "UNIT",
+    "track_remnants": false,
+    "sale_price": 7.83,
+    "source_price_with_tax": 9
+  },
+  {
+    "source_number": 287,
+    "sku": "VM-0287",
+    "name": "Vidrio claro 4mm - 2.44X1.83",
+    "category_code": "GLASS",
+    "unit_code": "SHEET",
+    "track_remnants": false,
+    "sale_price": 747.83,
+    "source_price_with_tax": 859
+  },
+  {
+    "source_number": 288,
+    "sku": "VM-0288",
+    "name": "Vidrio claro 5mm SPH - 1.605X2",
+    "category_code": "GLASS",
+    "unit_code": "SHEET",
+    "track_remnants": false,
+    "sale_price": 678.26,
+    "source_price_with_tax": 779
+  },
+  {
+    "source_number": 289,
+    "sku": "VM-0289",
+    "name": "Vidrio flotado bronce 5mm (3/16) - 1.65X2.14",
+    "category_code": "GLASS",
+    "unit_code": "SHEET",
+    "track_remnants": false,
+    "sale_price": 826.09,
+    "source_price_with_tax": 950
+  },
+  {
+    "source_number": 290,
+    "sku": "VM-0290",
+    "name": "Vidrio flotado bronce 5mm (3/16) - 3.30X2.14",
+    "category_code": "GLASS",
+    "unit_code": "SHEET",
+    "track_remnants": false,
+    "sale_price": 1652.17,
+    "source_price_with_tax": 1900
+  },
+  {
+    "source_number": 291,
+    "sku": "VM-0291",
+    "name": "Vidrio flotado claro 6mm - 1.65X2.14",
+    "category_code": "GLASS",
+    "unit_code": "SHEET",
+    "track_remnants": false,
+    "sale_price": 915.65,
+    "source_price_with_tax": 1052
+  },
+  {
+    "source_number": 292,
+    "sku": "VM-0292",
+    "name": "Vidrio laminado 3+3 claro 1.65X2.14 5mm",
+    "category_code": "GLASS",
+    "unit_code": "SHEET",
+    "track_remnants": false,
+    "sale_price": 1123.8,
+    "source_price_with_tax": 1292
+  },
+  {
+    "source_number": 293,
+    "sku": "VM-0293",
+    "name": "Vidrio laminado bronce 6mm (1/4) - 1.65X2.14",
+    "category_code": "GLASS",
+    "unit_code": "SHEET",
+    "track_remnants": false,
+    "sale_price": 1652.17,
+    "source_price_with_tax": 1900
+  },
+  {
+    "source_number": 294,
+    "sku": "VM-0294",
+    "name": "Vidrio laminado claro 6mm (1/4) - 1.65X2.14",
+    "category_code": "GLASS",
+    "unit_code": "SHEET",
+    "track_remnants": false,
+    "sale_price": 1556.52,
+    "source_price_with_tax": 1790
+  },
+  {
+    "source_number": 295,
+    "sku": "VM-0295",
+    "name": "Vidrio reflectivo azul 5mm - 1.65X2.14",
+    "category_code": "GLASS",
+    "unit_code": "SHEET",
+    "track_remnants": false,
+    "sale_price": 963.04,
+    "source_price_with_tax": 1107
+  },
+  {
+    "source_number": 296,
+    "sku": "VM-0296",
+    "name": "Vidrio reflectivo bronce 5mm (3/16) - 1.65X2.14",
+    "category_code": "GLASS",
+    "unit_code": "SHEET",
+    "track_remnants": false,
+    "sale_price": 826.08,
+    "source_price_with_tax": 950
+  },
+  {
+    "source_number": 297,
+    "sku": "VM-0297",
+    "name": "Vidrio super gris 5mm - 1.83X2.14",
+    "category_code": "GLASS",
+    "unit_code": "SHEET",
+    "track_remnants": false,
+    "sale_price": 1224.35,
+    "source_price_with_tax": 1408
+  },
+  {
+    "source_number": 298,
+    "sku": "VM-0298",
+    "name": "Vidrio super gris 5mm - 1.83X2.44",
+    "category_code": "GLASS",
+    "unit_code": "SHEET",
+    "track_remnants": false,
+    "sale_price": 1352.17,
+    "source_price_with_tax": 1555
+  },
+  {
+    "source_number": 299,
+    "sku": "VM-0299",
+    "name": "Vidrio super gris 5mm (3/16) - 1.65X2.14",
+    "category_code": "GLASS",
+    "unit_code": "SHEET",
+    "track_remnants": false,
+    "sale_price": 1069.56,
+    "source_price_with_tax": 1230
+  },
+  {
+    "source_number": 300,
+    "sku": "VM-0300",
+    "name": "Vidrio super gris 5mm X G - 1.65X2.44",
+    "category_code": "GLASS",
+    "unit_code": "SHEET",
+    "track_remnants": false,
+    "sale_price": 1173.91,
+    "source_price_with_tax": 1348
+  },
+  {
+    "source_number": 301,
+    "sku": "VM-0301",
+    "name": "Vidrio tapiz bronce 5mm - 1.83X2.44",
+    "category_code": "GLASS",
+    "unit_code": "SHEET",
+    "track_remnants": false,
+    "sale_price": 1256.52,
+    "source_price_with_tax": 1444
+  }
+]

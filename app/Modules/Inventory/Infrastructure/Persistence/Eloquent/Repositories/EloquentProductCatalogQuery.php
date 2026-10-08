@@ -10,8 +10,14 @@ use Illuminate\Support\Facades\DB;
 
 final class EloquentProductCatalogQuery implements ProductCatalogQueryInterface
 {
-    public function search(string $search, int $page): array
-    {
+    public function search(
+        string $search,
+        ?int $categoryId,
+        string $status,
+        string $sort,
+        int $perPage,
+        int $page,
+    ): array {
         $search = trim($search);
 
         $query = InventoryProductModel::query()
@@ -71,9 +77,30 @@ final class EloquentProductCatalogQuery implements ProductCatalogQueryInterface
             });
         }
 
-        $paginator = $query
-            ->orderByDesc('inventory_products.id')
-            ->paginate(15, ['*'], 'page', max(1, $page));
+        if ($categoryId !== null) {
+            $query->where('inventory_products.category_id', $categoryId);
+        }
+
+        if ($status === 'active') {
+            $query->where('inventory_products.active', true);
+        } elseif ($status === 'inactive') {
+            $query->where('inventory_products.active', false);
+        }
+
+        match ($sort) {
+            'sku_desc' => $query->orderByDesc('inventory_products.sku'),
+            'name_asc' => $query->orderBy('inventory_products.name')->orderBy('inventory_products.sku'),
+            'name_desc' => $query->orderByDesc('inventory_products.name')->orderBy('inventory_products.sku'),
+            'category_asc' => $query->orderBy('categories.name')->orderBy('inventory_products.sku'),
+            default => $query->orderBy('inventory_products.sku'),
+        };
+
+        $paginator = $query->paginate(
+            max(15, min(100, $perPage)),
+            ['*'],
+            'page',
+            max(1, $page),
+        );
 
         return [
             'data' => $paginator->getCollection()

@@ -13,6 +13,12 @@ final class SqlInventoryEntryOptions implements InventoryEntryOptionsInterface
     {
         $products = DB::table('inventory_products as products')
             ->join(
+                'inventory_categories as categories',
+                'categories.id',
+                '=',
+                'products.category_id'
+            )
+            ->join(
                 'inventory_units as units',
                 'units.id',
                 '=',
@@ -23,14 +29,18 @@ final class SqlInventoryEntryOptions implements InventoryEntryOptionsInterface
             ->where('products.track_lots', false)
             ->where('products.track_remnants', false)
             ->whereNull('products.deleted_at')
+            ->where('categories.active', true)
+            ->whereNull('categories.deleted_at')
             ->where('units.active', true)
             ->whereNull('units.deleted_at')
-            ->orderBy('products.name')
+            ->orderBy('products.sku')
             ->get([
                 'products.id',
                 'products.sku',
                 'products.name',
+                'products.category_id',
                 'products.base_unit_id',
+                'categories.name as category_name',
                 'units.name as base_unit_name',
                 'units.symbol as base_unit_symbol',
             ]);
@@ -82,6 +92,8 @@ final class SqlInventoryEntryOptions implements InventoryEntryOptionsInterface
                     'id' => (int) $product->id,
                     'sku' => $product->sku,
                     'name' => $product->name,
+                    'category_id' => (int) $product->category_id,
+                    'category_name' => $product->category_name,
                     'base_unit_symbol' => $product->base_unit_symbol,
                     'units' => $units,
                 ];

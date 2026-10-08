@@ -3,6 +3,7 @@ import { Head, useForm } from '@inertiajs/vue3';
 import Button from 'primevue/button';
 import InputText from 'primevue/inputtext';
 import { useI18n } from 'vue-i18n';
+import brandLogo from '../../assets/vidrieria-maradiaga-logo.png';
 
 const { t } = useI18n();
 
@@ -25,9 +26,11 @@ function submit(): void {
 
     <main class="login-page">
         <section class="brand-panel" aria-label="Vidriería Maradiaga">
-            <div class="brand-mark" aria-hidden="true">VM</div>
-
-            <p class="eyebrow">VIDRIERÍA MARADIAGA</p>
+            <img
+                class="brand-logo"
+                :src="brandLogo"
+                alt="Vidriería Maradiaga"
+            />
 
             <h1>{{ t('login.slogan') }}</h1>
 
@@ -134,16 +137,12 @@ function submit(): void {
     color: white;
 }
 
-.brand-mark {
-    display: grid;
-    place-items: center;
-    width: 64px;
-    height: 64px;
+.brand-logo {
+    width: min(100%, 22rem);
+    height: auto;
     margin-bottom: 2rem;
-    border: 1px solid #ffffff50;
-    border-radius: 18px;
-    font-size: 1.4rem;
-    font-weight: 800;
+    border-radius: 0.8rem;
+    box-shadow: 0 18px 45px #06111f55;
 }
 
 .eyebrow {
@@ -233,7 +232,8 @@ function submit(): void {
         padding: 1.75rem;
     }
 
-    .brand-mark {
+    .brand-logo {
+        width: min(100%, 15rem);
         margin-bottom: 0.75rem;
     }
 

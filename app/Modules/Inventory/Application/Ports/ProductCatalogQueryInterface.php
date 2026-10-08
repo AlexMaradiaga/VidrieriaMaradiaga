@@ -6,7 +6,14 @@ namespace App\Modules\Inventory\Application\Ports;
 
 interface ProductCatalogQueryInterface
 {
-    public function search(string $search, int $page): array;
+    public function search(
+        string $search,
+        ?int $categoryId,
+        string $status,
+        string $sort,
+        int $perPage,
+        int $page,
+    ): array;
 
     public function formOptions(): array;
 }

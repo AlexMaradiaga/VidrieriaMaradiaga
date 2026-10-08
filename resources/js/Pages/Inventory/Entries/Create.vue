@@ -3,6 +3,7 @@ import { computed, onMounted, reactive, ref, watch } from 'vue';
 import { Head, Link } from '@inertiajs/vue3';
 import axios from 'axios';
 import Button from 'primevue/button';
+import Select from 'primevue/select';
 import Toast from 'primevue/toast';
 import ConfirmDialog from 'primevue/confirmdialog';
 import { useToast } from 'primevue/usetoast';
@@ -26,8 +27,14 @@ interface UnitOption extends Option {
 
 interface ProductOption extends Option {
     sku: string;
+    category_id: number;
+    category_name: string;
     base_unit_symbol: string;
     units: UnitOption[];
+}
+
+interface ProductSelectOption extends ProductOption {
+    label: string;
 }
 
 interface EntryPayload {
@@ -72,6 +79,7 @@ const success = ref('');
 const movementId = ref<number | null>(null);
 const errors = ref<Record<string, string[]>>({});
 const pending = ref<EntryPayload | null>(null);
+const selectedCategoryId = ref<number | null>(null);
 
 watch(success, (message) => {
     if (!message) return;
@@ -112,6 +120,29 @@ const selectedProduct = computed(() =>
     props.products.find((product) => product.id === form.product_id),
 );
 
+const categoryOptions = computed(() => {
+    const categories = new Map<number, string>();
+
+    for (const product of props.products) {
+        categories.set(product.category_id, product.category_name);
+    }
+
+    return Array.from(categories, ([id, name]) => ({ id, name }))
+        .sort((left, right) => left.name.localeCompare(right.name, 'es'));
+});
+
+const selectableProducts = computed<ProductSelectOption[]>(() =>
+    props.products
+        .filter((product) =>
+            selectedCategoryId.value === null ||
+            product.category_id === selectedCategoryId.value,
+        )
+        .map((product) => ({
+            ...product,
+            label: `${product.sku} — ${product.name}`,
+        })),
+);
+
 const availableUnits = computed(() => selectedProduct.value?.units ?? []);
 
 const selectedUnit = computed(() =>
@@ -135,6 +166,16 @@ watch(
         form.unit_id = selectedProduct.value?.units[0]?.id ?? '';
     },
 );
+
+watch(selectedCategoryId, () => {
+    if (
+        selectedProduct.value &&
+        selectedCategoryId.value !== null &&
+        selectedProduct.value.category_id !== selectedCategoryId.value
+    ) {
+        form.product_id = '';
+    }
+});
 
 watch(
     () => form.reason,
@@ -395,19 +436,44 @@ function newEntry(): void {
             <form @submit.prevent="submit">
                 <fieldset :disabled="locked || !ready">
                     <div class="grid">
-                        <label class="wide">
-                            {{t('inventory.entries.product')}} *
-                            <select v-model="form.product_id" required>
-                                <option disabled value="">{{t('inventory.entries.chooseProduct')}}</option>
+                        <label>
+                            {{t('inventory.entries.category')}}
+                            <select v-model="selectedCategoryId">
+                                <option :value="null">{{t('inventory.entries.allCategories')}}</option>
 
                                 <option
-                                    v-for="product in products"
-                                    :key="product.id"
-                                    :value="product.id"
+                                    v-for="category in categoryOptions"
+                                    :key="category.id"
+                                    :value="category.id"
                                 >
-                                    {{ product.sku }} — {{ product.name }}
+                                    {{ category.name }}
                                 </option>
                             </select>
+                        </label>
+
+                        <label class="wide product-field">
+                            {{t('inventory.entries.product')}} *
+                            <Select
+                                v-model="form.product_id"
+                                :options="selectableProducts"
+                                option-label="label"
+                                option-value="id"
+                                :placeholder="t('inventory.entries.chooseProduct')"
+                                :filter-placeholder="t('inventory.entries.searchProduct')"
+                                :filter-fields="['sku', 'name', 'category_name']"
+                                filter
+                                show-clear
+                                class="product-select"
+                                required
+                            >
+                                <template #option="{ option }">
+                                    <div class="product-option">
+                                        <strong>{{ option.sku }}</strong>
+                                        <span>{{ option.name }}</span>
+                                        <small>{{ option.category_name }}</small>
+                                    </div>
+                                </template>
+                            </Select>
                         </label>
 
                         <label>
@@ -588,6 +654,27 @@ fieldset {
     gap: 1rem;
 }
 
+.product-field {
+    grid-column: 1 / -1;
+}
+
+.product-select {
+    width: 100%;
+}
+
+.product-option {
+    display: grid;
+    grid-template-columns: minmax(5.5rem, auto) minmax(0, 1fr) auto;
+    gap: 0.75rem;
+    align-items: center;
+    width: 100%;
+}
+
+.product-option small {
+    color: var(--p-text-muted-color, #64748b);
+    font-weight: 400;
+}
+
 label {
     display: flex;
     flex-direction: column;
@@ -664,6 +751,11 @@ fieldset:disabled {
 @media (max-width: 640px) {
     .grid {
         grid-template-columns: 1fr;
+    }
+
+    .product-option {
+        grid-template-columns: 1fr;
+        gap: 0.15rem;
     }
 
     .panel {

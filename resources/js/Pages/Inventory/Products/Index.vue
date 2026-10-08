@@ -65,6 +65,10 @@ const props = defineProps<{
     };
     filters: {
         search: string;
+        category_id: number | null;
+        status: 'all' | 'active' | 'inactive';
+        sort: 'sku_asc' | 'sku_desc' | 'name_asc' | 'name_desc' | 'category_asc';
+        per_page: 15 | 30 | 50 | 100;
     };
     categories: Option[];
     units: UnitOption[];
@@ -89,6 +93,10 @@ const canChangeStatus = computed(() =>
 );
 
 const search = ref(props.filters.search);
+const categoryId = ref<number | ''>(props.filters.category_id ?? '');
+const status = ref(props.filters.status);
+const sort = ref(props.filters.sort);
+const perPage = ref(props.filters.per_page);
 const showEditor = ref(false);
 const editingId = ref<number | null>(null);
 const editingCategory = ref('');
@@ -183,6 +191,25 @@ watch(
     (value) => {
         search.value = value;
     },
+);
+
+watch(
+    () => props.filters,
+    (filters) => {
+        categoryId.value = filters.category_id ?? '';
+        status.value = filters.status;
+        sort.value = filters.sort;
+        perPage.value = filters.per_page;
+    },
+    { deep: true },
+);
+
+const hasFilters = computed(() =>
+    search.value.trim() !== '' ||
+    categoryId.value !== '' ||
+    status.value !== 'all' ||
+    sort.value !== 'sku_asc' ||
+    perPage.value !== 30,
 );
 
 watch(
@@ -331,6 +358,10 @@ function refreshProducts(pageNumber = 1): void {
         '/inventory/products',
         {
             search: search.value.trim(),
+            category_id: categoryId.value || undefined,
+            status: status.value,
+            sort: sort.value,
+            per_page: perPage.value,
             page: pageNumber,
         },
         {
@@ -357,6 +388,10 @@ function clearSearch(): void {
     if (busy.value) return;
 
     search.value = '';
+    categoryId.value = '';
+    status.value = 'all';
+    sort.value = 'sku_asc';
+    perPage.value = 30;
     searchProducts();
 }
 
@@ -770,9 +805,9 @@ async function performStatusChange(product: ProductRow, targetStatus: boolean): 
 
         <section class="panel" :aria-busy="loading">
             <form class="search-bar" @submit.prevent="searchProducts">
-                <label for="product-search">{{t('inventory.products.search')}}</label>
-
-                <div class="search-controls">
+                <div class="filter-grid">
+                    <label for="product-search">
+                        {{t('inventory.products.search')}}
                     <input
                         id="product-search"
                         v-model="search"
@@ -781,6 +816,55 @@ async function performStatusChange(product: ProductRow, targetStatus: boolean): 
                         :placeholder="t('inventory.products.searchExample')"
                         :disabled="busy"
                     />
+                    </label>
+
+                    <label>
+                        {{t('inventory.products.filterCategory')}}
+                        <select v-model="categoryId" :disabled="busy">
+                            <option value="">{{t('inventory.products.allCategories')}}</option>
+
+                            <option
+                                v-for="category in categories"
+                                :key="category.id"
+                                :value="category.id"
+                            >
+                                {{ category.name }}
+                            </option>
+                        </select>
+                    </label>
+
+                    <label>
+                        {{t('inventory.products.filterStatus')}}
+                        <select v-model="status" :disabled="busy">
+                            <option value="all">{{t('common.all')}}</option>
+                            <option value="active">{{t('common.active')}}</option>
+                            <option value="inactive">{{t('common.inactive')}}</option>
+                        </select>
+                    </label>
+
+                    <label>
+                        {{t('inventory.products.orderBy')}}
+                        <select v-model="sort" :disabled="busy">
+                            <option value="sku_asc">{{t('inventory.products.skuAscending')}}</option>
+                            <option value="sku_desc">{{t('inventory.products.skuDescending')}}</option>
+                            <option value="name_asc">{{t('inventory.products.nameAscending')}}</option>
+                            <option value="name_desc">{{t('inventory.products.nameDescending')}}</option>
+                            <option value="category_asc">{{t('inventory.products.categoryAscending')}}</option>
+                        </select>
+                    </label>
+
+                    <label>
+                        {{t('inventory.products.rowsPerPage')}}
+                        <select v-model="perPage" :disabled="busy">
+                            <option :value="15">15</option>
+                            <option :value="30">30</option>
+                            <option :value="50">50</option>
+                            <option :value="100">100</option>
+                        </select>
+                    </label>
+                </div>
+
+                <div class="search-controls">
 
                     <Button
                         type="submit"
@@ -791,7 +875,7 @@ async function performStatusChange(product: ProductRow, targetStatus: boolean): 
                     />
 
                     <Button
-                        v-if="search || filters.search"
+                        v-if="hasFilters"
                         type="button"
                         :label="t('inventory.products.viewAll')"
                         severity="secondary"
@@ -987,7 +1071,7 @@ fieldset {
 }
 
 .form-grid label,
-.search-bar > label {
+.filter-grid label {
     display: flex;
     flex-direction: column;
     gap: 0.4rem;
@@ -1093,6 +1177,12 @@ textarea:focus-visible,
     margin-bottom: 1.5rem;
 }
 
+.filter-grid {
+    display: grid;
+    grid-template-columns: minmax(16rem, 2fr) repeat(4, minmax(9rem, 1fr));
+    gap: 1rem;
+}
+
 .search-controls {
     margin-top: 0.5rem;
 }
@@ -1177,12 +1267,22 @@ th {
         grid-template-columns: 1fr;
     }
 
+    .filter-grid {
+        grid-template-columns: 1fr;
+    }
+
     .panel {
         padding: 1rem;
     }
 
     .pagination {
         flex-wrap: wrap;
+    }
+}
+
+@media (min-width: 641px) and (max-width: 1100px) {
+    .filter-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 }
 </style>

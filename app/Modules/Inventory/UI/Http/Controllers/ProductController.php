@@ -33,21 +33,42 @@ final class ProductController extends Controller
 
         $data = $request->validate([
             'search' => ['nullable', 'string', 'max:180'],
+            'category_id' => ['nullable', 'integer', 'min:1'],
+            'status' => ['nullable', 'in:all,active,inactive'],
+            'sort' => ['nullable', 'in:sku_asc,sku_desc,name_asc,name_desc,category_asc'],
+            'per_page' => ['nullable', 'integer', 'in:15,30,50,100'],
             'page' => ['nullable', 'integer', 'min:1', 'max:1000000'],
         ]);
 
         $search = trim((string) ($data['search'] ?? ''));
+        $categoryId = isset($data['category_id']) ? (int) $data['category_id'] : null;
+        $status = (string) ($data['status'] ?? 'all');
+        $sort = (string) ($data['sort'] ?? 'sku_asc');
+        $perPage = (int) ($data['per_page'] ?? 30);
         $page = (int) ($data['page'] ?? 1);
 
-        $options = $request->user()->can('inventory.products.create')
-            ? $catalog->formOptions()
-            : ['categories' => [], 'units' => []];
+        $options = $catalog->formOptions();
 
         return Inertia::render('Inventory/Products/Index', [
-            'products' => $catalog->search($search, $page),
-            'filters' => ['search' => $search],
+            'products' => $catalog->search(
+                $search,
+                $categoryId,
+                $status,
+                $sort,
+                $perPage,
+                $page,
+            ),
+            'filters' => [
+                'search' => $search,
+                'category_id' => $categoryId,
+                'status' => $status,
+                'sort' => $sort,
+                'per_page' => $perPage,
+            ],
             'categories' => $options['categories'],
-            'units' => $options['units'],
+            'units' => $request->user()->can('inventory.products.create')
+                ? $options['units']
+                : [],
         ]);
     }
 
