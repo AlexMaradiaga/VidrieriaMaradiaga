@@ -14,7 +14,7 @@ class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable, HasRoles;
-
+    protected $dateFormat = 'Y-m-d\TH:i:s.v';
     protected string $guard_name = 'web';
 
     protected $attributes = [
