@@ -22,6 +22,7 @@ Route::middleware(['auth', 'active'])->group(function (): void {
 
     Route::get('/suppliers', [SupplierController::class, 'index'])->name('suppliers.index');
     Route::post('/suppliers', [SupplierController::class, 'store'])->name('suppliers.store');
+    Route::put('/suppliers/{supplierId}', [SupplierController::class, 'update'])->whereNumber('supplierId')->name('suppliers.update');
     Route::patch('/suppliers/{supplierId}/active', [SupplierController::class, 'active'])->whereNumber('supplierId')->name('suppliers.active');
 
     Route::prefix('purchases')->name('purchases.')->group(function (): void {
