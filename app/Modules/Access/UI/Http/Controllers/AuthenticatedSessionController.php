@@ -64,7 +64,27 @@ final class AuthenticatedSessionController extends Controller
 
         $request->user()?->forceFill(['last_login_at' => now()])->save();
 
-        return redirect()->intended(route('dashboard'));
+        // Discard legacy HTTP or external intended URLs saved before proxy
+        // configuration was fixed. Preserve same-host paths and query strings.
+        $intended = $request->session()->pull('url.intended');
+
+        if (is_string($intended)) {
+            $parts = parse_url($intended);
+
+            if (is_array($parts)
+                && isset($parts['host'])
+                && strcasecmp($parts['host'], $request->getHost()) === 0
+                && in_array($parts['scheme'] ?? '', ['http', 'https'], true)
+                && ! isset($parts['user']) && ! isset($parts['pass'])) {
+                return redirect()->to(
+                    $request->getSchemeAndHttpHost()
+                    .($parts['path'] ?? '/')
+                    .(isset($parts['query']) ? '?'.$parts['query'] : '')
+                );
+            }
+        }
+
+        return redirect()->route('dashboard');
     }
 
     public function destroy(Request $request): RedirectResponse
