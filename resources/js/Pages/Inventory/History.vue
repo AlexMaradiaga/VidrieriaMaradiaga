@@ -328,7 +328,9 @@ function changePage(targetPage: number): void {
         <h1>{{ title }}</h1>
 
         <p v-if="mode === 'entries'" class="hint">
-            {{t('inventory.history.entriesHint')}}
+            Audita todas las operaciones que afectaron el inventario: entradas,
+            salidas, traslados y ajustes. Consulta qué cambió, cuándo, en qué
+            ubicación y quién lo registró.
         </p>
 
         <p v-if="mode === 'kardex'" class="hint">

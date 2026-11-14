@@ -35,6 +35,7 @@ final class ProductController extends Controller
             'search' => ['nullable', 'string', 'max:180'],
             'category_id' => ['nullable', 'integer', 'min:1'],
             'status' => ['nullable', 'in:all,active,inactive'],
+            'stock_status' => ['nullable', 'in:all,available,out_of_stock'],
             'sort' => ['nullable', 'in:sku_asc,sku_desc,name_asc,name_desc,category_asc'],
             'per_page' => ['nullable', 'integer', 'in:15,30,50,100'],
             'page' => ['nullable', 'integer', 'min:1', 'max:1000000'],
@@ -43,6 +44,7 @@ final class ProductController extends Controller
         $search = trim((string) ($data['search'] ?? ''));
         $categoryId = isset($data['category_id']) ? (int) $data['category_id'] : null;
         $status = (string) ($data['status'] ?? 'all');
+        $stockStatus = (string) ($data['stock_status'] ?? 'all');
         $sort = (string) ($data['sort'] ?? 'sku_asc');
         $perPage = (int) ($data['per_page'] ?? 30);
         $page = (int) ($data['page'] ?? 1);
@@ -54,6 +56,7 @@ final class ProductController extends Controller
                 $search,
                 $categoryId,
                 $status,
+                $stockStatus,
                 $sort,
                 $perPage,
                 $page,
@@ -62,6 +65,7 @@ final class ProductController extends Controller
                 'search' => $search,
                 'category_id' => $categoryId,
                 'status' => $status,
+                'stock_status' => $stockStatus,
                 'sort' => $sort,
                 'per_page' => $perPage,
             ],

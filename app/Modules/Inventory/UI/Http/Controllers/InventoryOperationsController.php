@@ -69,6 +69,7 @@ final class InventoryOperationsController extends Controller
             'product_id' => ['required', 'integer', 'min:1'],
             'source_location_id' => ['required', 'integer', 'min:1', 'different:destination_location_id'],
             'destination_location_id' => ['required', 'integer', 'min:1', 'different:source_location_id'],
+            'responsible_name' => ['required', 'string', 'max:180'],
             'document_date' => ['required', 'date_format:Y-m-d', 'before_or_equal:today'],
             'reference' => ['nullable', 'string', 'max:100'],
             'notes' => ['nullable', 'string', 'max:1000'],
@@ -103,6 +104,7 @@ final class InventoryOperationsController extends Controller
             'operation_key' => ['required', 'uuid'],
             'location_id' => ['required', 'integer', 'min:1'],
             'document_date' => ['required', 'date_format:Y-m-d', 'before_or_equal:today'],
+            'responsible_name' => ['required', 'string', 'max:180'],
             'notes' => ['nullable', 'string', 'max:1000'],
             'lines' => ['required', 'array', 'min:1', 'max:500'],
             'lines.*.product_id' => ['required', 'integer', 'distinct', 'min:1'],
@@ -290,6 +292,7 @@ final class InventoryOperationsController extends Controller
                 'code' => ['required', 'string', 'max:30', 'unique:inventory_categories,code'],
                 'name' => ['required', 'string', 'max:100'], 'description' => ['nullable', 'string', 'max:500'],
                 'sort_order' => ['required', 'integer', 'min:0'], 'parent_id' => ['nullable', 'integer', 'exists:inventory_categories,id'],
+                'default_warehouse_id' => ['nullable', 'integer', 'exists:inventory_warehouses,id'],
             ])],
             'suppliers' => ['inventory_suppliers', $request->validate([
                 'code' => ['required', 'string', 'max:30', 'unique:inventory_suppliers,code'],

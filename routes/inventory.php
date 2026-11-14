@@ -4,6 +4,7 @@ use App\Modules\Inventory\UI\Http\Controllers\InventoryEntryController;
 use App\Modules\Inventory\UI\Http\Controllers\InventoryHistoryController;
 use App\Modules\Inventory\UI\Http\Controllers\ProductController;
 use App\Modules\Inventory\UI\Http\Controllers\InventoryOperationsController;
+use App\Modules\Inventory\UI\Http\Controllers\InventoryToolController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth', 'active'])
@@ -71,4 +72,11 @@ Route::middleware(['auth', 'active'])
             ->whereNumber('recordId')->name('catalogs.active');
 
         Route::get('/cut-calculator', [InventoryOperationsController::class, 'cutCalculator'])->name('cuts.index');
+
+        Route::get('/tools', [InventoryToolController::class, 'index'])->name('tools.index');
+        Route::post('/tools', [InventoryToolController::class, 'store'])->name('tools.store');
+        Route::post('/tools/{toolId}/assign', [InventoryToolController::class, 'assign'])
+            ->whereNumber('toolId')->name('tools.assign');
+        Route::post('/tools/{toolId}/return', [InventoryToolController::class, 'returnTool'])
+            ->whereNumber('toolId')->name('tools.return');
     });

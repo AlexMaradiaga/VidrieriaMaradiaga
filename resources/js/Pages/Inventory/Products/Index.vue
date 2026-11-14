@@ -67,6 +67,7 @@ const props = defineProps<{
         search: string;
         category_id: number | null;
         status: 'all' | 'active' | 'inactive';
+        stock_status: 'all' | 'available' | 'out_of_stock';
         sort: 'sku_asc' | 'sku_desc' | 'name_asc' | 'name_desc' | 'category_asc';
         per_page: 15 | 30 | 50 | 100;
     };
@@ -95,6 +96,7 @@ const canChangeStatus = computed(() =>
 const search = ref(props.filters.search);
 const categoryId = ref<number | ''>(props.filters.category_id ?? '');
 const status = ref(props.filters.status);
+const stockStatus = ref(props.filters.stock_status);
 const sort = ref(props.filters.sort);
 const perPage = ref(props.filters.per_page);
 const showEditor = ref(false);
@@ -198,6 +200,7 @@ watch(
     (filters) => {
         categoryId.value = filters.category_id ?? '';
         status.value = filters.status;
+        stockStatus.value = filters.stock_status;
         sort.value = filters.sort;
         perPage.value = filters.per_page;
     },
@@ -208,6 +211,7 @@ const hasFilters = computed(() =>
     search.value.trim() !== '' ||
     categoryId.value !== '' ||
     status.value !== 'all' ||
+    stockStatus.value !== 'all' ||
     sort.value !== 'sku_asc' ||
     perPage.value !== 30,
 );
@@ -360,6 +364,7 @@ function refreshProducts(pageNumber = 1): void {
             search: search.value.trim(),
             category_id: categoryId.value || undefined,
             status: status.value,
+            stock_status: stockStatus.value,
             sort: sort.value,
             per_page: perPage.value,
             page: pageNumber,
@@ -390,6 +395,7 @@ function clearSearch(): void {
     search.value = '';
     categoryId.value = '';
     status.value = 'all';
+    stockStatus.value = 'all';
     sort.value = 'sku_asc';
     perPage.value = 30;
     searchProducts();
@@ -839,6 +845,15 @@ async function performStatusChange(product: ProductRow, targetStatus: boolean): 
                             <option value="all">{{t('common.all')}}</option>
                             <option value="active">{{t('common.active')}}</option>
                             <option value="inactive">{{t('common.inactive')}}</option>
+                        </select>
+                    </label>
+
+                    <label>
+                        Existencia total
+                        <select v-model="stockStatus" :disabled="busy">
+                            <option value="all">Todos los productos</option>
+                            <option value="available">Solo con existencia</option>
+                            <option value="out_of_stock">Sin existencia</option>
                         </select>
                     </label>
 

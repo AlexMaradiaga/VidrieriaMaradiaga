@@ -29,8 +29,15 @@ interface ProductOption extends Option {
     sku: string;
     category_id: number;
     category_name: string;
+    default_warehouse_id: number | null;
     base_unit_symbol: string;
     units: UnitOption[];
+}
+
+interface LocationOption extends Option {
+    warehouse_id: number;
+    warehouse_code: string;
+    warehouse_name: string;
 }
 
 interface ProductSelectOption extends ProductOption {
@@ -65,7 +72,7 @@ interface ValidationResponse {
 
 const props = defineProps<{
     products: ProductOption[];
-    locations: Option[];
+    locations: LocationOption[];
     suppliers: Option[];
     today: string;
 }>();
@@ -80,6 +87,7 @@ const movementId = ref<number | null>(null);
 const errors = ref<Record<string, string[]>>({});
 const pending = ref<EntryPayload | null>(null);
 const selectedCategoryId = ref<number | null>(null);
+const showAllLocations = ref(false);
 
 watch(success, (message) => {
     if (!message) return;
@@ -145,6 +153,16 @@ const selectableProducts = computed<ProductSelectOption[]>(() =>
 
 const availableUnits = computed(() => selectedProduct.value?.units ?? []);
 
+const recommendedLocations = computed(() => {
+    const warehouseId = selectedProduct.value?.default_warehouse_id;
+    if (warehouseId === null || warehouseId === undefined) return props.locations;
+    return props.locations.filter((location) => location.warehouse_id === warehouseId);
+});
+
+const receiveLocations = computed(() =>
+    showAllLocations.value ? props.locations : recommendedLocations.value,
+);
+
 const selectedUnit = computed(() =>
     availableUnits.value.find((unit) => unit.id === form.unit_id),
 );
@@ -164,6 +182,8 @@ watch(
     () => form.product_id,
     () => {
         form.unit_id = selectedProduct.value?.units[0]?.id ?? '';
+        showAllLocations.value = false;
+        form.location_id = recommendedLocations.value[0]?.id ?? '';
     },
 );
 
@@ -521,13 +541,19 @@ function newEntry(): void {
                                 <option disabled value="">{{t('inventory.entries.chooseLocation')}}</option>
 
                                 <option
-                                    v-for="location in locations"
+                                    v-for="location in receiveLocations"
                                     :key="location.id"
                                     :value="location.id"
                                 >
                                     {{ location.name }}
                                 </option>
                             </select>
+                            <small v-if="selectedProduct?.default_warehouse_id">
+                                Bodega recomendada según la categoría del producto.
+                                <button type="button" class="link-button" @click="showAllLocations=!showAllLocations">
+                                    {{ showAllLocations ? 'Mostrar solo la recomendada' : 'Mostrar todas las bodegas' }}
+                                </button>
+                            </small>
                         </label>
 
                         <label>
@@ -681,6 +707,17 @@ label {
     gap: 0.5rem;
     font-size: 0.9rem;
     font-weight: 600;
+}
+
+.link-button {
+    width: auto;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--p-primary-color);
+    cursor: pointer;
+    font: inherit;
+    text-decoration: underline;
 }
 
 input,

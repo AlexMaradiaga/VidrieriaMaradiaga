@@ -41,6 +41,9 @@ final class AccessRolesSeeder extends Seeder
                 'inventory.catalogs.view',
                 'inventory.catalogs.manage',
                 'inventory.cuts.use',
+                'inventory.tools.view',
+                'inventory.tools.manage',
+                'inventory.tools.assign',
                 'access.users.view',
                 'access.users.manage',
                 'access.roles.manage',
@@ -96,6 +99,9 @@ final class AccessRolesSeeder extends Seeder
                     'inventory.kits.view',
                     'inventory.catalogs.view',
                     'inventory.cuts.use',
+                    'inventory.tools.view',
+                    'inventory.tools.manage',
+                    'inventory.tools.assign',
                 ],
 
                 'Ventas' => [
@@ -143,6 +149,8 @@ final class AccessRolesSeeder extends Seeder
                 'Recursos Humanos' => [
                     'access.users.view',
                     'access.employees.manage',
+                    'inventory.tools.view',
+                    'inventory.tools.assign',
                 ],
             ];
 

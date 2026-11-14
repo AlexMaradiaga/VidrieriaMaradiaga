@@ -14,6 +14,7 @@ final class EloquentProductCatalogQuery implements ProductCatalogQueryInterface
         string $search,
         ?int $categoryId,
         string $status,
+        string $stockStatus,
         string $sort,
         int $perPage,
         int $page,
@@ -85,6 +86,12 @@ final class EloquentProductCatalogQuery implements ProductCatalogQueryInterface
             $query->where('inventory_products.active', true);
         } elseif ($status === 'inactive') {
             $query->where('inventory_products.active', false);
+        }
+
+        if ($stockStatus === 'available') {
+            $query->whereRaw('(SELECT COALESCE(SUM(stock_filter.quantity), 0) FROM inventory_stock_balances AS stock_filter WHERE stock_filter.product_id = inventory_products.id) > 0');
+        } elseif ($stockStatus === 'out_of_stock') {
+            $query->whereRaw('(SELECT COALESCE(SUM(stock_filter.quantity), 0) FROM inventory_stock_balances AS stock_filter WHERE stock_filter.product_id = inventory_products.id) <= 0');
         }
 
         match ($sort) {

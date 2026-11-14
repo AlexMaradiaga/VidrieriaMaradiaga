@@ -11,17 +11,29 @@ final class SqlInventoryOperationsQuery implements InventoryOperationsQueryInter
 {
     public function options(): array
     {
+        $stockTotals = DB::table('inventory_stock_balances')
+            ->selectRaw('product_id, SUM(quantity) as quantity')
+            ->groupBy('product_id');
+
         $products = DB::table('inventory_products as products')
             ->join('inventory_units as units', 'units.id', '=', 'products.base_unit_id')
+            ->join('inventory_categories as categories', 'categories.id', '=', 'products.category_id')
+            ->leftJoinSub($stockTotals, 'stock_totals', 'stock_totals.product_id', '=', 'products.id')
             ->where('products.active', true)
             ->where('products.track_stock', true)
             ->whereNull('products.deleted_at')
             ->orderBy('products.name')
             ->get([
                 'products.id', 'products.sku', 'products.name', 'products.base_unit_id',
-                'products.average_cost', 'products.minimum_stock',
+                'products.average_cost', 'products.minimum_stock', 'products.category_id',
+                'categories.name as category_name', DB::raw('COALESCE(stock_totals.quantity, 0) as stock_quantity'),
                 'units.name as base_unit_name', 'units.symbol as base_unit_symbol',
             ]);
+
+        $stockByProduct = DB::table('inventory_stock_balances')
+            ->where('quantity', '>', 0)
+            ->get(['product_id', 'location_id', 'quantity'])
+            ->groupBy('product_id');
 
         $issueUnits = DB::table('inventory_product_units as conversions')
             ->join('inventory_units as units', 'units.id', '=', 'conversions.unit_id')
@@ -42,14 +54,22 @@ final class SqlInventoryOperationsQuery implements InventoryOperationsQueryInter
             ->where('warehouses.active', true)
             ->whereNull('warehouses.deleted_at')
             ->orderBy('warehouses.name')->orderBy('locations.name')
-            ->get(['locations.id', 'locations.name', 'warehouses.name as warehouse_name'])
+            ->get([
+                'locations.id', 'locations.name', 'locations.warehouse_id',
+                'warehouses.code as warehouse_code', 'warehouses.name as warehouse_name',
+                'warehouses.address as warehouse_address',
+            ])
             ->map(fn (object $row): array => [
                 'id' => (int) $row->id,
                 'name' => $row->warehouse_name.' / '.$row->name,
+                'warehouse_id' => (int) $row->warehouse_id,
+                'warehouse_code' => $row->warehouse_code,
+                'warehouse_name' => $row->warehouse_name,
+                'warehouse_address' => $row->warehouse_address,
             ])->all();
 
         return [
-            'products' => $products->map(function (object $product) use ($issueUnits): array {
+            'products' => $products->map(function (object $product) use ($issueUnits, $stockByProduct): array {
                 $units = [[
                     'id' => (int) $product->base_unit_id,
                     'name' => $product->base_unit_name,
@@ -74,13 +94,31 @@ final class SqlInventoryOperationsQuery implements InventoryOperationsQueryInter
                     'id' => (int) $product->id,
                     'sku' => $product->sku,
                     'name' => $product->name,
+                    'category_id' => (int) $product->category_id,
+                    'category_name' => $product->category_name,
                     'base_unit_symbol' => $product->base_unit_symbol,
                     'average_cost' => (string) $product->average_cost,
                     'minimum_stock' => (string) $product->minimum_stock,
+                    'stock_quantity' => (string) $product->stock_quantity,
+                    'stocks' => $stockByProduct->get($product->id, collect())
+                        ->map(fn (object $stock): array => [
+                            'location_id' => (int) $stock->location_id,
+                            'quantity' => (string) $stock->quantity,
+                        ])->values()->all(),
                     'units' => $units,
                 ];
             })->all(),
             'locations' => $locations,
+            'responsibles' => DB::table('employees')
+                ->where('active', true)
+                ->whereNull('deleted_at')
+                ->orderBy('first_name')->orderBy('last_name')
+                ->get(['id', 'first_name', 'last_name', 'employee_code'])
+                ->map(fn (object $employee): array => [
+                    'id' => (int) $employee->id,
+                    'name' => trim($employee->first_name.' '.$employee->last_name),
+                    'code' => $employee->employee_code,
+                ])->all(),
             'today' => now()->toDateString(),
         ];
     }
@@ -130,12 +168,13 @@ final class SqlInventoryOperationsQuery implements InventoryOperationsQueryInter
                 ->join('inventory_warehouses as warehouses', 'warehouses.id', '=', 'locations.warehouse_id')
                 ->join('users', 'users.id', '=', 'counts.created_by')
                 ->leftJoin('inventory_count_lines as lines', 'lines.count_id', '=', 'counts.id')
-                ->groupBy('counts.id', 'counts.document_date', 'counts.status', 'counts.notes', 'counts.created_at', 'locations.name', 'warehouses.name', 'users.name')
+                ->groupBy('counts.id', 'counts.document_date', 'counts.status', 'counts.notes', 'counts.created_at', 'counts.responsible_name', 'locations.name', 'warehouses.name', 'users.name')
                 ->orderByDesc('counts.id')
                 ->limit(100)
                 ->get([
                     'counts.id', 'counts.document_date', 'counts.status', 'counts.notes', 'counts.created_at',
-                    'locations.name as location', 'warehouses.name as warehouse', 'users.name as creator',
+                    'locations.name as location', 'warehouses.name as warehouse',
+                    DB::raw('COALESCE(counts.responsible_name, users.name) as creator'),
                     DB::raw('COUNT(lines.id) as line_count'),
                     DB::raw('COALESCE(SUM(ABS(lines.variance_quantity)), 0) as total_variance'),
                 ])->map(fn (object $row): array => [
@@ -229,7 +268,10 @@ final class SqlInventoryOperationsQuery implements InventoryOperationsQueryInter
     {
         return [
             'units' => DB::table('inventory_units')->whereNull('deleted_at')->orderBy('name')->get(),
-            'categories' => DB::table('inventory_categories')->whereNull('deleted_at')->orderBy('sort_order')->orderBy('name')->get(),
+            'categories' => DB::table('inventory_categories as categories')
+                ->leftJoin('inventory_warehouses as default_warehouses', 'default_warehouses.id', '=', 'categories.default_warehouse_id')
+                ->whereNull('categories.deleted_at')->orderBy('categories.sort_order')->orderBy('categories.name')
+                ->get(['categories.*', 'default_warehouses.name as default_warehouse_name']),
             'suppliers' => DB::table('inventory_suppliers')->whereNull('deleted_at')->orderBy('legal_name')->get(),
             'warehouses' => DB::table('inventory_warehouses')->whereNull('deleted_at')->orderBy('name')->get(),
             'locations' => DB::table('inventory_locations as locations')

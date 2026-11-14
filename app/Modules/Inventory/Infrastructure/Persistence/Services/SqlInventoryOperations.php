@@ -102,19 +102,22 @@ final class SqlInventoryOperations implements InventoryOperationsInterface
             throw new DomainException(__('inventory.errors.same_locations'));
         }
 
+        $responsibleName = $this->responsibleName($data, $userId);
+
         $key = strtolower($data['operation_key']);
         $requestHash = hash('sha256', json_encode([
             'user_id' => $userId,
             'product_id' => (int) $data['product_id'],
             'source_location_id' => $source,
             'destination_location_id' => $destination,
+            'responsible_name' => $responsibleName,
             'quantity' => (string) $quantity,
             'document_date' => $data['document_date'],
             'reference' => trim((string) ($data['reference'] ?? '')) ?: null,
             'notes' => trim((string) ($data['notes'] ?? '')) ?: null,
         ], JSON_THROW_ON_ERROR));
 
-        return DB::transaction(function () use ($data, $userId, $quantity, $source, $destination, $key, $requestHash): array {
+        return DB::transaction(function () use ($data, $userId, $quantity, $source, $destination, $responsibleName, $key, $requestHash): array {
             $existing = DB::table('inventory_transfers')->where('operation_key', $key)->lockForUpdate()->first();
             if ($existing !== null) {
                 if ($existing->request_hash !== $requestHash) {
@@ -163,6 +166,7 @@ final class SqlInventoryOperations implements InventoryOperationsInterface
                 'product_id' => $product->id,
                 'source_location_id' => $source,
                 'destination_location_id' => $destination,
+                'responsible_name' => $responsibleName,
                 'quantity' => (string) $quantity,
                 'document_date' => $data['document_date'],
                 'reference' => $reference,
@@ -183,10 +187,12 @@ final class SqlInventoryOperations implements InventoryOperationsInterface
         $key = strtolower($data['operation_key']);
         $locationId = (int) $data['location_id'];
         $lines = collect($data['lines'])->sortBy('product_id')->values();
+        $responsibleName = $this->responsibleName($data, $userId);
         $requestHash = hash('sha256', json_encode([
             'user_id' => $userId,
             'location_id' => $locationId,
             'document_date' => $data['document_date'],
+            'responsible_name' => $responsibleName,
             'notes' => trim((string) ($data['notes'] ?? '')) ?: null,
             'lines' => $lines->map(fn (array $line): array => [
                 'product_id' => (int) $line['product_id'],
@@ -194,7 +200,7 @@ final class SqlInventoryOperations implements InventoryOperationsInterface
             ])->all(),
         ], JSON_THROW_ON_ERROR));
 
-        return DB::transaction(function () use ($data, $userId, $key, $locationId, $lines, $requestHash): array {
+        return DB::transaction(function () use ($data, $userId, $key, $locationId, $responsibleName, $lines, $requestHash): array {
             $existing = DB::table('inventory_counts')->where('operation_key', $key)->lockForUpdate()->first();
             if ($existing !== null) {
                 if ($existing->request_hash !== $requestHash) {
@@ -210,6 +216,7 @@ final class SqlInventoryOperations implements InventoryOperationsInterface
                 'request_hash' => $requestHash,
                 'location_id' => $locationId,
                 'document_date' => $data['document_date'],
+                'responsible_name' => $responsibleName,
                 'status' => 'posted',
                 'notes' => trim((string) ($data['notes'] ?? '')) ?: null,
                 'created_by' => $userId,
@@ -266,6 +273,18 @@ final class SqlInventoryOperations implements InventoryOperationsInterface
         $product->base_unit_id = (int) $product->base_unit_id;
 
         return $product;
+    }
+
+    private function responsibleName(array $data, int $userId): string
+    {
+        $provided = trim((string) ($data['responsible_name'] ?? ''));
+
+        if ($provided !== '') {
+            return $provided;
+        }
+
+        return (string) (DB::table('users')->where('id', $userId)->value('name')
+            ?? 'Usuario #'.$userId);
     }
 
     private function issueFactor(object $product, int $unitId): BigDecimal

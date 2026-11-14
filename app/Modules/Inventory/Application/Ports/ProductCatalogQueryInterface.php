@@ -10,6 +10,7 @@ interface ProductCatalogQueryInterface
         string $search,
         ?int $categoryId,
         string $status,
+        string $stockStatus,
         string $sort,
         int $perPage,
         int $page,

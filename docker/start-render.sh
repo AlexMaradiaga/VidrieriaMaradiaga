@@ -19,6 +19,8 @@ chown -R www-data:www-data storage bootstrap/cache
 
 php artisan optimize:clear
 php artisan migrate --force
+php artisan db:seed --class=AccessRolesSeeder --force
+php artisan permission:cache-reset
 php artisan config:cache
 php artisan route:cache
 php artisan view:cache

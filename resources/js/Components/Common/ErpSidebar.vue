@@ -100,6 +100,12 @@ const rawModules: NavModule[] = [
                 permission: "inventory.kits.view",
             },
             {
+                label: "Herramientas asignadas",
+                icon: "pi-wrench",
+                href: "/inventory/tools",
+                permission: "inventory.tools.view",
+            },
+            {
                 label: "Calculadora de cortes",
                 icon: "pi-calculator",
                 href: "/inventory/cut-calculator",

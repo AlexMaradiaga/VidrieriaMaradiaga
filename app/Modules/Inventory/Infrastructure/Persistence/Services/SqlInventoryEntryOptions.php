@@ -40,6 +40,7 @@ final class SqlInventoryEntryOptions implements InventoryEntryOptionsInterface
                 'products.name',
                 'products.category_id',
                 'products.base_unit_id',
+                'categories.default_warehouse_id',
                 'categories.name as category_name',
                 'units.name as base_unit_name',
                 'units.symbol as base_unit_symbol',
@@ -94,6 +95,9 @@ final class SqlInventoryEntryOptions implements InventoryEntryOptionsInterface
                     'name' => $product->name,
                     'category_id' => (int) $product->category_id,
                     'category_name' => $product->category_name,
+                    'default_warehouse_id' => $product->default_warehouse_id === null
+                        ? null
+                        : (int) $product->default_warehouse_id,
                     'base_unit_symbol' => $product->base_unit_symbol,
                     'units' => $units,
                 ];
@@ -115,11 +119,16 @@ final class SqlInventoryEntryOptions implements InventoryEntryOptionsInterface
                 ->get([
                     'locations.id',
                     'locations.name',
+                    'locations.warehouse_id',
+                    'warehouses.code as warehouse_code',
                     'warehouses.name as warehouse_name',
                 ])
                 ->map(fn (object $location): array => [
                     'id' => (int) $location->id,
                     'name' => $location->warehouse_name.' / '.$location->name,
+                    'warehouse_id' => (int) $location->warehouse_id,
+                    'warehouse_code' => $location->warehouse_code,
+                    'warehouse_name' => $location->warehouse_name,
                 ])
                 ->all(),
 
