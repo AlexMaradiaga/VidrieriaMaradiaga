@@ -64,13 +64,13 @@ const rawModules: NavModule[] = [
                 permission: "inventory.transfers.create",
             },
             {
-                label: "Movimientos",
+                label: "Auditoría de movimientos",
                 icon: "pi-history",
                 href: "/inventory/entries",
                 permission: "inventory.entries.view",
             },
             {
-                label: "Kardex por producto",
+                label: "Kardex valorizado",
                 icon: "pi-list",
                 href: "/inventory/kardex",
                 permission: "inventory.kardex.view",

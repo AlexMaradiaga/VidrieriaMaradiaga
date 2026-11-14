@@ -45,12 +45,16 @@ final class SqlInventoryMovementQuery implements InventoryMovementQueryInterface
                 ->all(),
 
             'suppliers' => DB::table('inventory_suppliers')
-                ->orderBy('legal_name')
+                ->orderByRaw("COALESCE(NULLIF(trade_name, ''), legal_name)")
                 ->orderBy('id')
-                ->get(['id', 'legal_name'])
+                ->get(['id', 'code', 'legal_name', 'trade_name'])
                 ->map(static fn (object $row): array => [
                     'id' => (int) $row->id,
-                    'name' => $row->legal_name,
+                    'name' => $row->code.' — '.(
+                        trim((string) $row->trade_name) !== ''
+                            ? $row->trade_name
+                            : $row->legal_name
+                    ),
                 ])
                 ->all(),
         ];
@@ -153,7 +157,9 @@ final class SqlInventoryMovementQuery implements InventoryMovementQueryInterface
                 'm.reason',
                 'm.status',
                 'm.posted_at',
-                's.legal_name as supplier',
+                DB::raw(
+                    "COALESCE(NULLIF(s.trade_name, ''), s.legal_name) as supplier"
+                ),
                 'u.name as creator',
             ])
             ->selectRaw(
@@ -191,7 +197,9 @@ final class SqlInventoryMovementQuery implements InventoryMovementQueryInterface
                 'm.posted_at',
                 'm.cancelled_at',
                 'm.cancellation_reason',
-                's.legal_name as supplier',
+                DB::raw(
+                    "COALESCE(NULLIF(s.trade_name, ''), s.legal_name) as supplier"
+                ),
                 'c.name as creator',
                 'p.name as poster',
                 'x.name as canceller',

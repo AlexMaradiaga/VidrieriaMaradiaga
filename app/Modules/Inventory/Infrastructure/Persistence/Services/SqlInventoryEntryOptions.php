@@ -135,11 +135,15 @@ final class SqlInventoryEntryOptions implements InventoryEntryOptionsInterface
             'suppliers' => DB::table('inventory_suppliers')
                 ->where('active', true)
                 ->whereNull('deleted_at')
-                ->orderBy('legal_name')
-                ->get(['id', 'legal_name'])
+                ->orderByRaw("COALESCE(NULLIF(trade_name, ''), legal_name)")
+                ->get(['id', 'code', 'legal_name', 'trade_name'])
                 ->map(fn (object $supplier): array => [
                     'id' => (int) $supplier->id,
-                    'name' => $supplier->legal_name,
+                    'name' => $supplier->code.' — '.(
+                        trim((string) $supplier->trade_name) !== ''
+                            ? $supplier->trade_name
+                            : $supplier->legal_name
+                    ),
                 ])
                 ->all(),
 

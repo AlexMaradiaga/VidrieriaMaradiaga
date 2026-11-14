@@ -303,6 +303,10 @@ function search(): void {
     navigate(form);
 }
 
+function printKardex(): void {
+    window.print();
+}
+
 function changePage(targetPage: number): void {
     if (props.mode === 'detail' && props.entry) {
         router.get(
@@ -323,14 +327,14 @@ function changePage(targetPage: number): void {
     <Head :title="`${title} | ${t('common.appName')}`" />
 
     <main class="history">
-        <InventoryNav />
+        <InventoryNav class="no-print" />
 
         <h1>{{ title }}</h1>
 
         <p v-if="mode === 'entries'" class="hint">
-            Audita todas las operaciones que afectaron el inventario: entradas,
-            salidas, traslados y ajustes. Consulta qué cambió, cuándo, en qué
-            ubicación y quién lo registró.
+            Auditoría general de entradas, salidas, traslados y ajustes. Aquí se
+            consulta qué operación se realizó, cuándo, en qué ubicación, con qué
+            referencia, proveedor y usuario responsable.
         </p>
 
         <p v-if="mode === 'kardex'" class="hint">
@@ -339,7 +343,7 @@ function changePage(targetPage: number): void {
 
         <form
             v-if="mode !== 'detail' && options"
-            class="panel"
+            class="panel no-print"
             @submit.prevent="search"
         >
             <div class="filters">
@@ -783,10 +787,20 @@ function changePage(targetPage: number): void {
             </p>
 
             <template v-else>
-                <h2>
-                    {{ ledger.product.sku }} —
-                    {{ ledger.product.name }}
-                </h2>
+                <div class="report-heading">
+                    <h2>
+                        {{ ledger.product.sku }} —
+                        {{ ledger.product.name }}
+                    </h2>
+
+                    <Button
+                        class="no-print"
+                        :label="t('inventory.history.printKardex')"
+                        icon="pi pi-print"
+                        severity="secondary"
+                        @click="printKardex"
+                    />
+                </div>
 
                 <p class="hint">
                     {{t('inventory.history.ledgerScope',{unit:ledger.product.unit,location:locationName})}}
@@ -948,7 +962,7 @@ function changePage(targetPage: number): void {
 
         <nav
             v-if="pagination"
-            class="pagination"
+            class="pagination no-print"
             :aria-label="t('inventory.history.pagination')"
         >
             <Button
@@ -1071,6 +1085,14 @@ a:focus-visible,
     margin-top: 1rem;
 }
 
+.report-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
 .table-wrap {
     overflow-x: auto;
 }
@@ -1173,6 +1195,44 @@ dd {
 
     .pagination {
         justify-content: center;
+    }
+}
+
+@media print {
+    @page {
+        size: landscape;
+        margin: 12mm;
+    }
+
+    .no-print {
+        display: none !important;
+    }
+
+    .history {
+        max-width: none;
+        padding: 0;
+        color: #000;
+    }
+
+    .panel,
+    .stat {
+        border-color: #999;
+        box-shadow: none;
+        break-inside: avoid;
+    }
+
+    .table-wrap {
+        overflow: visible;
+    }
+
+    table {
+        font-size: 9pt;
+    }
+
+    th,
+    td {
+        padding: 0.45rem;
+        color: #000;
     }
 }
 </style>
