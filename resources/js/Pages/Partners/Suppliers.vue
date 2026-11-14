@@ -89,17 +89,18 @@ const saveEdit = () => {
         <section class="card">
             <h2>Proveedores registrados</h2>
             <div class="table"><table>
-                <thead><tr><th>Código</th><th>Nombre</th><th>Contacto</th><th>Crédito</th><th>Estado</th><th v-if="canManage">Acciones</th></tr></thead>
+                <thead><tr><th>Código</th><th>Razón social</th><th>Nombre comercial</th><th>Contacto</th><th>Teléfono</th><th>Crédito</th><th>Estado</th><th v-if="canManage">Acciones</th></tr></thead>
                 <tbody>
                     <tr v-for="s in suppliers" :key="s.id">
-                        <td>{{ s.code }}</td><td>{{ s.legal_name }}</td><td>{{ s.phone || s.email || '—' }}</td>
+                        <td>{{ s.code }}</td><td>{{ s.legal_name }}</td><td>{{ s.trade_name || '—' }}</td>
+                        <td>{{ s.contact_name || '—' }}</td><td>{{ s.phone || '—' }}</td>
                         <td>{{ s.payment_terms_days }} días</td><td>{{ s.active ? 'Activo' : 'Inactivo' }}</td>
                         <td v-if="canManage"><div class="actions">
                             <button type="button" :aria-label="`Editar proveedor ${s.legal_name}`" @click="openEdit(s)">Editar</button>
                             <button type="button" class="danger" @click="toggle(s)">{{ s.active ? 'Desactivar' : 'Activar' }}</button>
                         </div></td>
                     </tr>
-                    <tr v-if="!suppliers.length"><td :colspan="canManage ? 6 : 5">No hay proveedores registrados.</td></tr>
+                    <tr v-if="!suppliers.length"><td :colspan="canManage ? 8 : 7">No hay proveedores registrados.</td></tr>
                 </tbody>
             </table></div>
         </section>
