@@ -61,11 +61,6 @@ Route::middleware(['auth', 'active'])
         Route::patch('/remnants/{remnantId}/status', [InventoryOperationsController::class, 'remnantsStatus'])
             ->whereNumber('remnantId')->name('remnants.status');
 
-        Route::get('/kits', [InventoryOperationsController::class, 'kits'])->name('kits.index');
-        Route::post('/kits', [InventoryOperationsController::class, 'kitsStore'])->name('kits.store');
-        Route::patch('/kits/{kitId}/active', [InventoryOperationsController::class, 'kitsActive'])
-            ->whereNumber('kitId')->name('kits.active');
-
         Route::get('/catalogs', [InventoryOperationsController::class, 'catalogs'])->name('catalogs.index');
         Route::post('/catalogs/{catalog}', [InventoryOperationsController::class, 'catalogStore'])->name('catalogs.store');
         Route::patch('/catalogs/{catalog}/{recordId}/active', [InventoryOperationsController::class, 'catalogActive'])
@@ -79,4 +74,6 @@ Route::middleware(['auth', 'active'])
             ->whereNumber('toolId')->name('tools.assign');
         Route::post('/tools/{toolId}/return', [InventoryToolController::class, 'returnTool'])
             ->whereNumber('toolId')->name('tools.return');
+        Route::patch('/tools/{toolId}/status', [InventoryToolController::class, 'updateStatus'])
+            ->whereNumber('toolId')->name('tools.status');
     });

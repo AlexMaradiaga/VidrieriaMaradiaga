@@ -169,7 +169,11 @@ final class SqlInventoryMovementQuery implements InventoryMovementQueryInterface
             ->orderByDesc('m.document_date')
             ->orderByDesc('m.id');
 
-        return $this->page($query, (int) ($filters['page'] ?? 1));
+        return $this->page(
+            $query,
+            (int) ($filters['page'] ?? 1),
+            ! empty($filters['print']) ? 2000 : 20,
+        );
     }
 
     public function entry(int $movementId, int $page = 1): ?array
@@ -418,7 +422,8 @@ final class SqlInventoryMovementQuery implements InventoryMovementQueryInterface
             ],
             'rows' => $this->page(
                 $rows,
-                (int) ($filters['page'] ?? 1)
+                (int) ($filters['page'] ?? 1),
+                ! empty($filters['print']) ? 2000 : 20,
             ),
         ];
     }
@@ -454,9 +459,13 @@ final class SqlInventoryMovementQuery implements InventoryMovementQueryInterface
         return (string) $result->total;
     }
 
-    private function page(Builder $query, int $page): array
+    private function page(
+        Builder $query,
+        int $page,
+        int $perPage = 20,
+    ): array
     {
-        $paginator = $query->paginate(20, ['*'], 'page', $page);
+        $paginator = $query->paginate($perPage, ['*'], 'page', $page);
 
         return [
             'data' => $paginator->getCollection()

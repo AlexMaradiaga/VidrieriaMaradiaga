@@ -94,12 +94,6 @@ const rawModules: NavModule[] = [
                 permission: "inventory.remnants.view",
             },
             {
-                label: "Kits",
-                icon: "pi-objects-column",
-                href: "/inventory/kits",
-                permission: "inventory.kits.view",
-            },
-            {
                 label: "Herramientas asignadas",
                 icon: "pi-wrench",
                 href: "/inventory/tools",

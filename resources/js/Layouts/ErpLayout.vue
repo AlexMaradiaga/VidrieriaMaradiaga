@@ -188,4 +188,30 @@ const logout = (): void => logoutForm.post("/logout");
         display: none;
     }
 }
+
+@media print {
+    .erp-topbar {
+        display: none !important;
+    }
+
+    .erp-workspace {
+        min-height: auto !important;
+        margin-left: 0 !important;
+        background: #fff !important;
+        color: #000 !important;
+    }
+
+    .erp-content {
+        overflow: visible !important;
+    }
+
+    :global(.sidebar),
+    :global(.sidebar-overlay),
+    :global(.overlay),
+    :global(.settings-trigger),
+    :global(.p-drawer),
+    :global(.p-overlay-mask) {
+        display: none !important;
+    }
+}
 </style>

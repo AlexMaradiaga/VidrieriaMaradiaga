@@ -63,8 +63,55 @@ final class InventoryToolController extends Controller
                 ];
             })->all();
 
+        $history = DB::table('inventory_tool_assignments as assignments')
+            ->join('inventory_tools as tools', 'tools.id', '=', 'assignments.tool_id')
+            ->join('employees', 'employees.id', '=', 'assignments.employee_id')
+            ->join('users as assigners', 'assigners.id', '=', 'assignments.assigned_by')
+            ->leftJoin('users as returners', 'returners.id', '=', 'assignments.returned_by')
+            ->whereNull('tools.deleted_at')
+            ->orderByDesc('assignments.id')
+            ->limit(100)
+            ->get([
+                'assignments.id', 'assignments.assigned_at',
+                'assignments.expected_return_at', 'assignments.returned_at',
+                'assignments.condition_out', 'assignments.condition_return',
+                'assignments.notes', 'tools.code as tool_code',
+                'tools.name as tool_name', 'employees.employee_code',
+                'employees.first_name', 'employees.last_name',
+                'assigners.name as assigned_by_name',
+                'returners.name as returned_by_name',
+            ])->map(function (object $assignment): array {
+                $returnedCondition = $assignment->condition_return === null
+                    ? null
+                    : (string) $assignment->condition_return;
+
+                return [
+                    'id' => (int) $assignment->id,
+                    'tool' => $assignment->tool_code.' — '.$assignment->tool_name,
+                    'employee' => $assignment->employee_code.' — '.trim(
+                        $assignment->first_name.' '.$assignment->last_name
+                    ),
+                    'assigned_at' => (string) $assignment->assigned_at,
+                    'expected_return_at' => $assignment->expected_return_at === null
+                        ? null
+                        : (string) $assignment->expected_return_at,
+                    'returned_at' => $assignment->returned_at === null
+                        ? null
+                        : (string) $assignment->returned_at,
+                    'condition_out' => (string) $assignment->condition_out,
+                    'condition_return' => $returnedCondition,
+                    'deteriorated' => $returnedCondition !== null
+                        && self::conditionRank($returnedCondition)
+                            > self::conditionRank((string) $assignment->condition_out),
+                    'notes' => $assignment->notes,
+                    'assigned_by' => $assignment->assigned_by_name,
+                    'returned_by' => $assignment->returned_by_name,
+                ];
+            })->all();
+
         return Inertia::render('Inventory/Tools/Index', [
             'tools' => $tools,
+            'history' => $history,
             'employees' => DB::table('employees')
                 ->where('active', true)->whereNull('deleted_at')
                 ->orderBy('first_name')->orderBy('last_name')
@@ -180,8 +227,10 @@ final class InventoryToolController extends Controller
             'notes' => ['nullable', 'string', 'max:1000'],
         ]);
 
+        $deterioration = null;
+
         try {
-            DB::transaction(function () use ($data, $request, $toolId): void {
+            DB::transaction(function () use ($data, $request, $toolId, &$deterioration): void {
                 $assignment = DB::table('inventory_tool_assignments')
                     ->where('tool_id', $toolId)->whereNull('returned_at')
                     ->lockForUpdate()->first();
@@ -194,11 +243,34 @@ final class InventoryToolController extends Controller
                     throw new DomainException('La fecha de devolución no puede ser anterior a la asignación.');
                 }
 
+                if (
+                    self::conditionRank($data['condition_return'])
+                    > self::conditionRank((string) $assignment->condition_out)
+                ) {
+                    if (trim((string) ($data['notes'] ?? '')) === '') {
+                        throw new DomainException(
+                            'Describe la avería o diferencia encontrada al recibir la herramienta.'
+                        );
+                    }
+
+                    $deterioration = sprintf(
+                        'ALERTA: la herramienta salió en condición %s y regresó en condición %s.',
+                        self::conditionLabel((string) $assignment->condition_out),
+                        self::conditionLabel($data['condition_return']),
+                    );
+                }
+
+                $previousNotes = trim((string) ($assignment->notes ?? ''));
+                $returnNotes = trim((string) ($data['notes'] ?? ''));
+                $notes = $returnNotes === ''
+                    ? $previousNotes
+                    : trim($previousNotes."\nObservación de devolución: ".$returnNotes);
+
                 $now = now();
                 DB::table('inventory_tool_assignments')->where('id', $assignment->id)->update([
                     'returned_at' => $data['returned_at'],
                     'condition_return' => $data['condition_return'],
-                    'notes' => $data['notes'] ?? $assignment->notes,
+                    'notes' => $notes === '' ? null : $notes,
                     'returned_by' => (int) $request->user()->getAuthIdentifier(),
                     'updated_at' => $now,
                 ]);
@@ -216,6 +288,92 @@ final class InventoryToolController extends Controller
             throw ValidationException::withMessages(['tool' => $exception->getMessage()]);
         }
 
+        if ($deterioration !== null) {
+            return back()->with('warning', $deterioration.' La herramienta quedó bloqueada hasta revisión.');
+        }
+
         return back()->with('success', 'Devolución registrada correctamente.');
+    }
+
+    public function updateStatus(Request $request, int $toolId): RedirectResponse
+    {
+        Gate::authorize('inventory.tools.manage');
+        $data = $request->validate([
+            'condition' => ['required', Rule::in(['good', 'fair', 'damaged', 'maintenance'])],
+            'notes' => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        try {
+            DB::transaction(function () use ($data, $toolId): void {
+                $tool = DB::table('inventory_tools')
+                    ->where('id', $toolId)->whereNull('deleted_at')
+                    ->lockForUpdate()->first();
+
+                if ($tool === null || ! $tool->active) {
+                    throw new DomainException('La herramienta no existe o está inactiva.');
+                }
+
+                $hasOpenAssignment = DB::table('inventory_tool_assignments')
+                    ->where('tool_id', $toolId)->whereNull('returned_at')
+                    ->lockForUpdate()->exists();
+
+                if ($tool->status === 'assigned' || $hasOpenAssignment) {
+                    throw new DomainException('No puedes cambiar el estado mientras la herramienta esté asignada.');
+                }
+
+                if (
+                    in_array($tool->status, ['damaged', 'maintenance'], true)
+                    && in_array($data['condition'], ['good', 'fair'], true)
+                    && trim((string) ($data['notes'] ?? '')) === ''
+                ) {
+                    throw new DomainException(
+                        'Indica qué reparación, revisión o prueba permitió volver a habilitar la herramienta.'
+                    );
+                }
+
+                $status = in_array($data['condition'], ['damaged', 'maintenance'], true)
+                    ? $data['condition']
+                    : 'available';
+
+                $previousNotes = trim((string) ($tool->notes ?? ''));
+                $statusNotes = trim((string) ($data['notes'] ?? ''));
+                $notes = $statusNotes === ''
+                    ? $previousNotes
+                    : trim($previousNotes."\n".now()->toDateString().': '.$statusNotes);
+
+                DB::table('inventory_tools')->where('id', $toolId)->update([
+                    'condition' => $data['condition'],
+                    'status' => $status,
+                    'notes' => $notes === '' ? null : $notes,
+                    'updated_at' => now(),
+                ]);
+            }, 5);
+        } catch (DomainException $exception) {
+            throw ValidationException::withMessages(['tool' => $exception->getMessage()]);
+        }
+
+        return back()->with('success', 'Estado de la herramienta actualizado correctamente.');
+    }
+
+    private static function conditionRank(string $condition): int
+    {
+        return match ($condition) {
+            'good' => 0,
+            'fair' => 1,
+            'maintenance' => 2,
+            'damaged' => 3,
+            default => 0,
+        };
+    }
+
+    private static function conditionLabel(string $condition): string
+    {
+        return match ($condition) {
+            'good' => 'buena',
+            'fair' => 'regular',
+            'maintenance' => 'mantenimiento',
+            'damaged' => 'dañada',
+            default => $condition,
+        };
     }
 }

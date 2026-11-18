@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { computed, reactive, watch } from 'vue';
+import { computed, nextTick, onMounted, reactive, watch } from 'vue';
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import Button from 'primevue/button';
 import Tag from 'primevue/tag';
 import { useI18n } from 'vue-i18n';
 import InventoryNav from '../../Components/Common/InventoryNav.vue';
+import brandLogo from '../../assets/vidrieria-maradiaga-logo.png';
 
 interface Option {
     id: number;
@@ -34,6 +35,7 @@ interface Filters {
     status?: string | null;
     reason?: string | null;
     supplier_id?: number | null;
+    print?: boolean;
 }
 
 interface EntryRow {
@@ -187,6 +189,41 @@ const locationName = computed(() =>
     )?.name ?? t('inventory.history.allLocations'),
 );
 
+const productName = computed(() =>
+    props.options?.products.find(
+        (product) => product.id === props.filters?.product_id,
+    )?.name ?? 'Todos los productos',
+);
+
+const supplierName = computed(() =>
+    props.options?.suppliers.find(
+        (supplier) => supplier.id === props.filters?.supplier_id,
+    )?.name ?? 'Todos los proveedores',
+);
+
+const reportPeriod = computed(() => {
+    const from = props.filters?.from ? date(props.filters.from) : 'Inicio';
+    const to = props.filters?.to ? date(props.filters.to) : 'Actualidad';
+
+    return `${from} — ${to}`;
+});
+
+const issuedAt = new Intl.DateTimeFormat('es-HN', {
+    dateStyle: 'long',
+    timeStyle: 'short',
+}).format(new Date());
+
+onMounted(() => {
+    if (!props.filters?.print) return;
+
+    void nextTick(() => {
+        window.addEventListener('afterprint', () => window.close(), {
+            once: true,
+        });
+        window.setTimeout(() => window.print(), 350);
+    });
+});
+
 function allowed(permission: string): boolean {
     return page.props.auth.permissions.includes(permission);
 }
@@ -285,6 +322,7 @@ function navigate(filters: Filters, targetPage = 1): void {
     for (const [key, value] of Object.entries(filters)) {
         if (
             key !== 'page' &&
+            key !== 'print' &&
             value !== null &&
             value !== undefined &&
             value !== ''
@@ -303,8 +341,24 @@ function search(): void {
     navigate(form);
 }
 
-function printKardex(): void {
-    window.print();
+function printReport(): void {
+    const parameters = new URLSearchParams();
+
+    for (const [key, value] of Object.entries(props.filters ?? {})) {
+        if (
+            key !== 'page' &&
+            key !== 'print' &&
+            value !== null &&
+            value !== undefined &&
+            value !== ''
+        ) {
+            parameters.set(key, String(value));
+        }
+    }
+
+    parameters.set('print', '1');
+    parameters.set('page', '1');
+    window.open(`${listPath.value}?${parameters.toString()}`, '_blank', 'noopener');
 }
 
 function changePage(targetPage: number): void {
@@ -329,7 +383,30 @@ function changePage(targetPage: number): void {
     <main class="history">
         <InventoryNav class="no-print" />
 
-        <h1>{{ title }}</h1>
+        <section
+            v-if="(mode === 'kardex' && ledger) || (mode === 'entries' && entries)"
+            class="print-report-header"
+        >
+            <div class="print-brand">
+                <img :src="brandLogo" alt="Vidriería Maradiaga" />
+                <div>
+                    <strong>VIDRIERÍA MARADIAGA</strong>
+                    <span>Sistema de gestión empresarial</span>
+                </div>
+            </div>
+
+            <div class="print-report-title">
+                <small>REPORTE DE INVENTARIO</small>
+                <h1>
+                    {{ mode === 'kardex'
+                        ? 'Kardex valorizado por producto'
+                        : 'Auditoría de movimientos' }}
+                </h1>
+                <span>Emitido: {{ issuedAt }}</span>
+            </div>
+        </section>
+
+        <h1 class="screen-title">{{ title }}</h1>
 
         <p v-if="mode === 'entries'" class="hint">
             Auditoría general de entradas, salidas, traslados y ajustes. Aquí se
@@ -337,7 +414,7 @@ function changePage(targetPage: number): void {
             referencia, proveedor y usuario responsable.
         </p>
 
-        <p v-if="mode === 'kardex'" class="hint">
+        <p v-if="mode === 'kardex'" class="hint screen-only">
             {{t('inventory.history.kardexHint')}}
         </p>
 
@@ -502,9 +579,53 @@ function changePage(targetPage: number): void {
             v-if="mode === 'entries' && entries"
             class="panel"
         >
-            <h2>{{t('inventory.history.found',{total:entries.total})}}</h2>
+            <div class="report-heading screen-only">
+                <h2>{{t('inventory.history.found',{total:entries.total})}}</h2>
 
-            <p class="hint">
+                <Button
+                    :label="t('inventory.history.printAudit')"
+                    icon="pi pi-print"
+                    severity="secondary"
+                    @click="printReport"
+                />
+            </div>
+
+            <section class="print-report-data audit-report-data">
+                <div>
+                    <span>Período consultado</span>
+                    <strong>{{ reportPeriod }}</strong>
+                </div>
+                <div>
+                    <span>Producto</span>
+                    <strong>{{ productName }}</strong>
+                </div>
+                <div>
+                    <span>Ubicación</span>
+                    <strong>{{ locationName }}</strong>
+                </div>
+                <div>
+                    <span>Proveedor</span>
+                    <strong>{{ supplierName }}</strong>
+                </div>
+                <div>
+                    <span>Motivo</span>
+                    <strong>
+                        {{ filters?.reason ? reason(filters.reason) : 'Todos' }}
+                    </strong>
+                </div>
+                <div>
+                    <span>Estado</span>
+                    <strong>
+                        {{ filters?.status ? status(filters.status) : 'Todos' }}
+                    </strong>
+                </div>
+                <div>
+                    <span>Movimientos encontrados</span>
+                    <strong>{{ entries.total }}</strong>
+                </div>
+            </section>
+
+            <p class="hint screen-only">
                 {{t('inventory.history.filterHelp')}}
             </p>
 
@@ -524,7 +645,7 @@ function changePage(targetPage: number): void {
                             <th>{{t('common.status')}}</th>
                             <th class="number">{{t('inventory.history.amount')}}</th>
                             <th>{{t('inventory.history.registeredBy')}}</th>
-                            <th>{{t('common.action')}}</th>
+                            <th class="no-print">{{t('common.action')}}</th>
                         </tr>
                     </thead>
 
@@ -568,7 +689,7 @@ function changePage(targetPage: number): void {
 
                             <td>{{ item.creator ?? '—' }}</td>
 
-                            <td>
+                            <td class="no-print">
                                 <Link
                                     :href="`/inventory/entries/${item.id}`"
                                 >
@@ -585,6 +706,11 @@ function changePage(targetPage: number): void {
                     </tbody>
                 </table>
             </div>
+
+            <footer class="print-report-footer">
+                <span>Vidriería Maradiaga ERP</span>
+                <span>Documento generado el {{ issuedAt }}</span>
+            </footer>
         </section>
 
         <!-- Detalle de un movimiento -->
@@ -787,7 +913,7 @@ function changePage(targetPage: number): void {
             </p>
 
             <template v-else>
-                <div class="report-heading">
+                <div class="report-heading screen-only">
                     <h2>
                         {{ ledger.product.sku }} —
                         {{ ledger.product.name }}
@@ -798,13 +924,34 @@ function changePage(targetPage: number): void {
                         :label="t('inventory.history.printKardex')"
                         icon="pi pi-print"
                         severity="secondary"
-                        @click="printKardex"
+                        @click="printReport"
                     />
                 </div>
 
-                <p class="hint">
+                <p class="hint screen-only">
                     {{t('inventory.history.ledgerScope',{unit:ledger.product.unit,location:locationName})}}
                 </p>
+
+                <section class="print-report-data">
+                    <div>
+                        <span>Producto</span>
+                        <strong>
+                            {{ ledger.product.sku }} — {{ ledger.product.name }}
+                        </strong>
+                    </div>
+                    <div>
+                        <span>Unidad de control</span>
+                        <strong>{{ ledger.product.unit }}</strong>
+                    </div>
+                    <div>
+                        <span>Ubicación</span>
+                        <strong>{{ locationName }}</strong>
+                    </div>
+                    <div>
+                        <span>Período consultado</span>
+                        <strong>{{ reportPeriod }}</strong>
+                    </div>
+                </section>
 
                 <div class="stats">
                     <div class="stat">
@@ -957,6 +1104,11 @@ function changePage(targetPage: number): void {
                         </table>
                     </div>
                 </section>
+
+                <footer class="print-report-footer">
+                    <span>Vidriería Maradiaga ERP</span>
+                    <span>Documento generado el {{ issuedAt }}</span>
+                </footer>
             </template>
         </template>
 
@@ -1093,6 +1245,12 @@ a:focus-visible,
     flex-wrap: wrap;
 }
 
+.print-report-header,
+.print-report-data,
+.print-report-footer {
+    display: none;
+}
+
 .table-wrap {
     overflow-x: auto;
 }
@@ -1204,7 +1362,9 @@ dd {
         margin: 12mm;
     }
 
-    .no-print {
+    .no-print,
+    .screen-only,
+    .screen-title {
         display: none !important;
     }
 
@@ -1212,13 +1372,125 @@ dd {
         max-width: none;
         padding: 0;
         color: #000;
+        background: #fff;
+        font-family: Arial, Helvetica, sans-serif;
     }
 
-    .panel,
+    .print-report-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 2rem;
+        padding: 0 0 0.75rem;
+        margin-bottom: 0.9rem;
+        border-bottom: 3px solid #0f766e;
+    }
+
+    .print-brand {
+        display: flex;
+        align-items: center;
+        gap: 0.8rem;
+    }
+
+    .print-brand img {
+        width: 120px;
+        height: 58px;
+        object-fit: contain;
+    }
+
+    .print-brand strong,
+    .print-brand span {
+        display: block;
+    }
+
+    .print-brand strong {
+        color: #0f172a;
+        font-size: 11pt;
+        letter-spacing: 0.05em;
+    }
+
+    .print-brand span {
+        margin-top: 0.2rem;
+        color: #475569;
+        font-size: 8pt;
+    }
+
+    .print-report-title {
+        text-align: right;
+    }
+
+    .print-report-title small,
+    .print-report-title span {
+        display: block;
+        color: #475569;
+        font-size: 8pt;
+    }
+
+    .print-report-title h1 {
+        margin: 0.2rem 0;
+        color: #0f172a;
+        font-size: 17pt;
+    }
+
+    .print-report-data {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 0.55rem 1.2rem;
+        margin: 0 0 0.9rem;
+        padding: 0.75rem 0.9rem;
+        border: 1px solid #cbd5e1;
+        border-left: 4px solid #0f766e;
+        background: #f8fafc;
+    }
+
+    .audit-report-data {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .print-report-data span,
+    .print-report-data strong {
+        display: block;
+    }
+
+    .print-report-data span {
+        color: #64748b;
+        font-size: 7.5pt;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+    }
+
+    .print-report-data strong {
+        margin-top: 0.18rem;
+        color: #0f172a;
+        font-size: 9pt;
+        overflow-wrap: anywhere;
+    }
+
+    .stats {
+        gap: 0.55rem;
+        margin-bottom: 0.7rem;
+    }
+
     .stat {
-        border-color: #999;
+        padding: 0.65rem 0.8rem;
+        border-radius: 0.25rem;
+        border-top: 3px solid #0f766e;
+        background: #f8fafc;
+        font-size: 8pt;
+    }
+
+    .stat strong {
+        margin-top: 0.3rem;
+        font-size: 14pt;
+    }
+
+    .panel {
+        margin: 0.65rem 0 0;
+        padding: 0;
+        border: 0;
+        border-radius: 0;
         box-shadow: none;
-        break-inside: avoid;
+        background: #fff;
     }
 
     .table-wrap {
@@ -1226,13 +1498,46 @@ dd {
     }
 
     table {
-        font-size: 9pt;
+        font-size: 8pt;
+        border: 1px solid #cbd5e1;
+    }
+
+    thead {
+        display: table-header-group;
+    }
+
+    tr {
+        break-inside: avoid;
+    }
+
+    th {
+        background: #0f766e !important;
+        color: #fff !important;
+        font-size: 7.5pt;
+        text-transform: uppercase;
+        letter-spacing: 0.02em;
     }
 
     th,
     td {
-        padding: 0.45rem;
+        padding: 0.38rem 0.42rem;
         color: #000;
+        border-color: #cbd5e1;
+    }
+
+    tbody tr:nth-child(even) td {
+        background: #f8fafc !important;
+    }
+
+    .print-report-footer {
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+        margin-top: 0.8rem;
+        padding-top: 0.45rem;
+        border-top: 1px solid #94a3b8;
+        color: #64748b;
+        font-size: 7.5pt;
     }
 }
 </style>

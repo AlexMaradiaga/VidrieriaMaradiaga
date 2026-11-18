@@ -41,6 +41,7 @@ final class InventoryHistoryController extends Controller
 
         $validated = $request->validate([
             'page' => ['nullable', 'integer', 'min:1', 'max:100000'],
+            'print' => ['nullable', 'boolean'],
         ]);
 
         $entry = $query->entry(
@@ -167,6 +168,7 @@ final class InventoryHistoryController extends Controller
         }
 
         $data['page'] = (int) ($data['page'] ?? 1);
+        $data['print'] = $request->boolean('print');
 
         if (! $kardex) {
             $data['search'] = trim((string) ($data['search'] ?? ''));
