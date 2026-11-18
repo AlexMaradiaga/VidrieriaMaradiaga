@@ -267,14 +267,18 @@ final class InventoryOperationsController extends Controller
     {
         return [
             'operation_key' => ['required', 'uuid'],
-            'product_id' => ['required', 'integer', 'min:1'],
-            'location_id' => ['required', 'integer', 'min:1'],
-            'unit_id' => ['required', 'integer', 'min:1'],
             'reason' => ['required', Rule::in(['sale', 'work_order', 'production', 'internal_consumption', 'waste', 'adjustment'])],
             'document_date' => ['required', 'date_format:Y-m-d', 'before_or_equal:today'],
-            'reference' => ['nullable', 'required_if:reason,sale,work_order,production', 'string', 'max:100'],
+            'reference' => ['required', 'string', 'max:100'],
+            'requested_by' => ['required', 'string', 'max:180'],
+            'customer_id' => ['nullable', 'integer', 'exists:sales_customers,id'],
+            'customer_name' => ['required', 'string', 'max:180'],
+            'customer_address' => ['nullable', 'string', 'max:500'],
             'notes' => ['nullable', 'required_if:reason,waste,adjustment', 'string', 'max:1000'],
-            'quantity' => ['required', 'string', 'regex:/^\d{1,14}(?:\.\d{1,4})?$/'],
+            'lines' => ['required', 'array', 'min:1', 'max:100'],
+            'lines.*.product_id' => ['required', 'integer', 'min:1', 'exists:inventory_products,id'],
+            'lines.*.location_id' => ['required', 'integer', 'min:1', 'exists:inventory_locations,id'],
+            'lines.*.quantity' => ['required', 'string', 'regex:/^\d{1,14}(?:\.\d{1,4})?$/'],
         ];
     }
 

@@ -126,6 +126,9 @@ final class SqlInventoryMovementQuery implements InventoryMovementQueryInterface
             $query->where(function (Builder $search) use ($pattern): void {
                 $search
                     ->where('m.reference', 'like', $pattern)
+                    ->orWhere('m.requested_by', 'like', $pattern)
+                    ->orWhere('m.customer_name', 'like', $pattern)
+                    ->orWhere('m.customer_address', 'like', $pattern)
                     ->orWhereExists(
                         function (Builder $lines) use ($pattern): void {
                             $lines
@@ -154,6 +157,9 @@ final class SqlInventoryMovementQuery implements InventoryMovementQueryInterface
                 'm.direction',
                 'm.document_date',
                 'm.reference',
+                'm.requested_by',
+                'm.customer_name',
+                'm.customer_address',
                 'm.reason',
                 'm.status',
                 'm.posted_at',
@@ -194,6 +200,9 @@ final class SqlInventoryMovementQuery implements InventoryMovementQueryInterface
                 'm.direction',
                 'm.document_date',
                 'm.reference',
+                'm.requested_by',
+                'm.customer_name',
+                'm.customer_address',
                 'm.reason',
                 'm.status',
                 'm.notes',

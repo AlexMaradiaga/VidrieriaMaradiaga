@@ -46,6 +46,9 @@ interface EntryRow {
     reason: string;
     status: string;
     reference: string | null;
+    requested_by: string | null;
+    customer_name: string | null;
+    customer_address: string | null;
     supplier: string | null;
     creator: string | null;
     total_cost: string;
@@ -666,6 +669,8 @@ function changePage(targetPage: number): void {
                                 <small>
                                     {{ item.reference ?? t('inventory.history.noReference') }}
                                 </small>
+                                <small v-if="item.customer_name">Cliente: {{ item.customer_name }}</small>
+                                <small v-if="item.requested_by">Solicitó: {{ item.requested_by }}</small>
                             </td>
 
                             <td>{{ item.supplier ?? t('inventory.history.notApplicable') }}</td>
@@ -743,6 +748,21 @@ function changePage(targetPage: number): void {
                         <dd>
                             {{ entry.header.reference ?? t('inventory.history.noReference') }}
                         </dd>
+                    </div>
+
+                    <div v-if="entry.header.requested_by">
+                        <dt>Solicitado por</dt>
+                        <dd>{{ entry.header.requested_by }}</dd>
+                    </div>
+
+                    <div v-if="entry.header.customer_name">
+                        <dt>Cliente</dt>
+                        <dd>{{ entry.header.customer_name }}</dd>
+                    </div>
+
+                    <div v-if="entry.header.customer_address">
+                        <dt>Domicilio del cliente</dt>
+                        <dd>{{ entry.header.customer_address }}</dd>
                     </div>
 
                     <div>

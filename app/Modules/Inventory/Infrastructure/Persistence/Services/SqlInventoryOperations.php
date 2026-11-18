@@ -15,27 +15,49 @@ final class SqlInventoryOperations implements InventoryOperationsInterface
 {
     public function registerExit(array $data, int $userId): array
     {
-        $quantity = $this->decimal($data['quantity'], __('inventory.fields.quantity'));
+        $sourceLines = $data['lines'] ?? [[
+            'product_id' => $data['product_id'],
+            'location_id' => $data['location_id'],
+            'unit_id' => $data['unit_id'] ?? null,
+            'quantity' => $data['quantity'],
+        ]];
 
-        if (! $quantity->isGreaterThan('0')) {
-            throw new DomainException(__('inventory.errors.quantity_positive'));
+        $lines = collect($sourceLines)->values()->map(function (array $line, int $index): array {
+            $quantity = $this->decimal($line['quantity'], __('inventory.fields.quantity'));
+
+            if (! $quantity->isGreaterThan('0')) {
+                throw new DomainException(__('inventory.errors.quantity_positive'));
+            }
+
+            return [
+                'line_number' => $index + 1,
+                'product_id' => (int) $line['product_id'],
+                'location_id' => (int) $line['location_id'],
+                'unit_id' => empty($line['unit_id']) ? null : (int) $line['unit_id'],
+                'quantity' => (string) $quantity,
+            ];
+        });
+
+        if ($lines->duplicates(fn (array $line): string => $line['product_id'].'-'.$line['location_id'])->isNotEmpty()) {
+            throw new DomainException('Un producto no puede repetirse con la misma ubicación en una orden de salida.');
         }
 
         $payload = [
-            'product_id' => (int) $data['product_id'],
-            'location_id' => (int) $data['location_id'],
-            'unit_id' => (int) $data['unit_id'],
             'reason' => $data['reason'],
             'document_date' => $data['document_date'],
             'reference' => trim((string) ($data['reference'] ?? '')) ?: null,
+            'requested_by' => trim((string) ($data['requested_by'] ?? $this->responsibleName([], $userId))),
+            'customer_id' => empty($data['customer_id']) ? null : (int) $data['customer_id'],
+            'customer_name' => trim((string) ($data['customer_name'] ?? 'No especificado')),
+            'customer_address' => trim((string) ($data['customer_address'] ?? '')) ?: null,
             'notes' => trim((string) ($data['notes'] ?? '')) ?: null,
-            'quantity' => (string) $quantity,
+            'lines' => $lines->all(),
             'user_id' => $userId,
         ];
         $key = strtolower($data['operation_key']);
         $hash = hash('sha256', json_encode($payload, JSON_THROW_ON_ERROR));
 
-        return DB::transaction(function () use ($payload, $key, $hash, $quantity, $userId): array {
+        return DB::transaction(function () use ($payload, $key, $hash, $lines, $userId): array {
             $existing = DB::table('inventory_movements')->where('operation_key', $key)->lockForUpdate()->first();
 
             if ($existing !== null) {
@@ -46,21 +68,38 @@ final class SqlInventoryOperations implements InventoryOperationsInterface
                 return ['movement_id' => (int) $existing->id, 'repeated' => true];
             }
 
-            $product = $this->product($payload['product_id']);
-            $factor = $this->issueFactor($product, $payload['unit_id']);
-            $baseQuantity = $this->convertedQuantity($quantity, $factor);
-            $balance = $this->balance($product->id, $payload['location_id']);
-            $current = BigDecimal::of($balance === null ? '0' : (string) $balance->quantity)->toScale(4);
+            $prepared = [];
 
-            if ($current->isLessThan($baseQuantity)) {
-                throw new DomainException(__('inventory.errors.insufficient_stock'));
+            foreach ($lines->sortBy(fn (array $line): string => sprintf('%020d-%020d', $line['product_id'], $line['location_id'])) as $line) {
+                $product = $this->product($line['product_id']);
+                $quantity = BigDecimal::of($line['quantity'])->toScale(4);
+                $unitId = $line['unit_id'] ?? $product->base_unit_id;
+                $factor = $this->issueFactor($product, $unitId);
+                $baseQuantity = $this->convertedQuantity($quantity, $factor);
+                $balance = $this->balance($product->id, $line['location_id']);
+                $current = BigDecimal::of($balance === null ? '0' : (string) $balance->quantity)->toScale(4);
+
+                if ($current->isLessThan($baseQuantity)) {
+                    throw new DomainException('Existencia insuficiente para '.$product->sku.' — '.$product->name.'.');
+                }
+
+                $after = $current->minus($baseQuantity)->toScale(4);
+                $average = BigDecimal::of((string) $product->average_cost)->toScale(4);
+                $prepared[] = [
+                    ...$line,
+                    'unit_id' => $unitId,
+                    'product' => $product,
+                    'quantity_decimal' => $quantity,
+                    'factor' => $factor,
+                    'base_quantity' => $baseQuantity,
+                    'balance' => $balance,
+                    'after' => $after,
+                    'average' => $average,
+                    'unit_cost' => $average->toScale(8)->multipliedBy($factor)->toScale(4, RoundingMode::HALF_UP),
+                    'total_cost' => $average->multipliedBy($baseQuantity)->toScale(4, RoundingMode::HALF_UP),
+                ];
             }
 
-            $after = $current->minus($baseQuantity)->toScale(4);
-            $average = BigDecimal::of((string) $product->average_cost)->toScale(4);
-            $baseUnitCost = $average->toScale(8);
-            $unitCost = $baseUnitCost->multipliedBy($factor)->toScale(4, RoundingMode::HALF_UP);
-            $totalCost = $average->multipliedBy($baseQuantity)->toScale(4, RoundingMode::HALF_UP);
             $now = now();
 
             $movementId = DB::table('inventory_movements')->insertGetId([
@@ -71,6 +110,10 @@ final class SqlInventoryOperations implements InventoryOperationsInterface
                 'status' => 'posted',
                 'document_date' => $payload['document_date'],
                 'reference' => $payload['reference'],
+                'requested_by' => $payload['requested_by'],
+                'customer_id' => $payload['customer_id'],
+                'customer_name' => $payload['customer_name'],
+                'customer_address' => $payload['customer_address'],
                 'notes' => $payload['notes'],
                 'supplier_id' => null,
                 'created_by' => $userId,
@@ -80,8 +123,28 @@ final class SqlInventoryOperations implements InventoryOperationsInterface
                 'updated_at' => $now,
             ]);
 
-            $this->saveBalance($product->id, $payload['location_id'], $after, $balance, $now);
-            $this->insertLine($movementId, $product, $payload['location_id'], $payload['unit_id'], $quantity, $factor, $baseQuantity, $unitCost, $baseUnitCost, $totalCost, $after, $average, $now);
+            foreach ($prepared as $line) {
+                $product = $line['product'];
+                $quantity = $line['quantity_decimal'];
+                $average = $line['average'];
+                $this->saveBalance($product->id, $line['location_id'], $line['after'], $line['balance'], $now);
+                $this->insertLine(
+                    $movementId,
+                    $product,
+                    $line['location_id'],
+                    $line['unit_id'],
+                    $quantity,
+                    $line['factor'],
+                    $line['base_quantity'],
+                    $line['unit_cost'],
+                    $average->toScale(8),
+                    $line['total_cost'],
+                    $line['after'],
+                    $average,
+                    $now,
+                    $line['line_number'],
+                );
+            }
 
             return ['movement_id' => (int) $movementId, 'repeated' => false];
         }, 5);
@@ -368,11 +431,11 @@ final class SqlInventoryOperations implements InventoryOperationsInterface
         ]);
     }
 
-    private function insertLine(int $movementId, object $product, int $locationId, int $unitId, BigDecimal $quantity, BigDecimal $factor, BigDecimal $baseQuantity, BigDecimal $unitCost, BigDecimal $baseUnitCost, BigDecimal $totalCost, BigDecimal $after, BigDecimal $average, mixed $now): void
+    private function insertLine(int $movementId, object $product, int $locationId, int $unitId, BigDecimal $quantity, BigDecimal $factor, BigDecimal $baseQuantity, BigDecimal $unitCost, BigDecimal $baseUnitCost, BigDecimal $totalCost, BigDecimal $after, BigDecimal $average, mixed $now, int $lineNumber = 1): void
     {
         DB::table('inventory_movement_lines')->insert([
             'movement_id' => $movementId,
-            'line_number' => 1,
+            'line_number' => $lineNumber,
             'product_id' => $product->id,
             'location_id' => $locationId,
             'unit_id' => $unitId,

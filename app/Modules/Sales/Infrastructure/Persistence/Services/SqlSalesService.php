@@ -115,6 +115,10 @@ final class SqlSalesService implements SalesServiceInterface
                     'reason' => 'sale',
                     'document_date' => $data['document_date'],
                     'reference' => $number,
+                    'requested_by' => (string) (DB::table('users')->where('id', $userId)->value('name') ?? 'Usuario #'.$userId),
+                    'customer_id' => (int) $customer->id,
+                    'customer_name' => (string) $customer->name,
+                    'customer_address' => $customer->address,
                     'notes' => 'Salida automática por venta',
                     'quantity' => (string) $line['quantity'],
                 ], $userId);

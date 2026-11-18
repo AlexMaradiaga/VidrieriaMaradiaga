@@ -119,6 +119,17 @@ final class SqlInventoryOperationsQuery implements InventoryOperationsQueryInter
                     'name' => trim($employee->first_name.' '.$employee->last_name),
                     'code' => $employee->employee_code,
                 ])->all(),
+            'customers' => DB::table('sales_customers')
+                ->where('active', true)
+                ->whereNull('deleted_at')
+                ->orderBy('name')
+                ->get(['id', 'code', 'name', 'address'])
+                ->map(fn (object $customer): array => [
+                    'id' => (int) $customer->id,
+                    'code' => $customer->code,
+                    'name' => $customer->name,
+                    'address' => $customer->address,
+                ])->all(),
             'today' => now()->toDateString(),
         ];
     }
