@@ -80,7 +80,10 @@ final class SqlInventoryOperations implements InventoryOperationsInterface
                 $current = BigDecimal::of($balance === null ? '0' : (string) $balance->quantity)->toScale(4);
 
                 if ($current->isLessThan($baseQuantity)) {
-                    throw new DomainException('Existencia insuficiente para '.$product->sku.' — '.$product->name.'.');
+                    throw new DomainException(
+                        __('inventory.errors.insufficient_stock').' Producto: '
+                        .$product->sku.' — '.$product->name.'.'
+                    );
                 }
 
                 $after = $current->minus($baseQuantity)->toScale(4);

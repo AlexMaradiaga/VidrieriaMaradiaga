@@ -27,7 +27,8 @@ final class PurchaseController extends Controller
                 ->join('inventory_suppliers as s', 's.id', '=', 'p.supplier_id')
                 ->orderByDesc('p.document_date')->orderByDesc('p.id')
                 ->get(['p.id', 'p.number', 'p.supplier_document', 'p.document_date', 'p.due_date',
-                    's.legal_name as supplier', 'p.payment_type', 'p.status', 'p.total', 'p.paid_amount']),
+                    DB::raw("COALESCE(NULLIF(s.trade_name, ''), s.legal_name) as supplier"),
+                    'p.payment_type', 'p.status', 'p.total', 'p.paid_amount']),
             'treasuryAccounts' => DB::table('accounting_treasury_accounts')->where('active', true)->orderBy('name')->get(['id', 'name', 'type']),
         ]);
     }
@@ -37,7 +38,9 @@ final class PurchaseController extends Controller
         Gate::authorize('purchases.create');
 
         return Inertia::render('Purchasing/Create', [
-            'suppliers' => DB::table('inventory_suppliers')->where('active', true)->whereNull('deleted_at')->orderBy('legal_name')->get(['id', 'code', 'legal_name', 'payment_terms_days']),
+            'suppliers' => DB::table('inventory_suppliers')->where('active', true)->whereNull('deleted_at')
+                ->orderByRaw("COALESCE(NULLIF(trade_name, ''), legal_name)")
+                ->get(['id', 'code', 'legal_name', 'trade_name', 'payment_terms_days']),
             'locations' => DB::table('inventory_locations as l')->join('inventory_warehouses as w', 'w.id', '=', 'l.warehouse_id')
                 ->where('l.active', true)->whereNull('l.deleted_at')->orderBy('w.name')->orderBy('l.name')->get(['l.id', 'l.name', 'w.name as warehouse']),
             'products' => DB::table('inventory_products as p')->join('inventory_units as u', 'u.id', '=', 'p.base_unit_id')

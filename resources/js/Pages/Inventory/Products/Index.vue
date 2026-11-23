@@ -15,6 +15,7 @@ interface ProductRow {
     name: string;
     category_name: string | null;
     unit_symbol: string | null;
+    last_purchase_cost: string;
     sale_price: string;
     active: boolean;
     stock_quantity: string;
@@ -914,6 +915,7 @@ async function performStatusChange(product: ProductRow, targetStatus: boolean): 
                             <th scope="col">{{t('inventory.products.category')}}</th>
                             <th scope="col">{{t('inventory.products.controlUnit')}}</th>
                             <th scope="col">{{t('inventory.products.totalStock')}}</th>
+                            <th scope="col">Último costo de compra</th>
                             <th scope="col">{{t('inventory.products.salePriceColumn')}}</th>
                             <th scope="col">{{t('common.status')}}</th>
                             <th scope="col">{{t('common.actions')}}</th>
@@ -928,6 +930,10 @@ async function performStatusChange(product: ProductRow, targetStatus: boolean): 
                             <td>{{ product.unit_symbol ?? '—' }}</td>
                             <td class="number">
                                 {{ formatQuantity(product.stock_quantity ?? null) || '—' }}
+                            </td>
+
+                            <td class="number">
+                                {{ formatPrice(product.last_purchase_cost) }}
                             </td>
 
                             <td class="number">

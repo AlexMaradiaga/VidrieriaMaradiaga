@@ -122,6 +122,10 @@ final class InventoryHistoryController extends Controller
 
         if (! $kardex) {
             $rules['search'] = ['nullable', 'string', 'max:100'];
+            $rules['direction'] = [
+                'nullable',
+                Rule::in(['inbound', 'outbound']),
+            ];
             $rules['status'] = [
                 'nullable',
                 Rule::in(['draft', 'posted', 'cancelled']),
@@ -153,6 +157,7 @@ final class InventoryHistoryController extends Controller
         if (! $kardex) {
             $data = array_replace([
                 'search' => '',
+                'direction' => '',
                 'status' => '',
                 'reason' => '',
                 'supplier_id' => null,

@@ -32,6 +32,7 @@ interface Filters {
     location_id: number | null;
     page: number;
     search?: string;
+    direction?: string | null;
     status?: string | null;
     reason?: string | null;
     supplier_id?: number | null;
@@ -147,6 +148,7 @@ const emptyFilters = (): Filters => ({
     location_id: null,
     supplier_id: null,
     search: '',
+    direction: '',
     status: '',
     reason: '',
     page: 1,
@@ -506,6 +508,16 @@ function changePage(targetPage: number): void {
 
                 <template v-if="mode === 'entries'">
                     <label>
+                        {{t('inventory.history.direction')}}
+
+                        <select v-model="form.direction">
+                            <option value="">Todos los movimientos</option>
+                            <option value="inbound">Entradas</option>
+                            <option value="outbound">Salidas</option>
+                        </select>
+                    </label>
+
+                    <label>
                         {{t('inventory.history.supplier')}}
 
                         <select v-model="form.supplier_id">
@@ -609,6 +621,10 @@ function changePage(targetPage: number): void {
                 <div>
                     <span>Proveedor</span>
                     <strong>{{ supplierName }}</strong>
+                </div>
+                <div>
+                    <span>Tipo de movimiento</span>
+                    <strong>{{ filters?.direction ? direction(filters.direction) : 'Todos' }}</strong>
                 </div>
                 <div>
                     <span>Motivo</span>

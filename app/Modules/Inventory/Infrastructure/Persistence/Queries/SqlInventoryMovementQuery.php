@@ -85,7 +85,7 @@ final class SqlInventoryMovementQuery implements InventoryMovementQueryInterface
             )
             ->leftJoin('users as u', 'u.id', '=', 'm.created_by');
 
-        foreach (['status', 'reason', 'supplier_id'] as $key) {
+        foreach (['direction', 'status', 'reason', 'supplier_id'] as $key) {
             if (! empty($filters[$key])) {
                 $query->where('m.'.$key, $filters[$key]);
             }
