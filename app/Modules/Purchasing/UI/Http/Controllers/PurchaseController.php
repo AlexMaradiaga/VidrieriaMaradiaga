@@ -18,18 +18,33 @@ use Inertia\Response;
 
 final class PurchaseController extends Controller
 {
+    private const SUPPLIER_DISPLAY_NAME =
+        "COALESCE(NULLIF(LTRIM(RTRIM(s.trade_name)), N''), N'Nombre comercial no registrado')";
+
     public function index(): Response
     {
         Gate::authorize('purchases.view');
 
+        $purchases = DB::table('purchasing_documents as p')
+            ->join('inventory_suppliers as s', 's.id', '=', 'p.supplier_id')
+            ->orderByDesc('p.document_date')
+            ->orderByDesc('p.id')
+            ->get([
+                'p.id',
+                'p.number',
+                'p.supplier_document',
+                'p.document_date',
+                'p.due_date',
+                DB::raw(self::SUPPLIER_DISPLAY_NAME . ' AS supplier'),
+                'p.payment_type',
+                'p.status',
+                'p.total',
+                'p.paid_amount',
+            ]);
+
         return Inertia::render('Purchasing/Index', [
-            'purchases' => DB::table('purchasing_documents as p')
-                ->join('inventory_suppliers as s', 's.id', '=', 'p.supplier_id')
-                ->orderByDesc('p.document_date')->orderByDesc('p.id')
-                ->get(['p.id', 'p.number', 'p.supplier_document', 'p.document_date', 'p.due_date',
-                    DB::raw("COALESCE(NULLIF(s.trade_name, ''), s.legal_name) as supplier"),
-                    'p.payment_type', 'p.status', 'p.total', 'p.paid_amount']),
-            'treasuryAccounts' => DB::table('accounting_treasury_accounts')->where('active', true)->orderBy('name')->get(['id', 'name', 'type']),
+            'purchases' => $purchases,
+            'treasuryAccounts' => $this->activeTreasuryAccounts(),
         ]);
     }
 
@@ -37,62 +52,151 @@ final class PurchaseController extends Controller
     {
         Gate::authorize('purchases.create');
 
+        $suppliers = DB::table('inventory_suppliers as s')
+            ->where('s.active', true)
+            ->whereNull('s.deleted_at')
+            ->orderBy('display_name')
+            ->orderBy('s.code')
+            ->get([
+                's.id',
+                's.code',
+                's.payment_terms_days',
+                DB::raw(self::SUPPLIER_DISPLAY_NAME . ' AS display_name'),
+            ]);
+
+        $locations = DB::table('inventory_locations as l')
+            ->join('inventory_warehouses as w', 'w.id', '=', 'l.warehouse_id')
+            ->where('l.active', true)
+            ->whereNull('l.deleted_at')
+            ->orderBy('w.name')
+            ->orderBy('l.name')
+            ->get([
+                'l.id',
+                'l.name',
+                'w.name as warehouse',
+            ]);
+
+        $products = DB::table('inventory_products as p')
+            ->join('inventory_units as u', 'u.id', '=', 'p.base_unit_id')
+            ->where('p.active', true)
+            ->where('p.track_stock', true)
+            ->whereNull('p.deleted_at')
+            ->orderBy('p.name')
+            ->get([
+                'p.id',
+                'p.sku',
+                'p.name',
+                'p.average_cost',
+                'p.base_unit_id as unit_id',
+                'u.symbol as unit',
+            ]);
+
         return Inertia::render('Purchasing/Create', [
-            'suppliers' => DB::table('inventory_suppliers')->where('active', true)->whereNull('deleted_at')
-                ->orderByRaw("COALESCE(NULLIF(trade_name, ''), legal_name)")
-                ->get(['id', 'code', 'legal_name', 'trade_name', 'payment_terms_days']),
-            'locations' => DB::table('inventory_locations as l')->join('inventory_warehouses as w', 'w.id', '=', 'l.warehouse_id')
-                ->where('l.active', true)->whereNull('l.deleted_at')->orderBy('w.name')->orderBy('l.name')->get(['l.id', 'l.name', 'w.name as warehouse']),
-            'products' => DB::table('inventory_products as p')->join('inventory_units as u', 'u.id', '=', 'p.base_unit_id')
-                ->where('p.active', true)->where('p.track_stock', true)->whereNull('p.deleted_at')->orderBy('p.name')
-                ->get(['p.id', 'p.sku', 'p.name', 'p.average_cost', 'p.base_unit_id as unit_id', 'u.symbol as unit']),
-            'treasuryAccounts' => DB::table('accounting_treasury_accounts')->where('active', true)->orderBy('name')->get(['id', 'name', 'type']),
+            'suppliers' => $suppliers,
+            'locations' => $locations,
+            'products' => $products,
+            'treasuryAccounts' => $this->activeTreasuryAccounts(),
         ]);
     }
 
-    public function store(Request $request, PurchaseServiceInterface $purchases): RedirectResponse
-    {
+    public function store(
+        Request $request,
+        PurchaseServiceInterface $purchases,
+    ): RedirectResponse {
         Gate::authorize('purchases.create');
         Gate::authorize('purchases.post');
+
         $data = $request->validate([
-            'operation_key' => ['required', 'uuid'], 'supplier_id' => ['required', 'integer', 'exists:inventory_suppliers,id'],
+            'operation_key' => ['required', 'uuid'],
+            'supplier_id' => ['required', 'integer', 'exists:inventory_suppliers,id'],
             'location_id' => ['required', 'integer', 'exists:inventory_locations,id'],
             'supplier_document' => ['nullable', 'string', 'max:100'],
             'document_date' => ['required', 'date_format:Y-m-d', 'before_or_equal:today'],
             'due_date' => ['nullable', 'date_format:Y-m-d', 'after_or_equal:document_date'],
             'payment_type' => ['required', Rule::in(['cash', 'credit'])],
-            'treasury_account_id' => ['nullable', 'integer', 'exists:accounting_treasury_accounts,id'],
-            'payment_method' => ['nullable', Rule::in(['cash', 'bank_transfer', 'card', 'check', 'other'])],
-            'paid_amount' => ['required', 'numeric', 'min:0'], 'notes' => ['nullable', 'string', 'max:1000'],
+            'treasury_account_id' => [
+                'nullable',
+                'integer',
+                'exists:accounting_treasury_accounts,id',
+            ],
+            'payment_method' => [
+                'nullable',
+                Rule::in(['cash', 'bank_transfer', 'card', 'check', 'other']),
+            ],
+            'paid_amount' => ['required', 'numeric', 'min:0'],
+            'notes' => ['nullable', 'string', 'max:1000'],
             'lines' => ['required', 'array', 'min:1', 'max:100'],
             'lines.*.product_id' => ['required', 'integer', 'exists:inventory_products,id'],
             'lines.*.unit_id' => ['required', 'integer', 'exists:inventory_units,id'],
-            'lines.*.quantity' => ['required', 'numeric', 'gt:0'], 'lines.*.unit_cost' => ['required', 'numeric', 'min:0'],
-            'lines.*.discount' => ['required', 'numeric', 'min:0'], 'lines.*.tax_rate' => ['required', 'numeric', 'min:0', 'max:100'],
+            'lines.*.quantity' => ['required', 'numeric', 'gt:0'],
+            'lines.*.unit_cost' => ['required', 'numeric', 'min:0'],
+            'lines.*.discount' => ['required', 'numeric', 'min:0'],
+            'lines.*.tax_rate' => ['required', 'numeric', 'min:0', 'max:100'],
         ]);
+
         try {
-            $result = $purchases->create($data, (int) $request->user()->getAuthIdentifier());
+            $result = $purchases->create(
+                $data,
+                (int) $request->user()->getAuthIdentifier(),
+            );
         } catch (DomainException $exception) {
-            throw ValidationException::withMessages(['purchase' => $exception->getMessage()]);
+            throw ValidationException::withMessages([
+                'purchase' => $exception->getMessage(),
+            ]);
         }
-        return redirect()->route('purchases.index')->with('success', "Compra {$result['number']} registrada.");
+
+        return redirect()
+            ->route('purchases.index')
+            ->with('success', "Compra {$result['number']} registrada.");
     }
 
-    public function payment(Request $request, int $purchaseId, PurchaseServiceInterface $purchases): RedirectResponse
-    {
+    public function payment(
+        Request $request,
+        int $purchaseId,
+        PurchaseServiceInterface $purchases,
+    ): RedirectResponse {
         Gate::authorize('purchases.payments.manage');
+
         $data = $request->validate([
             'payment_date' => ['required', 'date_format:Y-m-d', 'before_or_equal:today'],
             'amount' => ['required', 'numeric', 'gt:0'],
-            'treasury_account_id' => ['required', 'integer', 'exists:accounting_treasury_accounts,id'],
-            'method' => ['required', Rule::in(['cash', 'bank_transfer', 'card', 'check', 'other'])],
-            'reference' => ['nullable', 'string', 'max:100'], 'notes' => ['nullable', 'string', 'max:500'],
+            'treasury_account_id' => [
+                'required',
+                'integer',
+                'exists:accounting_treasury_accounts,id',
+            ],
+            'method' => [
+                'required',
+                Rule::in(['cash', 'bank_transfer', 'card', 'check', 'other']),
+            ],
+            'reference' => ['nullable', 'string', 'max:100'],
+            'notes' => ['nullable', 'string', 'max:500'],
         ]);
+
         try {
-            $purchases->registerPayment($purchaseId, $data, (int) $request->user()->getAuthIdentifier());
+            $purchases->registerPayment(
+                $purchaseId,
+                $data,
+                (int) $request->user()->getAuthIdentifier(),
+            );
         } catch (DomainException $exception) {
-            throw ValidationException::withMessages(['payment' => $exception->getMessage()]);
+            throw ValidationException::withMessages([
+                'payment' => $exception->getMessage(),
+            ]);
         }
+
         return back()->with('success', 'Pago a proveedor registrado.');
+    }
+
+    private function activeTreasuryAccounts(): \Illuminate\Support\Collection
+    {
+        return DB::table('accounting_treasury_accounts')
+            ->where('active', true)
+            ->orderBy('name')
+            ->get([
+                'id',
+                'name',
+                'type',
+            ]);
     }
 }
