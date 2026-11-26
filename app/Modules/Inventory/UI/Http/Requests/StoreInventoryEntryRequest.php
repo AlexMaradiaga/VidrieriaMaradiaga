@@ -17,11 +17,16 @@ final class StoreInventoryEntryRequest extends FormRequest
 
     public function rules(): array
     {
-        return [
-            'operation_key' => ['required', 'uuid'],
+        $lineRules = [
             'product_id' => ['required', 'integer', 'min:1'],
             'location_id' => ['required', 'integer', 'min:1'],
             'unit_id' => ['required', 'integer', 'min:1'],
+            'quantity' => ['required', 'string', 'regex:/^\d{1,14}(?:\.\d{1,4})?$/'],
+            'unit_cost' => ['required', 'string', 'regex:/^\d{1,14}(?:\.\d{1,4})?$/'],
+        ];
+
+        $rules = [
+            'operation_key' => ['required', 'uuid'],
 
             'reason' => [
                 'required',
@@ -43,19 +48,22 @@ final class StoreInventoryEntryRequest extends FormRequest
 
             'reference' => ['nullable', 'string', 'max:100'],
             'notes' => ['nullable', 'string', 'max:1000'],
-
-            'quantity' => [
-                'required',
-                'string',
-                'regex:/^\d{1,14}(?:\.\d{1,4})?$/',
-            ],
-
-            'unit_cost' => [
-                'required',
-                'string',
-                'regex:/^\d{1,14}(?:\.\d{1,4})?$/',
-            ],
         ];
+
+        // Mantener compatibilidad con entradas de una línea y reintentos previos.
+        if (! array_key_exists('lines', $this->all())) {
+            return $rules + $lineRules;
+        }
+
+        $rules['category_id'] = ['required', 'integer', 'min:1'];
+        $rules['lines'] = ['required', 'array', 'list', 'min:1', 'max:200'];
+        $rules['lines.*'] = ['required', 'array:product_id,location_id,unit_id,quantity,unit_cost'];
+
+        foreach ($lineRules as $field => $fieldRules) {
+            $rules["lines.*.{$field}"] = $fieldRules;
+        }
+
+        return $rules;
     }
 
     public function messages(): array
@@ -82,6 +90,13 @@ final class StoreInventoryEntryRequest extends FormRequest
             'unit_cost' => __('inventory.attributes.unit_cost'),
             'document_date' => __('inventory.attributes.document_date'),
             'reason' => __('inventory.attributes.reason'),
+            'category_id' => 'categoría',
+            'lines' => 'productos',
+            'lines.*.product_id' => __('inventory.attributes.product_id').' (línea :position)',
+            'lines.*.location_id' => __('inventory.attributes.location_id').' (línea :position)',
+            'lines.*.unit_id' => __('inventory.attributes.unit_id').' (línea :position)',
+            'lines.*.quantity' => __('inventory.attributes.quantity').' (línea :position)',
+            'lines.*.unit_cost' => __('inventory.attributes.unit_cost').' (línea :position)',
         ];
     }
 }

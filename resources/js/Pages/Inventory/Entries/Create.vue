@@ -3,7 +3,7 @@ import { computed, onMounted, reactive, ref, watch } from 'vue';
 import { Head, Link } from '@inertiajs/vue3';
 import axios from 'axios';
 import Button from 'primevue/button';
-import Select from 'primevue/select';
+import MultiSelect from 'primevue/multiselect';
 import Toast from 'primevue/toast';
 import ConfirmDialog from 'primevue/confirmdialog';
 import { useToast } from 'primevue/usetoast';
@@ -44,19 +44,33 @@ interface ProductSelectOption extends ProductOption {
     label: string;
 }
 
-interface EntryPayload {
-    operation_key: string;
+interface EntryLine {
     product_id: number;
     location_id: number;
     unit_id: number;
+    quantity: string;
+    unit_cost: string;
+}
+
+interface EditableLine extends Omit<EntryLine, 'location_id' | 'unit_id'> {
+    location_id: number | '';
+    unit_id: number | '';
+    showAllLocations: boolean;
+}
+
+interface EntryHeader {
+    operation_key: string;
     supplier_id: number | null;
     reason: string;
     document_date: string;
     reference: string | null;
     notes: string | null;
-    quantity: string;
-    unit_cost: string;
 }
+
+type EntryPayload = EntryHeader & (
+    | EntryLine
+    | { category_id: number; lines: EntryLine[] }
+);
 
 interface EntryResponse {
     message: string;
@@ -87,7 +101,8 @@ const movementId = ref<number | null>(null);
 const errors = ref<Record<string, string[]>>({});
 const pending = ref<EntryPayload | null>(null);
 const selectedCategoryId = ref<number | null>(null);
-const showAllLocations = ref(false);
+const lines = ref<EditableLine[]>([]);
+const maxProducts = 200;
 
 watch(success, (message) => {
     if (!message) return;
@@ -112,20 +127,15 @@ watch(failure, (message) => {
 });
 
 const form = reactive({
-    product_id: '' as number | '',
-    location_id: '' as number | '',
-    unit_id: '' as number | '',
     supplier_id: '' as number | '',
     reason: 'purchase',
     document_date: props.today,
     reference: '',
     notes: '',
-    quantity: '',
-    unit_cost: '',
 });
 
-const selectedProduct = computed(() =>
-    props.products.find((product) => product.id === form.product_id),
+const productsById = computed(() =>
+    new Map(props.products.map((product) => [product.id, product])),
 );
 
 const categoryOptions = computed(() => {
@@ -142,7 +152,6 @@ const categoryOptions = computed(() => {
 const selectableProducts = computed<ProductSelectOption[]>(() =>
     props.products
         .filter((product) =>
-            selectedCategoryId.value === null ||
             product.category_id === selectedCategoryId.value,
         )
         .map((product) => ({
@@ -151,20 +160,55 @@ const selectableProducts = computed<ProductSelectOption[]>(() =>
         })),
 );
 
-const availableUnits = computed(() => selectedProduct.value?.units ?? []);
-
-const recommendedLocations = computed(() => {
-    const warehouseId = selectedProduct.value?.default_warehouse_id;
+function recommendedLocations(product: ProductOption | undefined): LocationOption[] {
+    const warehouseId = product?.default_warehouse_id;
     if (warehouseId === null || warehouseId === undefined) return props.locations;
     return props.locations.filter((location) => location.warehouse_id === warehouseId);
+}
+
+function receiveLocations(line: EditableLine): LocationOption[] {
+    return line.showAllLocations
+        ? props.locations
+        : recommendedLocations(productsById.value.get(line.product_id));
+}
+
+function toggleLocations(line: EditableLine): void {
+    line.showAllLocations = !line.showAllLocations;
+    const options = receiveLocations(line);
+    if (!options.some((location) => location.id === line.location_id)) {
+        line.location_id = options[0]?.id ?? '';
+    }
+}
+
+const selectedProductIds = computed<number[]>({
+    get: () => lines.value.map((line) => line.product_id),
+    set: (ids) => {
+        const current = new Map(lines.value.map((line) => [line.product_id, line]));
+        lines.value = [...new Set(ids ?? [])].slice(0, maxProducts).flatMap((id) => {
+            const product = productsById.value.get(id);
+            if (!product || product.category_id !== selectedCategoryId.value) return [];
+
+            return [current.get(id) ?? {
+                product_id: id,
+                location_id: recommendedLocations(product)[0]?.id ?? '',
+                unit_id: product.units[0]?.id ?? '',
+                quantity: '',
+                unit_cost: '',
+                showAllLocations: false,
+            }];
+        });
+    },
 });
 
-const receiveLocations = computed(() =>
-    showAllLocations.value ? props.locations : recommendedLocations.value,
-);
-
-const selectedUnit = computed(() =>
-    availableUnits.value.find((unit) => unit.id === form.unit_id),
+const productDetails = computed(() =>
+    lines.value.map((line) => {
+        const product = productsById.value.get(line.product_id);
+        return {
+            line,
+            product,
+            unit: product?.units.find((unit) => unit.id === line.unit_id),
+        };
+    }),
 );
 
 const locked = computed(
@@ -175,27 +219,10 @@ const canRegister = computed(
     () =>
         props.products.length > 0 &&
         props.locations.length > 0 &&
+        selectedCategoryId.value !== null &&
+        lines.value.length > 0 &&
         (form.reason !== 'purchase' || props.suppliers.length > 0),
 );
-
-watch(
-    () => form.product_id,
-    () => {
-        form.unit_id = selectedProduct.value?.units[0]?.id ?? '';
-        showAllLocations.value = false;
-        form.location_id = recommendedLocations.value[0]?.id ?? '';
-    },
-);
-
-watch(selectedCategoryId, () => {
-    if (
-        selectedProduct.value &&
-        selectedCategoryId.value !== null &&
-        selectedProduct.value.category_id !== selectedCategoryId.value
-    ) {
-        form.product_id = '';
-    }
-});
 
 watch(
     () => form.reason,
@@ -213,8 +240,9 @@ onMounted(() => {
 
             if (
                 typeof candidate.operation_key !== 'string' ||
-                typeof candidate.product_id !== 'number' ||
-                typeof candidate.quantity !== 'string'
+                ('lines' in candidate
+                    ? !Array.isArray(candidate.lines) || candidate.lines.length === 0
+                    : typeof candidate.product_id !== 'number' || typeof candidate.quantity !== 'string')
             ) {
                 throw new Error(t('inventory.entries.invalidPending'));
             }
@@ -232,9 +260,14 @@ onMounted(() => {
 function createPayload(): EntryPayload {
     return {
         operation_key: crypto.randomUUID(),
-        product_id: Number(form.product_id),
-        location_id: Number(form.location_id),
-        unit_id: Number(form.unit_id),
+        category_id: Number(selectedCategoryId.value),
+        lines: lines.value.map((line) => ({
+            product_id: line.product_id,
+            location_id: Number(line.location_id),
+            unit_id: Number(line.unit_id),
+            quantity: line.quantity.trim(),
+            unit_cost: line.unit_cost.trim(),
+        })),
         supplier_id: form.reason === 'purchase'
             ? Number(form.supplier_id)
             : null,
@@ -242,8 +275,6 @@ function createPayload(): EntryPayload {
         document_date: form.document_date,
         reference: form.reference.trim() || null,
         notes: form.notes.trim() || null,
-        quantity: form.quantity.trim(),
-        unit_cost: form.unit_cost.trim(),
     };
 }
 
@@ -332,11 +363,7 @@ function submit(): void {
     confirm.require({
         group: 'inventory-entry',
         header: t('inventory.entries.confirmTitle'),
-        message: t('inventory.entries.confirmMessage', {
-            quantity: form.quantity,
-            unit: selectedUnit.value?.symbol ?? '',
-            product: selectedProduct.value?.name ?? t('common.product').toLowerCase(),
-        }),
+        message: t('inventory.entries.confirmProducts', { count: lines.value.length }),
         icon: 'pi pi-question-circle',
         rejectProps: {
             label: t('common.cancel'),
@@ -371,8 +398,7 @@ function newEntry(): void {
 
     form.reference = '';
     form.notes = '';
-    form.quantity = '';
-    form.unit_cost = '';
+    lines.value = [];
 }
 </script>
 
@@ -431,7 +457,9 @@ function newEntry(): void {
 
         <div v-if="pending && movementId === null" class="notice pending">
             <p>
-                {{t('inventory.entries.pending',{product:pending.product_id,quantity:pending.quantity,reference:pending.reference ?? t('inventory.entries.noReference')})}}
+                {{ 'lines' in pending
+                    ? t('inventory.entries.pendingProducts', { count: pending.lines.length, reference: pending.reference ?? t('inventory.entries.noReference') })
+                    : t('inventory.entries.pending', { product: pending.product_id, quantity: pending.quantity, reference: pending.reference ?? t('inventory.entries.noReference') }) }}
             </p>
 
             <Button
@@ -458,8 +486,8 @@ function newEntry(): void {
                     <div class="grid">
                         <label>
                             {{t('inventory.entries.category')}}
-                            <select v-model="selectedCategoryId">
-                                <option :value="null">{{t('inventory.entries.allCategories')}}</option>
+                            <select v-model="selectedCategoryId" :disabled="lines.length > 0" required>
+                                <option disabled :value="null">{{t('inventory.entries.chooseCategory')}}</option>
 
                                 <option
                                     v-for="category in categoryOptions"
@@ -469,22 +497,28 @@ function newEntry(): void {
                                     {{ category.name }}
                                 </option>
                             </select>
+                            <small v-if="lines.length > 0">{{t('inventory.entries.changeCategoryHint')}}</small>
                         </label>
 
-                        <label class="wide product-field">
-                            {{t('inventory.entries.product')}} *
-                            <Select
-                                v-model="form.product_id"
+                        <label for="entry-products" class="wide product-field">
+                            {{t('inventory.entries.products')}} *
+                            <MultiSelect
+                                v-model="selectedProductIds"
+                                input-id="entry-products"
                                 :options="selectableProducts"
                                 option-label="label"
                                 option-value="id"
-                                :placeholder="t('inventory.entries.chooseProduct')"
+                                :placeholder="t('inventory.entries.chooseProducts')"
+                                :disabled="selectedCategoryId === null || locked || !ready"
+                                :show-toggle-all="false"
+                                :selection-limit="maxProducts"
+                                :max-selected-labels="1"
+                                :selected-items-label="t('inventory.entries.selectedProducts', { count: '{0}' })"
                                 :filter-placeholder="t('inventory.entries.searchProduct')"
                                 :filter-fields="['sku', 'name', 'category_name']"
                                 filter
                                 show-clear
                                 class="product-select"
-                                required
                             >
                                 <template #option="{ option }">
                                     <div class="product-option">
@@ -493,7 +527,10 @@ function newEntry(): void {
                                         <small>{{ option.category_name }}</small>
                                     </div>
                                 </template>
-                            </Select>
+                            </MultiSelect>
+                            <small v-if="lines.length === maxProducts">
+                                {{t('inventory.entries.productLimit', { count: maxProducts })}}
+                            </small>
                         </label>
 
                         <label>
@@ -535,66 +572,6 @@ function newEntry(): void {
                             </small>
                         </label>
 
-                        <label class="wide">
-                            {{t('inventory.entries.receiveLocation')}} *
-                            <select v-model="form.location_id" required>
-                                <option disabled value="">{{t('inventory.entries.chooseLocation')}}</option>
-
-                                <option
-                                    v-for="location in receiveLocations"
-                                    :key="location.id"
-                                    :value="location.id"
-                                >
-                                    {{ location.name }}
-                                </option>
-                            </select>
-                            <small v-if="selectedProduct?.default_warehouse_id">
-                                Bodega recomendada según la categoría del producto.
-                                <button type="button" class="link-button" @click="showAllLocations=!showAllLocations">
-                                    {{ showAllLocations ? 'Mostrar solo la recomendada' : 'Mostrar todas las bodegas' }}
-                                </button>
-                            </small>
-                        </label>
-
-                        <label>
-                            {{t('inventory.entries.receivedUnit')}} *
-                            <select v-model="form.unit_id" required>
-                                <option disabled value="">{{t('inventory.entries.chooseUnit')}}</option>
-
-                                <option
-                                    v-for="unit in availableUnits"
-                                    :key="unit.id"
-                                    :value="unit.id"
-                                >
-                                    {{ unit.name }} ({{ unit.symbol }})
-                                </option>
-                            </select>
-                        </label>
-
-                        <label>
-                            {{t('inventory.entries.receivedQuantity')}} *
-                            <input
-                                v-model="form.quantity"
-                                type="text"
-                                inputmode="decimal"
-                                pattern="[0-9]{1,14}(\.[0-9]{1,4})?"
-                                :placeholder="t('inventory.entries.quantityExample')"
-                                required
-                            />
-                        </label>
-
-                        <label>
-                            {{t('inventory.entries.unitCost')}} *
-                            <input
-                                v-model="form.unit_cost"
-                                type="text"
-                                inputmode="decimal"
-                                pattern="[0-9]{1,14}(\.[0-9]{1,4})?"
-                                :placeholder="t('inventory.entries.costExample')"
-                                required
-                            />
-                        </label>
-
                         <label>
                             {{t('inventory.entries.reference')}}
                             <input v-model="form.reference" maxlength="100" />
@@ -610,10 +587,78 @@ function newEntry(): void {
                         </label>
                     </div>
 
-                    <p v-if="selectedUnit && selectedProduct" class="hint">
-                        {{t('inventory.entries.conversion',{unit:selectedUnit.symbol,factor:selectedUnit.factor,base:selectedProduct.base_unit_symbol})}}
-                        {{t('inventory.entries.conversionCheck')}}
-                    </p>
+                    <section
+                        v-for="({ line, product, unit }, index) in productDetails"
+                        :key="line.product_id"
+                        class="entry-line"
+                    >
+                        <h2>{{ index + 1 }}. {{ product?.sku }} — {{ product?.name }}</h2>
+                        <div class="grid">
+                            <label class="wide">
+                                {{t('inventory.entries.receiveLocation')}} *
+                                <select v-model="line.location_id" required>
+                                    <option disabled value="">{{t('inventory.entries.chooseLocation')}}</option>
+
+                                    <option
+                                        v-for="location in receiveLocations(line)"
+                                        :key="location.id"
+                                        :value="location.id"
+                                    >
+                                        {{ location.name }}
+                                    </option>
+                                </select>
+                                <small v-if="product?.default_warehouse_id">
+                                    Bodega recomendada según la categoría del producto.
+                                    <button type="button" class="link-button" @click="toggleLocations(line)">
+                                        {{ line.showAllLocations ? 'Mostrar solo la recomendada' : 'Mostrar todas las bodegas' }}
+                                    </button>
+                                </small>
+                            </label>
+
+                            <label>
+                                {{t('inventory.entries.receivedUnit')}} *
+                                <select v-model="line.unit_id" required>
+                                    <option disabled value="">{{t('inventory.entries.chooseUnit')}}</option>
+
+                                    <option
+                                        v-for="unitOption in product?.units ?? []"
+                                        :key="unitOption.id"
+                                        :value="unitOption.id"
+                                    >
+                                        {{ unitOption.name }} ({{ unitOption.symbol }})
+                                    </option>
+                                </select>
+                            </label>
+
+                            <label>
+                                {{t('inventory.entries.receivedQuantity')}} *
+                                <input
+                                    v-model="line.quantity"
+                                    type="text"
+                                    inputmode="decimal"
+                                    pattern="[0-9]{1,14}(\.[0-9]{1,4})?"
+                                    :placeholder="t('inventory.entries.quantityExample')"
+                                    required
+                                />
+                            </label>
+
+                            <label>
+                                {{t('inventory.entries.unitCost')}} *
+                                <input
+                                    v-model="line.unit_cost"
+                                    type="text"
+                                    inputmode="decimal"
+                                    pattern="[0-9]{1,14}(\.[0-9]{1,4})?"
+                                    :placeholder="t('inventory.entries.costExample')"
+                                    required
+                                />
+                            </label>
+                        </div>
+                        <p v-if="unit && product" class="hint">
+                            {{t('inventory.entries.conversion',{unit:unit.symbol,factor:unit.factor,base:product.base_unit_symbol})}}
+                            {{t('inventory.entries.conversionCheck')}}
+                        </p>
+                    </section>
 
                     <p class="hint">
                         {{t('inventory.entries.numericHelp')}}
@@ -682,6 +727,18 @@ fieldset {
 
 .product-field {
     grid-column: 1 / -1;
+}
+
+.entry-line {
+    padding: 1rem;
+    margin-top: 1rem;
+    border: 1px solid var(--p-content-border-color, #cbd5e1);
+    border-radius: 0.75rem;
+}
+
+.entry-line h2 {
+    margin: 0 0 0.75rem;
+    font-size: 1rem;
 }
 
 .product-select {
