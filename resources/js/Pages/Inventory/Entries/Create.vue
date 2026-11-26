@@ -9,6 +9,7 @@ import ConfirmDialog from 'primevue/confirmdialog';
 import { useToast } from 'primevue/usetoast';
 import { useConfirm } from 'primevue/useconfirm';
 import { useI18n } from 'vue-i18n';
+import { reconcileProductSelection } from '../reconcileProductSelection';
 
 const toast = useToast();
 const confirm = useConfirm();
@@ -69,7 +70,7 @@ interface EntryHeader {
 
 type EntryPayload = EntryHeader & (
     | EntryLine
-    | { category_id: number; lines: EntryLine[] }
+    | { lines: EntryLine[]; category_id?: number }
 );
 
 interface EntryResponse {
@@ -152,12 +153,17 @@ const categoryOptions = computed(() => {
 const selectableProducts = computed<ProductSelectOption[]>(() =>
     props.products
         .filter((product) =>
-            product.category_id === selectedCategoryId.value,
+            selectedCategoryId.value === null || product.category_id === selectedCategoryId.value,
         )
         .map((product) => ({
             ...product,
             label: `${product.sku} — ${product.name}`,
         })),
+);
+
+const selectableIds = computed(() => new Set(selectableProducts.value.map(({ id }) => id)));
+const selectionLimit = computed(() =>
+    maxProducts - lines.value.filter((line) => !selectableIds.value.has(line.product_id)).length,
 );
 
 function recommendedLocations(product: ProductOption | undefined): LocationOption[] {
@@ -181,22 +187,23 @@ function toggleLocations(line: EditableLine): void {
 }
 
 const selectedProductIds = computed<number[]>({
-    get: () => lines.value.map((line) => line.product_id),
+    get: () => lines.value
+        .filter((line) => selectableIds.value.has(line.product_id))
+        .map((line) => line.product_id),
     set: (ids) => {
-        const current = new Map(lines.value.map((line) => [line.product_id, line]));
-        lines.value = [...new Set(ids ?? [])].slice(0, maxProducts).flatMap((id) => {
-            const product = productsById.value.get(id);
-            if (!product || product.category_id !== selectedCategoryId.value) return [];
-
-            return [current.get(id) ?? {
-                product_id: id,
-                location_id: recommendedLocations(product)[0]?.id ?? '',
-                unit_id: product.units[0]?.id ?? '',
-                quantity: '',
-                unit_cost: '',
-                showAllLocations: false,
-            }];
-        });
+        lines.value = reconcileProductSelection(
+            lines.value, selectableIds.value, ids ?? [], maxProducts, (id) => {
+                const product = productsById.value.get(id);
+                return {
+                    product_id: id,
+                    location_id: recommendedLocations(product)[0]?.id ?? '',
+                    unit_id: product?.units[0]?.id ?? '',
+                    quantity: '',
+                    unit_cost: '',
+                    showAllLocations: false,
+                };
+            },
+        );
     },
 });
 
@@ -219,7 +226,6 @@ const canRegister = computed(
     () =>
         props.products.length > 0 &&
         props.locations.length > 0 &&
-        selectedCategoryId.value !== null &&
         lines.value.length > 0 &&
         (form.reason !== 'purchase' || props.suppliers.length > 0),
 );
@@ -260,7 +266,6 @@ onMounted(() => {
 function createPayload(): EntryPayload {
     return {
         operation_key: crypto.randomUUID(),
-        category_id: Number(selectedCategoryId.value),
         lines: lines.value.map((line) => ({
             product_id: line.product_id,
             location_id: Number(line.location_id),
@@ -486,8 +491,8 @@ function newEntry(): void {
                     <div class="grid">
                         <label>
                             {{t('inventory.entries.category')}}
-                            <select v-model="selectedCategoryId" :disabled="lines.length > 0" required>
-                                <option disabled :value="null">{{t('inventory.entries.chooseCategory')}}</option>
+                            <select v-model="selectedCategoryId">
+                                <option :value="null">{{t('inventory.entries.allCategories')}}</option>
 
                                 <option
                                     v-for="category in categoryOptions"
@@ -497,21 +502,22 @@ function newEntry(): void {
                                     {{ category.name }}
                                 </option>
                             </select>
-                            <small v-if="lines.length > 0">{{t('inventory.entries.changeCategoryHint')}}</small>
+                            <small>{{t('inventory.entries.changeCategoryHint')}}</small>
                         </label>
 
                         <label for="entry-products" class="wide product-field">
                             {{t('inventory.entries.products')}} *
                             <MultiSelect
+                                :key="selectedCategoryId ?? 'all'"
                                 v-model="selectedProductIds"
                                 input-id="entry-products"
                                 :options="selectableProducts"
                                 option-label="label"
                                 option-value="id"
                                 :placeholder="t('inventory.entries.chooseProducts')"
-                                :disabled="selectedCategoryId === null || locked || !ready"
+                                :disabled="locked || !ready || selectionLimit === 0"
                                 :show-toggle-all="false"
-                                :selection-limit="maxProducts"
+                                :selection-limit="selectionLimit"
                                 :max-selected-labels="1"
                                 :selected-items-label="t('inventory.entries.selectedProducts', { count: '{0}' })"
                                 :filter-placeholder="t('inventory.entries.searchProduct')"
@@ -528,6 +534,9 @@ function newEntry(): void {
                                     </div>
                                 </template>
                             </MultiSelect>
+                            <small v-if="lines.length > 0">
+                                {{t('inventory.entries.selectedProducts', { count: lines.length })}}
+                            </small>
                             <small v-if="lines.length === maxProducts">
                                 {{t('inventory.entries.productLimit', { count: maxProducts })}}
                             </small>
@@ -592,7 +601,17 @@ function newEntry(): void {
                         :key="line.product_id"
                         class="entry-line"
                     >
-                        <h2>{{ index + 1 }}. {{ product?.sku }} — {{ product?.name }}</h2>
+                        <div class="entry-line-heading">
+                            <h2>{{ index + 1 }}. {{ product?.sku }} — {{ product?.name }}</h2>
+                            <Button
+                                type="button"
+                                label="Quitar"
+                                severity="secondary"
+                                text
+                                :disabled="locked || !ready"
+                                @click="lines.splice(index, 1)"
+                            />
+                        </div>
                         <div class="grid">
                             <label class="wide">
                                 {{t('inventory.entries.receiveLocation')}} *
@@ -736,8 +755,16 @@ fieldset {
     border-radius: 0.75rem;
 }
 
+.entry-line-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+}
+
 .entry-line h2 {
-    margin: 0 0 0.75rem;
+    margin: 0;
     font-size: 1rem;
 }
 

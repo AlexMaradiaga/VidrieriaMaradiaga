@@ -4,11 +4,13 @@ import { Head, Link } from '@inertiajs/vue3';
 import axios from 'axios';
 import Button from 'primevue/button';
 import ConfirmDialog from 'primevue/confirmdialog';
+import MultiSelect from 'primevue/multiselect';
 import Select from 'primevue/select';
 import Toast from 'primevue/toast';
 import { useConfirm } from 'primevue/useconfirm';
 import { useToast } from 'primevue/usetoast';
 import InventoryNav from '../../../Components/Common/InventoryNav.vue';
+import { reconcileProductSelection } from '../reconcileProductSelection';
 
 interface Unit { id:number; name:string; symbol:string; factor:string }
 interface Stock { location_id:number; quantity:string }
@@ -16,7 +18,7 @@ interface Product { id:number; sku:string; name:string; category_id:number; cate
 interface Location { id:number; name:string; warehouse_id:number; warehouse_code:string; warehouse_name:string; warehouse_address:string|null }
 interface Responsible { id:number; name:string; code:string }
 interface Customer { id:number; code:string; name:string; address:string|null }
-interface ExitLine { key:string; category_id:number|''; product_id:number|''; location_id:number|''; quantity:string }
+interface ExitLine { key:string; product_id:number; location_id:number|''; quantity:string }
 
 const props=defineProps<{mode:'exit'|'transfer';products:Product[];locations:Location[];responsibles:Responsible[];customers:Customer[];today:string}>();
 const toast=useToast();
@@ -27,7 +29,9 @@ const errors=ref<Record<string,string[]>>({});
 const pending=ref<Record<string,unknown>|null>(null);
 const storageKey=computed(()=>`vidrieria.inventory.pending-${props.mode}`);
 const form=reactive({customer_id:'' as number|'',requested_by:'',customer_name:'',customer_address:'',reason:'work_order',document_date:props.today,reference:'',notes:'',product_id:'' as number|'',source_location_id:'' as number|'',destination_location_id:'' as number|'',responsible_name:'',quantity:''});
-const lines=ref<ExitLine[]>([newLine()]);
+const lines=ref<ExitLine[]>([]);
+const exitCategoryId=ref<number|''>('');
+const maxExitLines=100;
 const transferCategoryId=ref<number|''>('');
 
 const categories=computed(()=>Array.from(new Map(props.products.map(item=>[item.category_id,item.category_name])),([id,name])=>({id,name})).sort((a,b)=>a.name.localeCompare(b.name,'es')));
@@ -35,10 +39,27 @@ const transferProduct=computed(()=>props.products.find(item=>item.id===form.prod
 const transferProducts=computed(()=>productOptions(transferCategoryId.value));
 const transferSourceLocations=computed(()=>locationsForProduct(form.product_id));
 const transferDestinationLocations=computed(()=>props.locations.filter(item=>item.id!==form.source_location_id));
+const exitProductOptions=computed(()=>productOptions(exitCategoryId.value));
+const exitSelectableIds=computed(()=>new Set(exitProductOptions.value.map(({id})=>id)));
+const selectedExitProductIds=computed<number[]>({
+    get:()=>[...new Set(lines.value
+        .filter(line=>exitSelectableIds.value.has(line.product_id))
+        .map(line=>line.product_id))],
+    set:(ids)=>{
+        lines.value=reconcileProductSelection(
+            lines.value, exitSelectableIds.value, ids??[], maxExitLines, makeExitLine,
+        );
+    },
+});
+const exitSelectionLimit=computed(()=>maxExitLines-lines.value.length+selectedExitProductIds.value.length);
+const exitLocked=computed(()=>saving.value||resultId.value!==null||pending.value!==null);
 const title=computed(()=>props.mode==='exit'?'Registrar orden de salida':'Trasladar existencias');
 const canSubmit=computed(()=>props.mode==='transfer'
     ? form.product_id!==''&&form.source_location_id!==''&&form.destination_location_id!==''&&form.responsible_name.trim()!==''&&form.quantity.trim()!==''
-    : form.reference.trim()!==''&&form.requested_by.trim()!==''&&form.customer_name.trim()!==''&&lines.value.length>0&&lines.value.every(line=>line.product_id!==''&&line.location_id!==''&&line.quantity.trim()!==''));
+    : pending.value!==null||(
+        form.reference.trim()!==''&&form.requested_by.trim()!==''&&form.customer_name.trim()!==''
+        &&lines.value.length>0&&lines.value.every(line=>line.location_id!==''&&line.quantity.trim()!=='')
+    ));
 
 onMounted(()=>{const saved=sessionStorage.getItem(storageKey.value);if(saved){try{pending.value=JSON.parse(saved) as Record<string,unknown>;toast.add({severity:'warn',summary:'Operación pendiente',detail:'Hay una operación pendiente. Puedes volver a enviarla sin duplicar el movimiento.',life:7000})}catch{sessionStorage.removeItem(storageKey.value)}}});
 watch(()=>form.customer_id,(id)=>{const customer=props.customers.find(item=>item.id===id);if(customer){form.customer_name=customer.name;form.customer_address=customer.address??''}});
@@ -46,18 +67,28 @@ watch(()=>form.product_id,()=>{form.source_location_id='';form.destination_locat
 watch(transferCategoryId,()=>{if(transferProduct.value&&transferCategoryId.value!==''&&transferProduct.value.category_id!==transferCategoryId.value)form.product_id=''});
 watch(()=>form.source_location_id,()=>{if(form.destination_location_id===form.source_location_id)form.destination_location_id=''});
 
-function newLine():ExitLine{return{key:crypto.randomUUID(),category_id:'',product_id:'',location_id:'',quantity:''}}
 function productOptions(categoryId:number|''){return props.products.filter(item=>categoryId===''||item.category_id===categoryId).map(item=>({...item,label:`${item.sku} — ${item.name} · ${Number(item.stock_quantity)>0?`Disponible: ${item.stock_quantity} ${item.base_unit_symbol}`:'Sin existencia'}`}))}
 function selectedProduct(productId:number|''){return props.products.find(item=>item.id===productId)}
 function locationsForProduct(productId:number|''){const product=selectedProduct(productId);const ids=new Set((product?.stocks??[]).filter(stock=>Number(stock.quantity)>0).map(stock=>stock.location_id));return props.locations.filter(location=>ids.has(location.id))}
-function lineCategoryChanged(line:ExitLine):void{const product=selectedProduct(line.product_id);if(product&&line.category_id!==''&&product.category_id!==line.category_id){line.product_id='';line.location_id=''}}
-function lineProductChanged(line:ExitLine):void{line.location_id=''}
-function addLine():void{lines.value.push(newLine())}
-function removeLine(index:number):void{if(lines.value.length>1)lines.value.splice(index,1)}
+function exitLocations(line:ExitLine):Location[]{
+    const used=new Set(lines.value.filter(other=>other.key!==line.key&&other.product_id===line.product_id).map(other=>other.location_id));
+    return locationsForProduct(line.product_id).filter(location=>!used.has(location.id));
+}
+function makeExitLine(productId:number):ExitLine{
+    return {key:crypto.randomUUID(),product_id:productId,location_id:'',quantity:''};
+}
+function canAddExitLocation(line:ExitLine):boolean{
+    return lines.value.length<maxExitLines&&line.location_id!==''&&exitLocations(line).length>1
+        &&!lines.value.some(other=>other.product_id===line.product_id&&other.location_id==='');
+}
+function addExitLocation(line:ExitLine):void{
+    if(exitLocked.value||!canAddExitLocation(line))return;
+    lines.value.push(makeExitLine(line.product_id));
+}
 function payload():Record<string,unknown>{const common={operation_key:crypto.randomUUID(),document_date:form.document_date,reference:form.reference.trim()||null,notes:form.notes.trim()||null};if(props.mode==='exit')return{...common,reason:form.reason,requested_by:form.requested_by.trim(),customer_id:form.customer_id===''?null:Number(form.customer_id),customer_name:form.customer_name.trim(),customer_address:form.customer_address.trim()||null,lines:lines.value.map(line=>({product_id:Number(line.product_id),location_id:Number(line.location_id),quantity:line.quantity.trim()}))};return{...common,product_id:Number(form.product_id),source_location_id:Number(form.source_location_id),destination_location_id:Number(form.destination_location_id),responsible_name:form.responsible_name.trim(),quantity:form.quantity.trim()}}
 function submit():void{if(saving.value||resultId.value!==null)return;if(pending.value!==null){void save();return}const message=props.mode==='exit'?`Se registrará la orden ${form.reference} con ${lines.value.length} producto(s) para ${form.customer_name}. Esta acción afectará las existencias.`:`Se trasladarán ${form.quantity} ${transferProduct.value?.base_unit_symbol??''} de ${transferProduct.value?.name??'este producto'}.`;confirm.require({header:props.mode==='exit'?'Confirmar orden de salida':'Confirmar traslado',message,icon:'pi pi-exclamation-triangle',rejectProps:{label:'Cancelar',severity:'secondary',outlined:true},acceptProps:{label:'Confirmar',severity:props.mode==='exit'?'danger':'success'},accept:()=>void save()})}
 async function save():Promise<void>{saving.value=true;errors.value={};try{const body=pending.value??payload();pending.value=body;sessionStorage.setItem(storageKey.value,JSON.stringify(body));const response=await axios.post(`/inventory/${props.mode==='exit'?'exits':'transfers'}`,body,{headers:{Accept:'application/json'}});resultId.value=Number(response.data.data.movement_id??response.data.data.transfer_id);pending.value=null;sessionStorage.removeItem(storageKey.value);toast.add({severity:'success',summary:'Operación registrada',detail:response.data.message,life:6000})}catch(error:unknown){if(axios.isAxiosError(error)&&error.response?.status===422){errors.value=(error.response.data as {errors?:Record<string,string[]>}).errors??{};pending.value=null;sessionStorage.removeItem(storageKey.value)}const detail=Object.values(errors.value).flat().join(' ')||'No fue posible registrar la operación.';toast.add({severity:'error',summary:'Revisa la información',detail,life:9000})}finally{saving.value=false}}
-function reset():void{resultId.value=null;errors.value={};pending.value=null;sessionStorage.removeItem(storageKey.value);Object.assign(form,{customer_id:'',requested_by:'',customer_name:'',customer_address:'',reason:'work_order',document_date:props.today,reference:'',notes:'',product_id:'',source_location_id:'',destination_location_id:'',responsible_name:'',quantity:''});lines.value=[newLine()]}
+function reset():void{resultId.value=null;errors.value={};pending.value=null;sessionStorage.removeItem(storageKey.value);Object.assign(form,{customer_id:'',requested_by:'',customer_name:'',customer_address:'',reason:'work_order',document_date:props.today,reference:'',notes:'',product_id:'',source_location_id:'',destination_location_id:'',responsible_name:'',quantity:''});lines.value=[];exitCategoryId.value=''}
 </script>
 
 <template>
@@ -76,13 +107,76 @@ function reset():void{resultId.value=null;errors.value={};pending.value=null;ses
 <label class="wide">Notas<textarea v-model.trim="form.notes" maxlength="1000" placeholder="Observaciones adicionales de la orden"/></label>
 </div></section>
 
-<section v-if="mode==='exit'" class="panel"><div class="section-title"><div><h2>Productos de la orden</h2><p>La unidad se toma automáticamente del catálogo del producto.</p></div><Button label="Agregar producto" icon="pi pi-plus" outlined :disabled="saving||resultId!==null" @click="addLine"/></div>
-<article v-for="(line,index) in lines" :key="line.key" class="line-card"><div class="line-heading"><strong>Producto {{index+1}}</strong><Button v-if="lines.length>1" icon="pi pi-trash" severity="danger" text rounded aria-label="Quitar producto" :disabled="saving||resultId!==null" @click="removeLine(index)"/></div><div class="line-grid">
-<label>Categoría<select v-model="line.category_id" :disabled="saving||resultId!==null" @change="lineCategoryChanged(line)"><option value="">Todas las categorías</option><option v-for="category in categories" :key="category.id" :value="category.id">{{category.name}}</option></select></label>
-<label>Producto *<Select v-model="line.product_id" :options="productOptions(line.category_id)" option-label="label" option-value="id" filter :filter-fields="['sku','name','category_name']" filter-placeholder="Escribe el código o nombre" placeholder="Selecciona o busca un producto" empty-message="No hay productos en esta categoría" :disabled="saving||resultId!==null" @change="lineProductChanged(line)"/></label>
-<label>Ubicación con existencia *<select v-model="line.location_id" :disabled="line.product_id===''||saving||resultId!==null"><option value="">{{line.product_id===''?'Primero selecciona el producto':'Selecciona la ubicación'}}</option><option v-for="location in locationsForProduct(line.product_id)" :key="location.id" :value="location.id">{{location.name}}</option></select><small v-if="line.product_id!==''&&!locationsForProduct(line.product_id).length">Este producto no tiene existencia disponible.</small></label>
-<label>Cantidad ({{selectedProduct(line.product_id)?.base_unit_symbol??'unidad base'}}) *<input v-model.trim="line.quantity" inputmode="decimal" placeholder="0" required/></label>
-</div></article></section>
+<section v-if="mode==='exit'" class="panel">
+    <div class="section-title">
+        <div>
+            <h2>Productos de la orden</h2>
+            <p>Cambiar de categoría no quita los productos ya seleccionados. La unidad se toma del catálogo.</p>
+        </div>
+    </div>
+
+    <div class="line-grid line-card">
+        <label>
+            Categoría
+            <select v-model="exitCategoryId" :disabled="exitLocked">
+                <option value="">Todas las categorías</option>
+                <option v-for="category in categories" :key="category.id" :value="category.id">{{category.name}}</option>
+            </select>
+        </label>
+        <label for="exit-products">
+            Productos *
+            <MultiSelect
+                :key="exitCategoryId || 'all'"
+                v-model="selectedExitProductIds"
+                input-id="exit-products"
+                :options="exitProductOptions"
+                option-label="label"
+                option-value="id"
+                :selection-limit="exitSelectionLimit"
+                :max-selected-labels="1"
+                :show-toggle-all="false"
+                :filter-fields="['sku','name','category_name']"
+                filter-placeholder="Escribe el código o nombre"
+                placeholder="Selecciona uno o varios productos"
+                empty-message="No hay productos en esta categoría"
+                :disabled="exitLocked || exitSelectionLimit === 0"
+                filter
+                show-clear
+            />
+        </label>
+    </div>
+
+    <p v-if="lines.length">Líneas de la orden: {{lines.length}} de {{maxExitLines}}</p>
+
+    <article v-for="(line,index) in lines" :key="line.key" class="line-card">
+        <div class="line-heading">
+            <strong>{{index+1}}. {{selectedProduct(line.product_id)?.sku}} — {{selectedProduct(line.product_id)?.name}}</strong>
+            <Button icon="pi pi-trash" severity="danger" text rounded aria-label="Quitar línea" :disabled="exitLocked" @click="lines.splice(index,1)"/>
+        </div>
+        <div class="line-grid">
+            <label>
+                Ubicación con existencia *
+                <select v-model="line.location_id" :disabled="exitLocked">
+                    <option value="">Selecciona la ubicación</option>
+                    <option v-for="location in exitLocations(line)" :key="location.id" :value="location.id">{{location.name}}</option>
+                </select>
+                <small v-if="!exitLocations(line).length">No hay otra ubicación disponible con existencia para este producto.</small>
+            </label>
+            <label>
+                Cantidad ({{selectedProduct(line.product_id)?.base_unit_symbol??'unidad base'}}) *
+                <input v-model.trim="line.quantity" inputmode="decimal" placeholder="0" :disabled="exitLocked" required/>
+            </label>
+        </div>
+        <Button
+            v-if="canAddExitLocation(line)"
+            label="Agregar otra ubicación"
+            icon="pi pi-plus"
+            text
+            :disabled="exitLocked"
+            @click="addExitLocation(line)"
+        />
+    </article>
+</section>
 
 <section v-else class="panel"><div class="grid">
 <label>Categoría<select v-model="transferCategoryId"><option value="">Todas las categorías</option><option v-for="category in categories" :key="category.id" :value="category.id">{{category.name}}</option></select></label>
@@ -95,7 +189,7 @@ function reset():void{resultId.value=null;errors.value={};pending.value=null;ses
 </div></section>
 
 <ul v-if="Object.keys(errors).length" class="errors" role="alert"><li v-for="(messages,field) in errors" :key="field"><strong>{{field}}:</strong> {{messages.join(' ')}}</li></ul>
-<div class="buttons"><Button v-if="resultId===null" :label="mode==='exit'?'Registrar orden y descontar existencias':'Confirmar traslado'" icon="pi pi-check" :severity="mode==='exit'?'danger':'success'" :loading="saving" :disabled="!canSubmit" @click="submit"/><Button v-else label="Registrar otra operación" icon="pi pi-plus" @click="reset"/><Link href="/">Cancelar</Link></div>
+<div class="buttons"><Button v-if="resultId===null" :label="mode==='exit' ? (pending ? 'Reintentar la misma orden' : 'Registrar orden y descontar existencias') : 'Confirmar traslado'" icon="pi pi-check" :severity="mode==='exit'?'danger':'success'" :loading="saving" :disabled="!canSubmit" @click="submit"/><Button v-else label="Registrar otra operación" icon="pi pi-plus" @click="reset"/><Link href="/">Cancelar</Link></div>
 </main>
 </template>
 

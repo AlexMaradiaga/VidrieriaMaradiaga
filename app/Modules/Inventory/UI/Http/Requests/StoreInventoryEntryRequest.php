@@ -55,7 +55,8 @@ final class StoreInventoryEntryRequest extends FormRequest
             return $rules + $lineRules;
         }
 
-        $rules['category_id'] = ['required', 'integer', 'min:1'];
+        // Los clientes anteriores pueden seguir enviando una categoría única.
+        $rules['category_id'] = ['sometimes', 'required', 'integer', 'min:1'];
         $rules['lines'] = ['required', 'array', 'list', 'min:1', 'max:200'];
         $rules['lines.*'] = ['required', 'array:product_id,location_id,unit_id,quantity,unit_cost'];
 
